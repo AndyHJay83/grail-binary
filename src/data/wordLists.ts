@@ -1,252 +1,5 @@
 import { WordList } from '../types';
 
-// Comprehensive sample word list for development - replace with actual EN-UK.txt content
-const sampleWords = [
-  'aardvark', 'abacus', 'abandon', 'ability', 'able', 'about', 'above', 'abroad',
-  'absolute', 'accept', 'access', 'accident', 'account', 'achieve', 'acid', 'across',
-  'act', 'action', 'active', 'activity', 'actor', 'actual', 'add', 'address',
-  'admit', 'adult', 'advance', 'advantage', 'adventure', 'advertise', 'advice',
-  'affect', 'afford', 'afraid', 'after', 'again', 'against', 'age', 'agency',
-  'agent', 'agree', 'agreement', 'ahead', 'air', 'airline', 'airport', 'alarm',
-  'album', 'alcohol', 'alive', 'allow', 'almost', 'alone', 'along', 'already',
-  'also', 'alter', 'always', 'among', 'amount', 'ancient', 'anger', 'angle',
-  'angry', 'animal', 'announce', 'annual', 'another', 'answer', 'any', 'anybody',
-  'anymore', 'anyone', 'anything', 'anyway', 'anywhere', 'appear', 'apple',
-  'application', 'apply', 'appointment', 'approach', 'approve', 'area', 'argue',
-  'arm', 'army', 'around', 'arrange', 'arrive', 'art', 'article', 'artist',
-  'as', 'ask', 'assist', 'assume', 'at', 'attack', 'attend', 'attention',
-  'attitude', 'attract', 'author', 'authority', 'available', 'avoid', 'away',
-  'baby', 'back', 'bad', 'bag', 'ball', 'bank', 'bar', 'base', 'basic',
-  'battle', 'be', 'bear', 'beat', 'beauty', 'because', 'become', 'bed',
-  'before', 'begin', 'behavior', 'behind', 'believe', 'below', 'best',
-  'better', 'between', 'beyond', 'big', 'bill', 'billion', 'bird', 'birth',
-  'black', 'blood', 'blue', 'board', 'boat', 'body', 'book', 'born', 'both',
-  'box', 'boy', 'break', 'bring', 'brother', 'build', 'business', 'buy',
-  'call', 'camera', 'can', 'cancer', 'candidate', 'capital', 'car', 'card',
-  'care', 'career', 'carry', 'case', 'catch', 'cause', 'cell', 'center',
-  'central', 'century', 'certain', 'certainly', 'chair', 'challenge', 'chance',
-  'change', 'character', 'charge', 'check', 'child', 'choice', 'choose',
-  'church', 'citizen', 'city', 'civil', 'claim', 'class', 'clear', 'clearly',
-  'close', 'coach', 'cold', 'collection', 'college', 'color', 'come',
-  'commercial', 'common', 'community', 'company', 'compare', 'computer',
-  'concern', 'condition', 'conference', 'Congress', 'consider', 'consumer',
-  'contain', 'continue', 'control', 'cost', 'could', 'country', 'couple',
-  'course', 'court', 'cover', 'create', 'crime', 'cultural', 'culture',
-  'cup', 'current', 'customer', 'cut', 'dark', 'data', 'daughter', 'day',
-  'dead', 'deal', 'death', 'debate', 'decade', 'decide', 'decision',
-  'deep', 'defense', 'degree', 'Democrat', 'democratic', 'describe',
-  'design', 'despite', 'detail', 'determine', 'develop', 'development',
-  'die', 'difference', 'different', 'difficult', 'dinner', 'direction',
-  'director', 'discover', 'discuss', 'discussion', 'disease', 'do', 'doctor',
-  'dog', 'door', 'down', 'draw', 'dream', 'drive', 'drop', 'drug', 'during',
-  'each', 'early', 'east', 'easy', 'eat', 'economic', 'economy', 'edge',
-  'education', 'effect', 'effort', 'eight', 'either', 'election', 'else',
-  'employee', 'end', 'energy', 'enjoy', 'enough', 'enter', 'entire',
-  'environment', 'environmental', 'especially', 'establish', 'even', 'evening',
-  'event', 'ever', 'every', 'everybody', 'everyone', 'everything', 'evidence',
-  'exactly', 'example', 'executive', 'exist', 'expect', 'experience',
-  'expert', 'explain', 'eye', 'face', 'fact', 'factor', 'fail', 'fall',
-  'family', 'far', 'fast', 'father', 'fear', 'federal', 'feel', 'feeling',
-  'few', 'field', 'fight', 'figure', 'fill', 'film', 'final', 'finally',
-  'financial', 'find', 'fine', 'finger', 'finish', 'fire', 'firm', 'first',
-  'fish', 'five', 'floor', 'fly', 'focus', 'follow', 'food', 'foot',
-  'force', 'foreign', 'forget', 'form', 'former', 'forward', 'four',
-  'free', 'friend', 'from', 'front', 'full', 'fund', 'future', 'game',
-  'garden', 'gas', 'general', 'generation', 'get', 'girl', 'give', 'glass',
-  'go', 'goal', 'good', 'government', 'great', 'green', 'ground', 'group',
-  'grow', 'growth', 'guess', 'gun', 'guy', 'hair', 'half', 'hand', 'hang',
-  'happen', 'happy', 'hard', 'have', 'he', 'head', 'health', 'hear',
-  'heart', 'heat', 'heavy', 'help', 'her', 'here', 'herself', 'high',
-  'him', 'himself', 'his', 'history', 'hit', 'hold', 'home', 'hope',
-  'hospital', 'hot', 'hotel', 'hour', 'house', 'how', 'however', 'huge',
-  'human', 'hundred', 'husband', 'I', 'idea', 'identify', 'if', 'image',
-  'imagine', 'impact', 'important', 'improve', 'in', 'include', 'including',
-  'increase', 'indeed', 'indicate', 'individual', 'industry', 'information',
-  'inside', 'instead', 'institution', 'interest', 'interesting', 'international',
-  'interview', 'into', 'investment', 'involve', 'issue', 'it', 'item', 'its',
-  'itself', 'job', 'join', 'just', 'keep', 'key', 'kid', 'kill', 'kind',
-  'kitchen', 'know', 'knowledge', 'land', 'language', 'large', 'last',
-  'late', 'later', 'laugh', 'law', 'lawyer', 'lay', 'lead', 'leader',
-  'learn', 'least', 'leave', 'left', 'leg', 'legal', 'less', 'let',
-  'letter', 'level', 'lie', 'life', 'light', 'like', 'likely', 'line',
-  'list', 'listen', 'little', 'live', 'local', 'long', 'look', 'lose',
-  'loss', 'lot', 'love', 'low', 'machine', 'magazine', 'main', 'maintain',
-  'major', 'majority', 'make', 'man', 'manage', 'management', 'manager',
-  'many', 'market', 'marriage', 'material', 'matter', 'may', 'maybe',
-  'me', 'mean', 'measure', 'media', 'medical', 'meet', 'meeting', 'member',
-  'memory', 'mention', 'message', 'method', 'middle', 'might', 'military',
-  'million', 'mind', 'minute', 'miss', 'model', 'modern', 'moment',
-  'money', 'month', 'more', 'morning', 'most', 'mother', 'mouth', 'move',
-  'movement', 'movie', 'Mr', 'Mrs', 'much', 'music', 'must', 'my', 'myself',
-  'name', 'national', 'natural', 'nature', 'near', 'nearly', 'necessary',
-  'need', 'network', 'never', 'new', 'news', 'newspaper', 'next', 'nice',
-  'night', 'nine', 'no', 'none', 'nor', 'north', 'not', 'note', 'nothing',
-  'notice', 'now', 'number', 'occur', 'of', 'off', 'offer', 'office',
-  'officer', 'official', 'often', 'oh', 'oil', 'ok', 'old', 'on', 'once',
-  'one', 'only', 'onto', 'open', 'operation', 'opportunity', 'option',
-  'or', 'order', 'organization', 'other', 'others', 'our', 'out', 'outside',
-  'over', 'own', 'owner', 'page', 'pain', 'painting', 'paper', 'parent',
-  'part', 'participant', 'particular', 'particularly', 'partner', 'party',
-  'pass', 'past', 'patient', 'pattern', 'pay', 'peace', 'people', 'per',
-  'perform', 'perhaps', 'period', 'person', 'personal', 'phone', 'physical',
-  'pick', 'picture', 'piece', 'place', 'plan', 'plant', 'play', 'player',
-  'PM', 'point', 'police', 'policy', 'political', 'politics', 'poor',
-  'popular', 'population', 'position', 'possible', 'power', 'practice',
-  'prepare', 'present', 'president', 'pressure', 'pretty', 'prevent',
-  'price', 'private', 'probably', 'problem', 'process', 'produce',
-  'product', 'production', 'professional', 'professor', 'program', 'project',
-  'property', 'protect', 'prove', 'provide', 'public', 'pull', 'push',
-  'put', 'quality', 'question', 'quickly', 'quite', 'race', 'radio',
-  'raise', 'range', 'rate', 'rather', 'reach', 'read', 'ready', 'real',
-  'reality', 'realize', 'really', 'reason', 'receive', 'recent', 'recently',
-  'recognize', 'record', 'red', 'reduce', 'reflect', 'region', 'relate',
-  'relationship', 'religious', 'remain', 'remember', 'remove', 'report',
-  'represent', 'Republican', 'require', 'research', 'resource', 'respond',
-  'response', 'responsibility', 'rest', 'result', 'return', 'reveal',
-  'rich', 'right', 'rise', 'risk', 'road', 'rock', 'role', 'room',
-  'rule', 'run', 'safe', 'same', 'save', 'say', 'scene', 'school',
-  'science', 'scientist', 'score', 'sea', 'season', 'seat', 'second',
-  'section', 'security', 'see', 'seek', 'seem', 'sell', 'send', 'senior',
-  'sense', 'series', 'serious', 'serve', 'service', 'set', 'seven',
-  'several', 'sex', 'sexual', 'shake', 'share', 'she', 'shoot', 'short',
-  'shot', 'should', 'shoulder', 'show', 'side', 'sign', 'significant',
-  'similar', 'simple', 'simply', 'since', 'sing', 'single', 'sister',
-  'sit', 'site', 'situation', 'six', 'size', 'skill', 'skin', 'small',
-  'smile', 'so', 'social', 'society', 'soldier', 'some', 'somebody',
-  'someone', 'something', 'sometimes', 'son', 'song', 'soon', 'sort',
-  'sound', 'source', 'south', 'southern', 'space', 'speak', 'special',
-  'specific', 'speech', 'spend', 'sport', 'spring', 'staff', 'stage',
-  'stand', 'standard', 'star', 'start', 'state', 'statement', 'station',
-  'stay', 'step', 'still', 'stock', 'stop', 'store', 'story', 'strategy',
-  'street', 'strong', 'structure', 'student', 'study', 'stuff', 'style',
-  'subject', 'success', 'successful', 'such', 'suddenly', 'suffer',
-  'suggest', 'summer', 'support', 'sure', 'surface', 'system', 'table',
-  'take', 'talk', 'task', 'tax', 'teach', 'teacher', 'team', 'technology',
-  'television', 'tell', 'ten', 'tend', 'term', 'test', 'than', 'thank',
-  'that', 'the', 'their', 'them', 'themselves', 'then', 'theory', 'there',
-  'these', 'they', 'thing', 'think', 'third', 'this', 'those', 'though',
-  'thought', 'thousand', 'threat', 'three', 'through', 'throughout',
-  'throw', 'thus', 'time', 'to', 'today', 'together', 'tonight', 'too',
-  'top', 'total', 'tough', 'toward', 'town', 'trade', 'traditional',
-  'training', 'treat', 'treatment', 'tree', 'trial', 'trip', 'trouble',
-  'true', 'truth', 'try', 'turn', 'TV', 'two', 'type', 'under',
-  'understand', 'unit', 'until', 'up', 'upon', 'us', 'use', 'usually',
-  'value', 'various', 'very', 'victim', 'view', 'violence', 'visit',
-  'voice', 'vote', 'wait', 'walk', 'wall', 'want', 'war', 'watch',
-  'water', 'way', 'we', 'weapon', 'wear', 'week', 'weight', 'well',
-  'west', 'western', 'what', 'whatever', 'when', 'where', 'whether',
-  'which', 'while', 'white', 'who', 'whole', 'whom', 'whose', 'why',
-  'wide', 'wife', 'will', 'win', 'wind', 'window', 'wish', 'with',
-  'within', 'without', 'woman', 'wonder', 'word', 'work', 'worker',
-  'world', 'worry', 'would', 'write', 'writer', 'wrong', 'yard', 'yeah',
-  'year', 'yes', 'yet', 'you', 'young', 'your', 'yourself',
-  // Additional words for better testing
-  'zebra', 'zero', 'zone', 'zoo', 'zoom', 'zombie', 'zodiac', 'zinc',
-  'zipper', 'zombie', 'zoo', 'zoom', 'zodiac', 'zinc', 'zipper',
-  'xylophone', 'xenon', 'xerox', 'xenial', 'xenophobe', 'xenophile',
-  'quintessential', 'quintuple', 'quintet', 'quintillion', 'quintuplet',
-  'jubilant', 'jubilee', 'jubilation', 'jubilantly', 'jubilate',
-  'kaleidoscope', 'kaleidoscopic', 'kaleidoscopically', 'kaleidoscopical',
-  'wonderful', 'wonderfully', 'wonderment', 'wondrous', 'wondrously',
-  'extraordinary', 'extraordinarily', 'extraordinariness', 'extraordinaire',
-  'magnificent', 'magnificently', 'magnificence', 'magnificentness',
-  'spectacular', 'spectacularly', 'spectacularness', 'spectacularity',
-  'phenomenal', 'phenomenally', 'phenomenalness', 'phenomenality',
-  'incredible', 'incredibly', 'incredibleness', 'incredibility',
-  'amazing', 'amazingly', 'amazingness', 'amazement', 'amazed',
-  'fantastic', 'fantastically', 'fantastical', 'fantasticalness',
-  'brilliant', 'brilliantly', 'brilliance', 'brilliantness',
-  'excellent', 'excellently', 'excellence', 'excellency',
-  'outstanding', 'outstandingly', 'outstandingness',
-  'exceptional', 'exceptionally', 'exceptionalness',
-  'remarkable', 'remarkably', 'remarkableness',
-  'notable', 'notably', 'notableness', 'notability',
-  'significant', 'significantly', 'significance', 'significancy',
-  'important', 'importantly', 'importance', 'importancy',
-  'essential', 'essentially', 'essentialness', 'essentiality',
-  'crucial', 'crucially', 'crucialness', 'cruciality',
-  'critical', 'critically', 'criticalness', 'criticality',
-  'vital', 'vitally', 'vitalness', 'vitality',
-  'necessary', 'necessarily', 'necessariness', 'necessity',
-  'required', 'requirement', 'requisite', 'requisiteness',
-  'mandatory', 'mandatorily', 'mandatoriness',
-  'obligatory', 'obligatorily', 'obligatoriness',
-  'compulsory', 'compulsorily', 'compulsoriness',
-  'imperative', 'imperatively', 'imperativeness',
-  'urgent', 'urgently', 'urgency', 'urgentness',
-  'immediate', 'immediately', 'immediateness', 'immediacy',
-  'instant', 'instantly', 'instantness', 'instantaneity',
-  'prompt', 'promptly', 'promptness', 'promptitude',
-  'swift', 'swiftly', 'swiftness', 'swiftitude',
-  'rapid', 'rapidly', 'rapidness', 'rapidity',
-  'quick', 'quickly', 'quickness', 'quickness',
-  'fast', 'fastly', 'fastness', 'fastitude',
-  'speedy', 'speedily', 'speediness', 'speeditude',
-  'hasty', 'hastily', 'hastiness', 'hastitude',
-  'hurried', 'hurriedly', 'hurriedness', 'hurriedness',
-  'rushed', 'rushly', 'rushness', 'rushitude',
-  'brisk', 'briskly', 'briskness', 'briskitude',
-  'lively', 'livelily', 'liveliness', 'livelitude',
-  'energetic', 'energetically', 'energeticness', 'energeticity',
-  'dynamic', 'dynamically', 'dynamicness', 'dynamicity',
-  'active', 'actively', 'activeness', 'activity',
-  'vigorous', 'vigorously', 'vigorousness', 'vigorosity',
-  'robust', 'robustly', 'robustness', 'robustity',
-  'strong', 'strongly', 'strongness', 'strength',
-  'powerful', 'powerfully', 'powerfulness', 'power',
-  'mighty', 'mightily', 'mightiness', 'might',
-  'forceful', 'forcefully', 'forcefulness', 'force',
-  'intense', 'intensely', 'intenseness', 'intensity',
-  'fierce', 'fiercely', 'fierceness', 'fierceness',
-  'violent', 'violently', 'violence', 'violentness',
-  'aggressive', 'aggressively', 'aggressiveness', 'aggression',
-  'assertive', 'assertively', 'assertiveness', 'assertion',
-  'confident', 'confidently', 'confidence', 'confidentiality',
-  'assured', 'assuredly', 'assuredness', 'assurance',
-  'certain', 'certainly', 'certainty', 'certainness',
-  'definite', 'definitely', 'definiteness', 'definition',
-  'positive', 'positively', 'positiveness', 'positivity',
-  'absolute', 'absolutely', 'absoluteness', 'absoluteness',
-  'complete', 'completely', 'completeness', 'completion',
-  'total', 'totally', 'totalness', 'totality',
-  'entire', 'entirely', 'entireness', 'entirety',
-  'whole', 'wholly', 'wholeness', 'wholeness',
-  'full', 'fully', 'fullness', 'fullness',
-  'thorough', 'thoroughly', 'thoroughness', 'thoroughness',
-  'comprehensive', 'comprehensively', 'comprehensiveness', 'comprehension',
-  'extensive', 'extensively', 'extensiveness', 'extension',
-  'wide', 'widely', 'wideness', 'width',
-  'broad', 'broadly', 'broadness', 'breadth',
-  'vast', 'vastly', 'vastness', 'vastness',
-  'immense', 'immensely', 'immenseness', 'immensity',
-  'enormous', 'enormously', 'enormousness', 'enormity',
-  'huge', 'hugely', 'hugeness', 'hugeness',
-  'massive', 'massively', 'massiveness', 'massiveness',
-  'gigantic', 'gigantically', 'giganticness', 'giganticness',
-  'colossal', 'colossally', 'colossalness', 'colossalness',
-  'tremendous', 'tremendously', 'tremendousness', 'tremendousness',
-  'monumental', 'monumentally', 'monumentalness', 'monumentalness',
-  'substantial', 'substantially', 'substantialness', 'substantiality',
-  'considerable', 'considerably', 'considerableness', 'considerability',
-  'significant', 'significantly', 'significance', 'significancy',
-  'notable', 'notably', 'notableness', 'notability',
-  'remarkable', 'remarkably', 'remarkableness', 'remarkableness',
-  'exceptional', 'exceptionally', 'exceptionalness', 'exceptionality',
-  'outstanding', 'outstandingly', 'outstandingness', 'outstandingness',
-  'excellent', 'excellently', 'excellence', 'excellency',
-  'brilliant', 'brilliantly', 'brilliance', 'brilliantness',
-  'fantastic', 'fantastically', 'fantastical', 'fantasticalness',
-  'amazing', 'amazingly', 'amazingness', 'amazement',
-  'incredible', 'incredibly', 'incredibleness', 'incredibility',
-  'phenomenal', 'phenomenally', 'phenomenalness', 'phenomenality',
-  'spectacular', 'spectacularly', 'spectacularness', 'spectacularity',
-  'magnificent', 'magnificently', 'magnificence', 'magnificentness',
-  'wondrous', 'wondrously', 'wondrousness', 'wondrousness',
-  'wonderful', 'wonderfully', 'wonderfulness', 'wonderfulness',
-  'extraordinary', 'extraordinarily', 'extraordinariness', 'extraordinariness',
-  'quintessential', 'quintessentially', 'quintessentialness', 'quintessentiality'
-];
-
 export const wordLists: WordList[] = [
   {
     id: 'en-uk',
@@ -258,20 +11,29 @@ export const wordLists: WordList[] = [
 
 export const loadWordList = async (filename: string): Promise<string[]> => {
   try {
+    console.log(`Attempting to load word list from: /wordlist/${filename}`);
     const response = await fetch(`/wordlist/${filename}`);
+    console.log(`Response status: ${response.status} ${response.statusText}`);
+    
     if (!response.ok) {
       throw new Error(`Failed to load word list: ${response.statusText}`);
     }
+    
     const text = await response.text();
-    return text
+    console.log(`Loaded text length: ${text.length} characters`);
+    console.log(`First 100 characters: ${text.substring(0, 100)}`);
+    
+    const words = text
       .split('\n')
       .map(word => word.trim())
       .filter(word => word.length > 0 && !word.startsWith('#'))
       .map(word => word.toLowerCase());
+    
+    console.log(`Parsed ${words.length} words from file`);
+    return words;
   } catch (error) {
     console.error('Error loading word list:', error);
-    // Fallback to sample words if file loading fails
-    return sampleWords;
+    throw new Error('Failed to load word list - EN-UK.txt is required');
   }
 };
 
@@ -291,9 +53,7 @@ export const getWordListById = async (id: string): Promise<WordList | undefined>
     return wordList;
   } catch (error) {
     console.error('Error loading word list:', error);
-    // Fallback to sample words
-    wordList.words = sampleWords;
-    return wordList;
+    throw error;
   }
 };
 
@@ -307,7 +67,7 @@ export const getAllWordLists = async (): Promise<WordList[]> => {
           wordList.words = words;
         } catch (error) {
           console.error('Error loading word list:', error);
-          wordList.words = sampleWords;
+          throw error;
         }
       }
       return wordList;
