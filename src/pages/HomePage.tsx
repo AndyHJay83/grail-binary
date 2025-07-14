@@ -30,7 +30,6 @@ const HomePage: React.FC = () => {
               // Map word list IDs to their corresponding filenames
               const filenameMap: Record<string, string> = {
                 'en-uk': 'EN-UK.txt',
-                '134k': '134K.txt',
                 '19k': '19K.txt',
                 'all-names': 'AllNames.txt',
                 'boys-names': 'BoysNames.txt',

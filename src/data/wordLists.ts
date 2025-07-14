@@ -9,13 +9,6 @@ export const wordLists: WordList[] = [
     isDefault: true
   },
   {
-    id: '134k',
-    name: '134K Word List',
-    words: [], // Will be loaded dynamically
-    description: 'Large comprehensive word list (134K words)',
-    isDefault: true
-  },
-  {
     id: '19k',
     name: '19K Word List',
     words: [], // Will be loaded dynamically
@@ -87,7 +80,6 @@ export const getWordListById = async (id: string): Promise<WordList | undefined>
   // Map word list IDs to their corresponding filenames
   const filenameMap: Record<string, string> = {
     'en-uk': 'EN-UK.txt',
-    '134k': '134K.txt',
     '19k': '19K.txt',
     'all-names': 'AllNames.txt',
     'boys-names': 'BoysNames.txt',
@@ -114,7 +106,6 @@ export const getAllWordLists = async (): Promise<WordList[]> => {
   // Map word list IDs to their corresponding filenames
   const filenameMap: Record<string, string> = {
     'en-uk': 'EN-UK.txt',
-    '134k': '134K.txt',
     '19k': '19K.txt',
     'all-names': 'AllNames.txt',
     'boys-names': 'BoysNames.txt',
