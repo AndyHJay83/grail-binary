@@ -4,6 +4,7 @@ import { useAppContext } from '../context/AppContext';
 import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fileExport';
 import { getBackgroundColor } from '../utils/binaryFilter';
 import { BinaryChoice } from '../types';
+import { getSequenceById } from '../data/letterSequences';
 
 const FilterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -166,7 +167,7 @@ const FilterPage: React.FC = () => {
       {/* Progress Indicator */}
       <div className="text-center mt-4">
         <div className="text-sm text-gray-400">
-          Progress: {filterState.letterIndex}/26 letters
+          Progress: {filterState.letterIndex}/{getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence.length || 26} letters
         </div>
         {filterState.sequence.length > 0 && (
           <div className="text-xs text-gray-500 mt-2">

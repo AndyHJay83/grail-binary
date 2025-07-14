@@ -1,6 +1,7 @@
 import { BinaryChoice } from '../types';
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// Default alphabet for fallback
+const DEFAULT_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export interface FilterResult {
   leftWords: string[];
@@ -16,10 +17,11 @@ export interface FilterResult {
 export const filterWords = (
   wordList: string[],
   sequence: BinaryChoice[],
-  currentLetterIndex: number
+  currentLetterIndex: number,
+  letterSequence: string = DEFAULT_ALPHABET
 ): FilterResult => {
-  const currentLetter = ALPHABET[currentLetterIndex];
-  const isComplete = currentLetterIndex >= ALPHABET.length;
+  const currentLetter = letterSequence[currentLetterIndex] || '';
+  const isComplete = currentLetterIndex >= letterSequence.length;
 
   if (sequence.length === 0) {
     return {
@@ -45,7 +47,7 @@ export const filterWords = (
 
     // Check each letter in the sequence
     for (let i = 0; i < sequence.length; i++) {
-      const letter = ALPHABET[i];
+      const letter = letterSequence[i];
       const choice = sequence[i];
       const hasLetter = upperWord.includes(letter);
 
@@ -83,15 +85,15 @@ export const getBackgroundColor = (count: number, totalCount: number): string =>
   return 'bg-black'; // Default black
 };
 
-export const getNextLetter = (currentIndex: number): string => {
-  if (currentIndex >= ALPHABET.length - 1) {
+export const getNextLetter = (currentIndex: number, letterSequence: string = DEFAULT_ALPHABET): string => {
+  if (currentIndex >= letterSequence.length - 1) {
     return '';
   }
-  return ALPHABET[currentIndex + 1];
+  return letterSequence[currentIndex + 1];
 };
 
-export const isFilterComplete = (sequence: BinaryChoice[]): boolean => {
-  return sequence.length >= ALPHABET.length;
+export const isFilterComplete = (sequence: BinaryChoice[], letterSequence: string = DEFAULT_ALPHABET): boolean => {
+  return sequence.length >= letterSequence.length;
 };
 
 export const resetFilter = (): FilterResult => {

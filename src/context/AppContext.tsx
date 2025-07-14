@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { AppState, WordList, UserPreferences, BinaryChoice } from '../types';
 import { filterWords, resetFilter } from '../utils/binaryFilter';
 import { getAllWordLists, getWordListById } from '../data/wordLists';
+import { getSequenceById } from '../data/letterSequences';
 
 interface AppAction {
   type: string;
@@ -22,7 +23,8 @@ const initialState: AppState = {
     exportPreferences: {
       defaultFilename: 'WORDLIST-RESULTS',
       includeTimestamp: false
-    }
+    },
+    selectedLetterSequence: 'full-alphabet'
   }
 };
 
@@ -40,8 +42,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newSequence = [...state.filterState.sequence, choice];
       const newLetterIndex = state.filterState.letterIndex + 1;
       
+      // Get the current letter sequence
+      const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      const letterSequence = currentSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      
       const filterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex)
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence)
         : resetFilter();
       
       return {
@@ -77,6 +83,16 @@ function appReducer(state: AppState, action: AppAction): AppState {
         }
       };
     
+    case 'UPDATE_LETTER_SEQUENCE':
+      return {
+        ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          selectedLetterSequence: action.payload
+        },
+        filterState: resetFilter() // Reset filter when sequence changes
+      };
+    
     default:
       return state;
   }
@@ -89,6 +105,7 @@ interface AppContextType {
   makeBinaryChoice: (choice: BinaryChoice) => void;
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
+  updateLetterSequence: (sequenceId: string) => void;
   getAllWordLists: () => Promise<WordList[]>;
 }
 
@@ -129,6 +146,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'UPDATE_PREFERENCES', payload: preferences });
   };
 
+  const updateLetterSequence = (sequenceId: string) => {
+    dispatch({ type: 'UPDATE_LETTER_SEQUENCE', payload: sequenceId });
+  };
+
   const value: AppContextType = {
     state,
     dispatch,
@@ -136,6 +157,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     makeBinaryChoice,
     resetFilter,
     updatePreferences,
+    updateLetterSequence,
     getAllWordLists
   };
 

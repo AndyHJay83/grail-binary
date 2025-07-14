@@ -1,3 +1,10 @@
+export interface LetterSequence {
+  id: string;
+  name: string;
+  sequence: string;
+  isDefault: boolean;
+}
+
 export interface WordList {
   id: string;
   name: string;
@@ -26,6 +33,7 @@ export interface UserPreferences {
     defaultFilename: string;
     includeTimestamp: boolean;
   };
+  selectedLetterSequence: string; // ID of the selected sequence
 }
 
 export type BinaryChoice = 'L' | 'R';

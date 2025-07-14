@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import LetterSequenceManager from '../components/LetterSequenceManager';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -85,6 +86,9 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Letter Sequences */}
+        <LetterSequenceManager />
 
         {/* App Management */}
         <div className="bg-black border-2 border-white rounded-lg p-6">
