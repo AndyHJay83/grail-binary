@@ -10,6 +10,7 @@ const HomePage: React.FC = () => {
   const { getAllWordLists, selectWordList, state } = useAppContext();
   const [wordLists, setWordLists] = React.useState<WordListCard[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const hasLoadedRef = React.useRef(false);
 
   React.useEffect(() => {
     const loadSelectedWordList = async () => {
@@ -30,9 +31,10 @@ const HomePage: React.FC = () => {
         console.log('HomePage: selectedWordList =', selectedWordList);
         
         if (selectedWordList) {
-          // If words aren't loaded yet, load them using the context
-          if (selectedWordList.words.length === 0) {
+          // If words aren't loaded yet and we haven't already started loading, load them
+          if (selectedWordList.words.length === 0 && !hasLoadedRef.current) {
             console.log('HomePage: Loading words for', selectedWordList.id);
+            hasLoadedRef.current = true;
             await selectWordList(selectedWordList.id);
             // Re-fetch the word list after loading
             const updatedWordLists = getAllWordLists();
@@ -64,7 +66,12 @@ const HomePage: React.FC = () => {
     };
     
     loadSelectedWordList();
-  }, [state.userPreferences.selectedWordListId, selectWordList, getAllWordLists]);
+  }, [state.userPreferences.selectedWordListId]);
+
+  // Reset the ref when the selected word list changes
+  React.useEffect(() => {
+    hasLoadedRef.current = false;
+  }, [state.userPreferences.selectedWordListId]);
 
   const handleWordListSelect = (wordListId: string) => {
     selectWordList(wordListId);
