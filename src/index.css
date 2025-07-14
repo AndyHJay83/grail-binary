@@ -22,7 +22,7 @@
   }
   
   .letter-bubble {
-    @apply bg-white text-black rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold shadow;
+    @apply bg-white text-black rounded-full w-20 h-20 flex items-center justify-center text-3xl font-bold shadow;
   }
   
   .binary-button {

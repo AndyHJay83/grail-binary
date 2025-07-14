@@ -41,6 +41,13 @@ const FilterPage: React.FC = () => {
     return getBackgroundColor(filterState.rightWords.length, selectedWordList.words.length);
   };
 
+  const getTextColor = (backgroundColor: string): string => {
+    if (backgroundColor.includes('success-green') || backgroundColor.includes('warning-red')) {
+      return 'text-black';
+    }
+    return 'text-white';
+  };
+
   if (!selectedWordList) {
     return (
       <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
@@ -74,7 +81,7 @@ const FilterPage: React.FC = () => {
         {/* Left Results */}
         <div className={`word-list ${getLeftBackgroundColor()}`}>
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Pattern A</h2>
+            <h2 className="text-lg font-bold">Left Pattern</h2>
             <button
               onClick={() => handleExport(filterState.leftWords, 'left')}
               className="export-btn"
@@ -83,13 +90,12 @@ const FilterPage: React.FC = () => {
               Export
             </button>
           </div>
-          <div className="text-xs text-gray-400 mb-1">Left = Include, Right = Exclude</div>
           <div className="word-count mb-2">
             {filterState.leftWords.length.toLocaleString()} words
           </div>
           <div className="overflow-y-auto h-full">
             {filterState.leftWords.map((word, index) => (
-              <div key={index} className="text-sm py-1">
+              <div key={index} className={`text-sm py-1 ${getTextColor(getLeftBackgroundColor())}`}>
                 {word}
               </div>
             ))}
@@ -99,7 +105,7 @@ const FilterPage: React.FC = () => {
         {/* Right Results */}
         <div className={`word-list ${getRightBackgroundColor()}`}>
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Pattern B</h2>
+            <h2 className="text-lg font-bold">Right Pattern</h2>
             <button
               onClick={() => handleExport(filterState.rightWords, 'right')}
               className="export-btn"
@@ -114,7 +120,7 @@ const FilterPage: React.FC = () => {
           </div>
           <div className="overflow-y-auto h-full">
             {filterState.rightWords.map((word, index) => (
-              <div key={index} className="text-sm py-1">
+              <div key={index} className={`text-sm py-1 ${getTextColor(getRightBackgroundColor())}`}>
                 {word}
               </div>
             ))}
