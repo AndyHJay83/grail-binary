@@ -67,8 +67,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Word Filter PWA</h1>
+      <div className="flex justify-end items-center mb-8">
         <button
           onClick={handleSettingsClick}
           className="btn-secondary"
@@ -130,12 +129,7 @@ const HomePage: React.FC = () => {
         ))}
       </div>
 
-      {/* PWA Install Prompt */}
-      <div className="mt-8 text-center">
-        <p className="text-gray-400 text-sm">
-          Install this app for the best experience
-        </p>
-      </div>
+
     </div>
   );
 };

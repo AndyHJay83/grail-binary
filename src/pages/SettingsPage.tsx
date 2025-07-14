@@ -53,6 +53,9 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <div className="max-w-2xl mx-auto space-y-8">
+        {/* Letter Sequences */}
+        <LetterSequenceManager />
+
         {/* Export Preferences */}
         <div className="bg-black border-2 border-white rounded-lg p-6">
           <h2 className="text-2xl font-bold mb-4">Export Preferences</h2>
@@ -86,9 +89,6 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Letter Sequences */}
-        <LetterSequenceManager />
 
         {/* App Management */}
         <div className="bg-black border-2 border-white rounded-lg p-6">
