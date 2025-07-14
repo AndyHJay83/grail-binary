@@ -34,20 +34,34 @@ export const filterWords = (
     };
   }
 
-  const filterByPattern = (words: string[], includeOnLeft: boolean): string[] => {
-    return words.filter(word => {
-      const upperWord = word.toUpperCase();
-      return sequence.every((choice, index) => {
-        const letter = ALPHABET[index];
-        const shouldInclude = includeOnLeft ? choice === 'L' : choice === 'R';
-        const hasLetter = upperWord.includes(letter);
-        return shouldInclude === hasLetter;
-      });
-    });
-  };
+  // For each word, determine if it matches the user's binary pattern
+  const leftWords: string[] = [];
+  const rightWords: string[] = [];
 
-  const leftWords = filterByPattern(wordList, true);
-  const rightWords = filterByPattern(wordList, false);
+  wordList.forEach(word => {
+    const upperWord = word.toUpperCase();
+    let matchesLeftPattern = true;
+    let matchesRightPattern = true;
+
+    // Check each letter in the sequence
+    for (let i = 0; i < sequence.length; i++) {
+      const letter = ALPHABET[i];
+      const choice = sequence[i];
+      const hasLetter = upperWord.includes(letter);
+
+      // Left pattern: L choice means include letter, R choice means exclude letter
+      if (choice === 'L' && !hasLetter) matchesLeftPattern = false;
+      if (choice === 'R' && hasLetter) matchesLeftPattern = false;
+
+      // Right pattern: R choice means include letter, L choice means exclude letter  
+      if (choice === 'R' && !hasLetter) matchesRightPattern = false;
+      if (choice === 'L' && hasLetter) matchesRightPattern = false;
+    }
+
+    // Add word to appropriate list(s)
+    if (matchesLeftPattern) leftWords.push(word);
+    if (matchesRightPattern) rightWords.push(word);
+  });
 
   return {
     leftWords,

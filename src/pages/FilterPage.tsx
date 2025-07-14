@@ -74,7 +74,7 @@ const FilterPage: React.FC = () => {
         {/* Left Results */}
         <div className={`word-list ${getLeftBackgroundColor()}`}>
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Left Pattern</h2>
+            <h2 className="text-lg font-bold">Pattern A</h2>
             <button
               onClick={() => handleExport(filterState.leftWords, 'left')}
               className="export-btn"
@@ -83,6 +83,7 @@ const FilterPage: React.FC = () => {
               Export
             </button>
           </div>
+          <div className="text-xs text-gray-400 mb-1">Left = Include, Right = Exclude</div>
           <div className="word-count mb-2">
             {filterState.leftWords.length.toLocaleString()} words
           </div>
@@ -98,7 +99,7 @@ const FilterPage: React.FC = () => {
         {/* Right Results */}
         <div className={`word-list ${getRightBackgroundColor()}`}>
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Right Pattern</h2>
+            <h2 className="text-lg font-bold">Pattern B</h2>
             <button
               onClick={() => handleExport(filterState.rightWords, 'right')}
               className="export-btn"
@@ -107,6 +108,7 @@ const FilterPage: React.FC = () => {
               Export
             </button>
           </div>
+          <div className="text-xs text-gray-400 mb-1">Right = Include, Left = Exclude</div>
           <div className="word-count mb-2">
             {filterState.rightWords.length.toLocaleString()} words
           </div>
