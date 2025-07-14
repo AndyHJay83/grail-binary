@@ -123,36 +123,39 @@ const FilterPage: React.FC = () => {
       </div>
 
       {/* Binary Input Area - Bottom 50% */}
-      <div className="flex items-center gap-2" style={{ height: '40vh' }}>
-        {/* Left Button - 45% width */}
-        <div className="h-full flex-1">
-          <button
-            onClick={() => handleBinaryChoice('L')}
-            className="binary-button w-full h-full"
-            disabled={filterState.letterIndex >= 26}
-            aria-label="Choose left option"
-          >
-            {/* Unlabelled button */}
-          </button>
-        </div>
+      <div className="relative" style={{ height: '40vh' }}>
+        {/* Buttons Container */}
+        <div className="flex h-full">
+          {/* Left Button - 50% width */}
+          <div className="h-full w-1/2">
+            <button
+              onClick={() => handleBinaryChoice('L')}
+              className="binary-button w-full h-full"
+              disabled={filterState.letterIndex >= 26}
+              aria-label="Choose left option"
+            >
+              {/* Unlabelled button */}
+            </button>
+          </div>
 
-        {/* Current Letter - 10% width */}
-        <div className="flex justify-center w-[10%]">
-          <div className="letter-bubble">
-            {filterState.currentLetter}
+          {/* Right Button - 50% width */}
+          <div className="h-full w-1/2">
+            <button
+              onClick={() => handleBinaryChoice('R')}
+              className="binary-button w-full h-full"
+              disabled={filterState.letterIndex >= 26}
+              aria-label="Choose right option"
+            >
+              {/* Unlabelled button */}
+            </button>
           </div>
         </div>
 
-        {/* Right Button - 45% width */}
-        <div className="h-full flex-1">
-          <button
-            onClick={() => handleBinaryChoice('R')}
-            className="binary-button w-full h-full"
-            disabled={filterState.letterIndex >= 26}
-            aria-label="Choose right option"
-          >
-            {/* Unlabelled button */}
-          </button>
+        {/* Current Letter - Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="letter-bubble">
+            {filterState.currentLetter}
+          </div>
         </div>
       </div>
 
