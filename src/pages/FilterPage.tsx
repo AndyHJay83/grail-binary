@@ -50,16 +50,8 @@ const FilterPage: React.FC = () => {
   };
 
   if (!selectedWordList) {
-    return (
-      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">No Word List Selected</h1>
-          <button onClick={handleHomeClick} className="btn-primary">
-            Go Home
-          </button>
-        </div>
-      </div>
-    );
+    navigate('/');
+    return null;
   }
 
   return (
