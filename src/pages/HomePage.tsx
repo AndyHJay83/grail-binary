@@ -30,29 +30,15 @@ const HomePage: React.FC = () => {
         console.log('HomePage: selectedWordList =', selectedWordList);
         
         if (selectedWordList) {
-          // If words aren't loaded yet, load them
+          // If words aren't loaded yet, load them using the context
           if (selectedWordList.words.length === 0) {
             console.log('HomePage: Loading words for', selectedWordList.id);
-            try {
-              // Map word list IDs to their corresponding filenames
-              const filenameMap: Record<string, string> = {
-                'en-uk': 'EN-UK.txt',
-                '19k': '19K.txt',
-                'all-names': 'AllNames.txt',
-                'boys-names': 'BoysNames.txt',
-                'girls-names': 'GirlsNames.txt'
-              };
-              
-              const filename = filenameMap[selectedWordList.id];
-              console.log('HomePage: filename =', filename);
-              if (filename) {
-                const { loadWordList } = await import('../data/wordLists');
-                const words = await loadWordList(filename);
-                selectedWordList.words = words;
-                console.log('HomePage: Loaded', words.length, 'words');
-              }
-            } catch (error) {
-              console.error(`Failed to load word list ${selectedWordList.id}:`, error);
+            await selectWordList(selectedWordList.id);
+            // Re-fetch the word list after loading
+            const updatedWordLists = getAllWordLists();
+            const updatedSelectedWordList = updatedWordLists.find(wl => wl.id === selectedWordListId);
+            if (updatedSelectedWordList) {
+              selectedWordList.words = updatedSelectedWordList.words;
             }
           } else {
             console.log('HomePage: Words already loaded, count =', selectedWordList.words.length);
@@ -78,7 +64,7 @@ const HomePage: React.FC = () => {
     };
     
     loadSelectedWordList();
-  }, [state.userPreferences.selectedWordListId]);
+  }, [state.userPreferences.selectedWordListId, selectWordList, getAllWordLists]);
 
   const handleWordListSelect = (wordListId: string) => {
     selectWordList(wordListId);
