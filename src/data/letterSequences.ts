@@ -9,9 +9,9 @@ export const defaultSequences: LetterSequence[] = [
     isDefault: true
   },
   {
-    id: 'qwerty',
-    name: 'QWERTY Layout',
-    sequence: 'QWERTYUIOPASDFGHJKLZXCVBNM',
+    id: 'seatjk',
+    name: 'SEATJK',
+    sequence: 'SEATJK',
     isDefault: true
   },
   {
