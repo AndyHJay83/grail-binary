@@ -15,17 +15,24 @@ export default defineConfig({
         name: 'Word Filter PWA',
         short_name: 'WordFilter',
         description: 'A Progressive Web App for filtering word lists using binary input',
-        theme_color: '#000000',
-        background_color: '#000000',
+        theme_color: '#1f2937',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/grail-binary/',
+        start_url: '/grail-binary/',
         icons: [
           {
-            src: 'favicon.ico',
-            sizes: '64x64',
-            type: 'image/x-icon'
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       }
