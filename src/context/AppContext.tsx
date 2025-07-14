@@ -101,32 +101,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
         filterState: resetFilter(updateLetterSequence) // Reset filter when sequence changes
       };
     
-    case 'UNDO_LAST_CHOICE':
-      if (state.filterState.letterIndex > 0) {
-        const undoSequence = state.filterState.sequence.slice(0, -1);
-        const undoLetterIndex = state.filterState.letterIndex - 1;
-        
-        // Get the current letter sequence
-        const undoCurrentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-        const undoLetterSequence = undoCurrentSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        
-        const undoFilterResult = state.selectedWordList 
-          ? filterWords(state.selectedWordList.words, undoSequence, undoLetterIndex, undoLetterSequence)
-          : resetFilter();
-        
-        return {
-          ...state,
-          filterState: {
-            currentLetter: undoFilterResult.currentLetter,
-            sequence: undoSequence,
-            leftWords: undoFilterResult.leftWords,
-            rightWords: undoFilterResult.rightWords,
-            letterIndex: undoLetterIndex
-          }
-        };
-      }
-      return state;
-    
     default:
       return state;
   }
@@ -137,7 +111,6 @@ interface AppContextType {
   dispatch: React.Dispatch<AppAction>;
   selectWordList: (id: string) => void;
   makeBinaryChoice: (choice: BinaryChoice) => void;
-  undoLastChoice: () => void;
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
@@ -173,10 +146,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'MAKE_BINARY_CHOICE', payload: { choice } });
   };
 
-  const undoLastChoice = () => {
-    dispatch({ type: 'UNDO_LAST_CHOICE' });
-  };
-
   const resetFilter = () => {
     dispatch({ type: 'RESET_FILTER' });
   };
@@ -194,7 +163,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch,
     selectWordList,
     makeBinaryChoice,
-    undoLastChoice,
     resetFilter,
     updatePreferences,
     updateLetterSequence,
