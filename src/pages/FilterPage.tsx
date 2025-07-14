@@ -95,7 +95,7 @@ const FilterPage: React.FC = () => {
           </div>
           <div className="overflow-y-auto h-full">
             {filterState.leftWords.map((word, index) => (
-              <div key={index} className={`text-sm py-1 ${getTextColor(getLeftBackgroundColor())}`}>
+              <div key={index} className={`text-base py-1 ${getTextColor(getLeftBackgroundColor())}`}>
                 {word}
               </div>
             ))}
@@ -119,7 +119,7 @@ const FilterPage: React.FC = () => {
 
           <div className="overflow-y-auto h-full">
             {filterState.rightWords.map((word, index) => (
-              <div key={index} className={`text-sm py-1 ${getTextColor(getRightBackgroundColor())}`}>
+              <div key={index} className={`text-base py-1 ${getTextColor(getRightBackgroundColor())}`}>
                 {word}
               </div>
             ))}
