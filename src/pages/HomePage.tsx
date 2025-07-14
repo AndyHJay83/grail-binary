@@ -6,7 +6,30 @@ import { WordListCard } from '../types';
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { getAllWordLists, selectWordList } = useAppContext();
-  const wordLists = getAllWordLists();
+  const [wordLists, setWordLists] = React.useState<WordListCard[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadWordLists = async () => {
+      try {
+        const lists = await getAllWordLists();
+        const cards = lists.map(list => ({
+          id: list.id,
+          name: list.name,
+          wordCount: list.words.length,
+          preview: list.words.slice(0, 5),
+          description: list.description
+        }));
+        setWordLists(cards);
+      } catch (error) {
+        console.error('Error loading word lists:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadWordLists();
+  }, [getAllWordLists]);
 
   const handleWordListSelect = (wordListId: string) => {
     selectWordList(wordListId);
@@ -21,13 +44,24 @@ const HomePage: React.FC = () => {
     return wordLists.map(list => ({
       id: list.id,
       name: list.name,
-      wordCount: list.words.length,
-      preview: list.words.slice(0, 5),
+      wordCount: list.wordCount,
+      preview: list.preview,
       description: list.description
     }));
   };
 
   const wordListCards = getWordListCards();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-4">Loading word lists...</div>
+          <div className="text-gray-400">Please wait</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-4">

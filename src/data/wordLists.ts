@@ -251,7 +251,7 @@ export const wordLists: WordList[] = [
   {
     id: 'en-uk',
     name: 'EN-UK Dictionary',
-    words: sampleWords,
+    words: [], // Will be loaded dynamically
     description: 'English (UK) word list for binary filtering'
   }
 ];
@@ -275,10 +275,44 @@ export const loadWordList = async (filename: string): Promise<string[]> => {
   }
 };
 
-export const getWordListById = (id: string): WordList | undefined => {
-  return wordLists.find(list => list.id === id);
+export const getWordListById = async (id: string): Promise<WordList | undefined> => {
+  const wordList = wordLists.find(list => list.id === id);
+  if (!wordList) return undefined;
+  
+  // If words are already loaded, return the word list
+  if (wordList.words.length > 0) {
+    return wordList;
+  }
+  
+  // Load words from file
+  try {
+    const words = await loadWordList('EN-UK.txt');
+    wordList.words = words;
+    return wordList;
+  } catch (error) {
+    console.error('Error loading word list:', error);
+    // Fallback to sample words
+    wordList.words = sampleWords;
+    return wordList;
+  }
 };
 
-export const getAllWordLists = (): WordList[] => {
-  return wordLists;
+export const getAllWordLists = async (): Promise<WordList[]> => {
+  // Load words for all word lists
+  const loadedWordLists = await Promise.all(
+    wordLists.map(async (wordList) => {
+      if (wordList.words.length === 0) {
+        try {
+          const words = await loadWordList('EN-UK.txt');
+          wordList.words = words;
+        } catch (error) {
+          console.error('Error loading word list:', error);
+          wordList.words = sampleWords;
+        }
+      }
+      return wordList;
+    })
+  );
+  
+  return loadedWordLists;
 }; 

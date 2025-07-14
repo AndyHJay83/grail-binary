@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { AppState, WordList, FilterState, UserPreferences, BinaryChoice } from '../types';
+import { AppState, WordList, UserPreferences, BinaryChoice } from '../types';
 import { filterWords, resetFilter } from '../utils/binaryFilter';
 import { getAllWordLists, getWordListById } from '../data/wordLists';
 
@@ -29,10 +29,9 @@ const initialState: AppState = {
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SELECT_WORD_LIST':
-      const wordList = getWordListById(action.payload);
+      // This will be handled asynchronously in the component
       return {
         ...state,
-        selectedWordList: wordList || null,
         filterState: resetFilter()
       };
     
@@ -54,6 +53,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
           rightWords: filterResult.rightWords,
           letterIndex: newLetterIndex
         }
+      };
+    
+    case 'SET_SELECTED_WORD_LIST':
+      return {
+        ...state,
+        selectedWordList: action.payload,
+        filterState: resetFilter()
       };
     
     case 'RESET_FILTER':
@@ -83,7 +89,7 @@ interface AppContextType {
   makeBinaryChoice: (choice: BinaryChoice) => void;
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
-  getAllWordLists: () => WordList[];
+  getAllWordLists: () => Promise<WordList[]>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -103,8 +109,12 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  const selectWordList = (id: string) => {
+  const selectWordList = async (id: string) => {
     dispatch({ type: 'SELECT_WORD_LIST', payload: id });
+    const wordList = await getWordListById(id);
+    if (wordList) {
+      dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: wordList });
+    }
   };
 
   const makeBinaryChoice = (choice: BinaryChoice) => {
