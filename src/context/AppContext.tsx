@@ -241,33 +241,35 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const selectWordList = async (id: string) => {
     dispatch({ type: 'SELECT_WORD_LIST', payload: id });
     
-    // Get word list from the new management system
-    const wordList = getWordListById(id);
-    if (wordList) {
-      // If words aren't loaded yet, load them
-      if (wordList.words.length === 0) {
-        try {
-          // Map word list IDs to their corresponding filenames
-          const filenameMap: Record<string, string> = {
-            'en-uk': 'EN-UK.txt',
-            '19k': '19K.txt',
-            'all-names': 'AllNames.txt',
-            'boys-names': 'BoysNames.txt',
-            'girls-names': 'GirlsNames.txt'
+    try {
+      // Map word list IDs to their corresponding filenames
+      const filenameMap: Record<string, string> = {
+        'en-uk': 'EN-UK.txt',
+        '19k': '19K.txt',
+        'all-names': 'AllNames.txt',
+        'boys-names': 'BoysNames.txt',
+        'girls-names': 'GirlsNames.txt'
+      };
+      
+      const filename = filenameMap[id];
+      if (filename) {
+        const { loadWordList } = await import('../data/wordLists');
+        const words = await loadWordList(filename);
+        
+        // Get the word list definition from the manager
+        const wordList = getWordListById(id);
+        if (wordList) {
+          // Create a new word list object with the loaded words
+          const loadedWordList = {
+            ...wordList,
+            words: words
           };
           
-          const filename = filenameMap[id];
-          if (filename) {
-            const { loadWordList } = await import('../data/wordLists');
-            const words = await loadWordList(filename);
-            wordList.words = words;
-          }
-        } catch (error) {
-          console.error('Failed to load word list:', error);
+          dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: loadedWordList });
         }
       }
-      
-      dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: wordList });
+    } catch (error) {
+      console.error('Failed to load word list:', error);
     }
   };
 
