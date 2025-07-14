@@ -22,11 +22,11 @@
   }
   
   .letter-bubble {
-    @apply bg-white text-black rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold;
+    @apply bg-white text-black rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold shadow;
   }
   
   .binary-button {
-    @apply bg-black border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-black transition-colors duration-200 text-lg font-bold;
+    @apply bg-black border-2 border-white text-white px-0 py-0 rounded-lg hover:bg-white hover:text-black transition-colors duration-200 text-3xl font-bold min-h-[5rem] min-w-[5rem];
   }
   
   .word-count {
