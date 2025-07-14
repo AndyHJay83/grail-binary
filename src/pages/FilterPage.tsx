@@ -108,7 +108,7 @@ const FilterPage: React.FC = () => {
               Export
             </button>
           </div>
-          <div className="text-xs text-gray-400 mb-1">Right = Include, Left = Exclude</div>
+
           <div className="word-count mb-2">
             {filterState.rightWords.length.toLocaleString()} words
           </div>
@@ -124,11 +124,11 @@ const FilterPage: React.FC = () => {
 
       {/* Binary Input Area - Bottom 50% */}
       <div className="grid grid-cols-3 gap-4 items-center" style={{ height: '40vh' }}>
-        {/* Left Button */}
-        <div className="flex justify-center">
+        {/* Left Button - Full 25% width */}
+        <div className="h-full">
           <button
             onClick={() => handleBinaryChoice('L')}
-            className="binary-button w-full max-w-xs"
+            className="binary-button w-full h-full"
             disabled={filterState.letterIndex >= 26}
             aria-label="Choose left option"
           >
@@ -143,11 +143,11 @@ const FilterPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Button */}
-        <div className="flex justify-center">
+        {/* Right Button - Full 25% width */}
+        <div className="h-full">
           <button
             onClick={() => handleBinaryChoice('R')}
-            className="binary-button w-full max-w-xs"
+            className="binary-button w-full h-full"
             disabled={filterState.letterIndex >= 26}
             aria-label="Choose right option"
           >
