@@ -209,9 +209,21 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       // If words aren't loaded yet, load them
       if (wordList.words.length === 0) {
         try {
-          const loadedWordList = await getWordListById(id);
-          if (loadedWordList) {
-            wordList.words = loadedWordList.words;
+          // Map word list IDs to their corresponding filenames
+          const filenameMap: Record<string, string> = {
+            'en-uk': 'EN-UK.txt',
+            '134k': '134K.txt',
+            '19k': '19K.txt',
+            'all-names': 'AllNames.txt',
+            'boys-names': 'BoysNames.txt',
+            'girls-names': 'GirlsNames.txt'
+          };
+          
+          const filename = filenameMap[id];
+          if (filename) {
+            const { loadWordList } = await import('../data/wordLists');
+            const words = await loadWordList(filename);
+            wordList.words = words;
           }
         } catch (error) {
           console.error('Failed to load word list:', error);

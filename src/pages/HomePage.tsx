@@ -24,14 +24,27 @@ const HomePage: React.FC = () => {
         const selectedWordList = allWordLists.find(wl => wl.id === selectedWordListId);
         
         if (selectedWordList) {
-          // If it's the default EN-UK word list and words aren't loaded yet, load them
-          if (selectedWordList.id === 'en-uk' && selectedWordList.words.length === 0) {
+          // If words aren't loaded yet, load them
+          if (selectedWordList.words.length === 0) {
             try {
-              const { loadWordList } = await import('../data/wordLists');
-              const words = await loadWordList('EN-UK.txt');
-              selectedWordList.words = words;
+              // Map word list IDs to their corresponding filenames
+              const filenameMap: Record<string, string> = {
+                'en-uk': 'EN-UK.txt',
+                '134k': '134K.txt',
+                '19k': '19K.txt',
+                'all-names': 'AllNames.txt',
+                'boys-names': 'BoysNames.txt',
+                'girls-names': 'GirlsNames.txt'
+              };
+              
+              const filename = filenameMap[selectedWordList.id];
+              if (filename) {
+                const { loadWordList } = await import('../data/wordLists');
+                const words = await loadWordList(filename);
+                selectedWordList.words = words;
+              }
             } catch (error) {
-              console.error('Failed to load EN-UK word list:', error);
+              console.error(`Failed to load word list ${selectedWordList.id}:`, error);
             }
           }
 
