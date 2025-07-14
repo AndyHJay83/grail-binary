@@ -31,7 +31,8 @@ const initialState: AppState = {
     selectedLetterSequence: 'full-alphabet',
     mostFrequentFilter: true, // Default to ON
     selectedWordListId: 'en-uk' // Default to EN-UK
-  }
+  },
+  undoStack: [] // Initialize empty undo stack
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -47,6 +48,19 @@ function appReducer(state: AppState, action: AppAction): AppState {
     
     case 'MAKE_BINARY_CHOICE':
       const { choice } = action.payload;
+      
+      // Save current state to undo stack before making choice
+      const currentState = {
+        currentLetter: state.filterState.currentLetter,
+        sequence: [...state.filterState.sequence],
+        leftWords: [...state.filterState.leftWords],
+        rightWords: [...state.filterState.rightWords],
+        letterIndex: state.filterState.letterIndex,
+        usedLetters: new Set(state.filterState.usedLetters),
+        dynamicSequence: [...state.filterState.dynamicSequence],
+        isDynamicMode: state.filterState.isDynamicMode
+      };
+      
       const newSequence = [...state.filterState.sequence, choice];
       const newLetterIndex = state.filterState.letterIndex + 1;
       
@@ -86,6 +100,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       return {
         ...state,
+        undoStack: [...state.undoStack, currentState], // Add current state to undo stack
         filterState: {
           currentLetter: nextLetterInfo.letter,
           sequence: newSequence,
@@ -123,6 +138,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const resetFilterResult = resetFilter(resetLetterSequence);
       return {
         ...state,
+        undoStack: [], // Clear undo stack when resetting
         filterState: {
           currentLetter: resetFilterResult.currentLetter,
           sequence: resetFilterResult.sequence,
@@ -166,6 +182,27 @@ function appReducer(state: AppState, action: AppAction): AppState {
         }
       };
     
+    case 'UNDO':
+      if (state.undoStack.length === 0) {
+        return state; // Nothing to undo
+      }
+      
+      // Get the previous state from the undo stack
+      const previousState = state.undoStack[state.undoStack.length - 1];
+      const newUndoStack = state.undoStack.slice(0, -1); // Remove the last item
+      
+      return {
+        ...state,
+        undoStack: newUndoStack,
+        filterState: previousState
+      };
+    
+    case 'RESET_UNDO':
+      return {
+        ...state,
+        undoStack: []
+      };
+    
     default:
       return state;
   }
@@ -176,6 +213,7 @@ interface AppContextType {
   dispatch: React.Dispatch<AppAction>;
   selectWordList: (id: string) => void;
   makeBinaryChoice: (choice: BinaryChoice) => void;
+  undo: () => void;
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
@@ -238,8 +276,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'MAKE_BINARY_CHOICE', payload: { choice } });
   };
 
+  const undo = () => {
+    dispatch({ type: 'UNDO' });
+  };
+
   const resetFilter = () => {
     dispatch({ type: 'RESET_FILTER' });
+    dispatch({ type: 'RESET_UNDO' }); // Clear undo stack when resetting
   };
 
   const updatePreferences = (preferences: Partial<UserPreferences>) => {
@@ -259,6 +302,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch,
     selectWordList,
     makeBinaryChoice,
+    undo,
     resetFilter,
     updatePreferences,
     updateLetterSequence,
