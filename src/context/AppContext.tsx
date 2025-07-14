@@ -265,6 +265,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             words: words
           };
           
+          // Update the word list cache
+          const { updateWordListCache } = await import('../data/wordListManager');
+          updateWordListCache(id, words);
+          
           dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: loadedWordList });
         }
       }
