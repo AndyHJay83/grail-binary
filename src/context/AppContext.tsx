@@ -32,9 +32,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SELECT_WORD_LIST':
       // This will be handled asynchronously in the component
+      const selectSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      const selectLetterSequence = selectSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       return {
         ...state,
-        filterState: resetFilter()
+        filterState: resetFilter(selectLetterSequence)
       };
     
     case 'MAKE_BINARY_CHOICE':
@@ -62,16 +64,20 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     
     case 'SET_SELECTED_WORD_LIST':
+      const setSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      const setLetterSequence = setSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       return {
         ...state,
         selectedWordList: action.payload,
-        filterState: resetFilter()
+        filterState: resetFilter(setLetterSequence)
       };
     
     case 'RESET_FILTER':
+      const resetSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      const resetLetterSequence = resetSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       return {
         ...state,
-        filterState: resetFilter()
+        filterState: resetFilter(resetLetterSequence)
       };
     
     case 'UPDATE_PREFERENCES':
@@ -84,13 +90,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     
     case 'UPDATE_LETTER_SEQUENCE':
+      const updateSequence = getSequenceById(action.payload);
+      const updateLetterSequence = updateSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       return {
         ...state,
         userPreferences: {
           ...state.userPreferences,
           selectedLetterSequence: action.payload
         },
-        filterState: resetFilter() // Reset filter when sequence changes
+        filterState: resetFilter(updateLetterSequence) // Reset filter when sequence changes
       };
     
     default:

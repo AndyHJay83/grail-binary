@@ -96,13 +96,13 @@ export const isFilterComplete = (sequence: BinaryChoice[], letterSequence: strin
   return sequence.length >= letterSequence.length;
 };
 
-export const resetFilter = (): FilterResult => {
+export const resetFilter = (letterSequence: string = DEFAULT_ALPHABET): FilterResult => {
   return {
     leftWords: [],
     rightWords: [],
     leftCount: 0,
     rightCount: 0,
-    currentLetter: 'A',
+    currentLetter: letterSequence[0] || 'A',
     letterIndex: 0,
     isComplete: false,
     sequence: []
