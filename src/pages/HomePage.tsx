@@ -2,10 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { WordListCard } from '../types';
+import { getSequenceById } from '../data/letterSequences';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { getAllWordLists, selectWordList } = useAppContext();
+  const { getAllWordLists, selectWordList, state } = useAppContext();
   const [wordLists, setWordLists] = React.useState<WordListCard[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -91,6 +92,12 @@ const HomePage: React.FC = () => {
               <span className="word-count">
                 {card.wordCount.toLocaleString()} words
               </span>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-400">
+                Letter sequence: {getSequenceById(state.userPreferences.selectedLetterSequence)?.name || 'Full Alphabet'}
+              </p>
             </div>
             
             <div className="mb-6">
