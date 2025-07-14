@@ -123,9 +123,9 @@ const FilterPage: React.FC = () => {
       </div>
 
       {/* Binary Input Area - Bottom 50% */}
-      <div className="grid grid-cols-3 gap-4 items-center" style={{ height: '40vh' }}>
-        {/* Left Button - Full 25% width */}
-        <div className="h-full">
+      <div className="flex items-center gap-2" style={{ height: '40vh' }}>
+        {/* Left Button - 45% width */}
+        <div className="h-full flex-1">
           <button
             onClick={() => handleBinaryChoice('L')}
             className="binary-button w-full h-full"
@@ -136,15 +136,15 @@ const FilterPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Current Letter */}
-        <div className="flex justify-center">
+        {/* Current Letter - 10% width */}
+        <div className="flex justify-center w-[10%]">
           <div className="letter-bubble">
             {filterState.currentLetter}
           </div>
         </div>
 
-        {/* Right Button - Full 25% width */}
-        <div className="h-full">
+        {/* Right Button - 45% width */}
+        <div className="h-full flex-1">
           <button
             onClick={() => handleBinaryChoice('R')}
             className="binary-button w-full h-full"
