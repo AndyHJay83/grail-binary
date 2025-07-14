@@ -73,8 +73,8 @@ const HomePage: React.FC = () => {
     hasLoadedRef.current = false;
   }, [state.userPreferences.selectedWordListId]);
 
-  const handleWordListSelect = (wordListId: string) => {
-    selectWordList(wordListId);
+  const handleWordListSelect = async (wordListId: string) => {
+    await selectWordList(wordListId);
     navigate('/filter');
   };
 
