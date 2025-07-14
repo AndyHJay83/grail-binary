@@ -18,6 +18,9 @@ export interface FilterState {
   leftWords: string[];
   rightWords: string[];
   letterIndex: number;
+  usedLetters: Set<string>;
+  dynamicSequence: string[];
+  isDynamicMode: boolean;
 }
 
 export interface AppState {
@@ -34,6 +37,7 @@ export interface UserPreferences {
     includeTimestamp: boolean;
   };
   selectedLetterSequence: string; // ID of the selected sequence
+  mostFrequentFilter: boolean; // NEW: Toggle for dynamic letter selection
 }
 
 export type BinaryChoice = 'L' | 'R';

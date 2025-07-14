@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { AppState, WordList, UserPreferences, BinaryChoice } from '../types';
-import { filterWords, resetFilter } from '../utils/binaryFilter';
+import { filterWords, resetFilter, getNextLetterWithDynamic } from '../utils/binaryFilter';
 import { getAllWordLists, getWordListById } from '../data/wordLists';
 import { getSequenceById } from '../data/letterSequences';
 
@@ -16,7 +16,10 @@ const initialState: AppState = {
     sequence: [],
     leftWords: [],
     rightWords: [],
-    letterIndex: 0
+    letterIndex: 0,
+    usedLetters: new Set<string>(),
+    dynamicSequence: [],
+    isDynamicMode: false
   },
   userPreferences: {
     theme: 'dark',
@@ -24,7 +27,8 @@ const initialState: AppState = {
       defaultFilename: 'WORDLIST-RESULTS',
       includeTimestamp: false
     },
-    selectedLetterSequence: 'full-alphabet'
+    selectedLetterSequence: 'full-alphabet',
+    mostFrequentFilter: true // Default to ON
   }
 };
 
@@ -48,36 +52,86 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const letterSequence = currentSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       
-      const filterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence)
+      // Get current letter and determine if it's dynamic
+      const currentLetter = state.filterState.currentLetter;
+      const isCurrentLetterDynamic = state.filterState.isDynamicMode;
+      
+      // Add current letter to used letters
+      const newUsedLetters = new Set(state.filterState.usedLetters);
+      newUsedLetters.add(currentLetter);
+      
+      // First, get the current filtered words to analyze for frequency
+      const currentFilterResult = state.selectedWordList 
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
         : resetFilter();
+      
+      // Use the filtered words for frequency analysis (combine left and right for analysis)
+      const remainingWords = [...currentFilterResult.leftWords, ...currentFilterResult.rightWords];
+      
+      // Get next letter (predefined or dynamic)
+      const nextLetterInfo = getNextLetterWithDynamic(
+        newLetterIndex,
+        letterSequence,
+        remainingWords,
+        newUsedLetters,
+        state.userPreferences.mostFrequentFilter
+      );
+      
+      // Update dynamic sequence if needed
+      const newDynamicSequence = [...state.filterState.dynamicSequence];
+      if (nextLetterInfo.isDynamic && nextLetterInfo.letter) {
+        newDynamicSequence.push(nextLetterInfo.letter);
+      }
       
       return {
         ...state,
         filterState: {
-          currentLetter: filterResult.currentLetter,
+          currentLetter: nextLetterInfo.letter,
           sequence: newSequence,
-          leftWords: filterResult.leftWords,
-          rightWords: filterResult.rightWords,
-          letterIndex: newLetterIndex
+          leftWords: currentFilterResult.leftWords,
+          rightWords: currentFilterResult.rightWords,
+          letterIndex: newLetterIndex,
+          usedLetters: newUsedLetters,
+          dynamicSequence: newDynamicSequence,
+          isDynamicMode: nextLetterInfo.isDynamic
         }
       };
     
     case 'SET_SELECTED_WORD_LIST':
       const setSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const setLetterSequence = setSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const resetResult = resetFilter(setLetterSequence);
       return {
         ...state,
         selectedWordList: action.payload,
-        filterState: resetFilter(setLetterSequence)
+        filterState: {
+          currentLetter: resetResult.currentLetter,
+          sequence: resetResult.sequence,
+          leftWords: resetResult.leftWords,
+          rightWords: resetResult.rightWords,
+          letterIndex: resetResult.letterIndex,
+          usedLetters: resetResult.usedLetters,
+          dynamicSequence: resetResult.dynamicSequence,
+          isDynamicMode: resetResult.isDynamicMode
+        }
       };
     
     case 'RESET_FILTER':
       const resetSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const resetLetterSequence = resetSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const resetFilterResult = resetFilter(resetLetterSequence);
       return {
         ...state,
-        filterState: resetFilter(resetLetterSequence)
+        filterState: {
+          currentLetter: resetFilterResult.currentLetter,
+          sequence: resetFilterResult.sequence,
+          leftWords: resetFilterResult.leftWords,
+          rightWords: resetFilterResult.rightWords,
+          letterIndex: resetFilterResult.letterIndex,
+          usedLetters: resetFilterResult.usedLetters,
+          dynamicSequence: resetFilterResult.dynamicSequence,
+          isDynamicMode: resetFilterResult.isDynamicMode
+        }
       };
     
     case 'UPDATE_PREFERENCES':
@@ -92,13 +146,23 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_LETTER_SEQUENCE':
       const updateSequence = getSequenceById(action.payload);
       const updateLetterSequence = updateSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const updateFilterResult = resetFilter(updateLetterSequence);
       return {
         ...state,
         userPreferences: {
           ...state.userPreferences,
           selectedLetterSequence: action.payload
         },
-        filterState: resetFilter(updateLetterSequence) // Reset filter when sequence changes
+        filterState: {
+          currentLetter: updateFilterResult.currentLetter,
+          sequence: updateFilterResult.sequence,
+          leftWords: updateFilterResult.leftWords,
+          rightWords: updateFilterResult.rightWords,
+          letterIndex: updateFilterResult.letterIndex,
+          usedLetters: updateFilterResult.usedLetters,
+          dynamicSequence: updateFilterResult.dynamicSequence,
+          isDynamicMode: updateFilterResult.isDynamicMode
+        }
       };
     
     default:
@@ -114,6 +178,7 @@ interface AppContextType {
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
+  updateMostFrequentFilter: (enabled: boolean) => void;
   getAllWordLists: () => Promise<WordList[]>;
 }
 
@@ -158,6 +223,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'UPDATE_LETTER_SEQUENCE', payload: sequenceId });
   };
 
+  const updateMostFrequentFilter = (enabled: boolean) => {
+    updatePreferences({ mostFrequentFilter: enabled });
+  };
+
   const value: AppContextType = {
     state,
     dispatch,
@@ -166,6 +235,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     resetFilter,
     updatePreferences,
     updateLetterSequence,
+    updateMostFrequentFilter,
     getAllWordLists
   };
 

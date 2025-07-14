@@ -30,6 +30,12 @@ const SettingsPage: React.FC = () => {
     });
   };
 
+  const handleMostFrequentFilterToggle = (enabled: boolean) => {
+    updatePreferences({
+      mostFrequentFilter: enabled
+    });
+  };
+
   const handleClearCache = () => {
     if ('caches' in window) {
       caches.keys().then(names => {
@@ -55,6 +61,30 @@ const SettingsPage: React.FC = () => {
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Letter Sequences */}
         <LetterSequenceManager />
+
+        {/* Most Frequent Filter Toggle */}
+        <div className="bg-black border-2 border-white rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-4">Filtering Options</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="mostFrequentFilter"
+                checked={userPreferences.mostFrequentFilter}
+                onChange={(e) => handleMostFrequentFilterToggle(e.target.checked)}
+                className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
+              />
+              <label htmlFor="mostFrequentFilter" className="text-sm">
+                Most Frequent Filter
+              </label>
+            </div>
+            
+            <div className="text-sm text-gray-400">
+              <p>When enabled, after exhausting the letter sequence, automatically select the most frequent unused letter from remaining words.</p>
+            </div>
+          </div>
+        </div>
 
         {/* Export Preferences */}
         <div className="bg-black border-2 border-white rounded-lg p-6">

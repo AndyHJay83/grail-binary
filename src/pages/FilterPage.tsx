@@ -150,7 +150,7 @@ const FilterPage: React.FC = () => {
 
         {/* Current Letter - Overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="letter-bubble">
+          <div className={`letter-bubble ${filterState.isDynamicMode ? 'text-red-500' : ''}`}>
             {filterState.currentLetter}
           </div>
         </div>
