@@ -8,7 +8,7 @@ import { AppProvider } from './context/AppContext';
 function App() {
   return (
     <AppProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <div className="min-h-screen bg-black text-white">
           <Routes>
             <Route path="/" element={<HomePage />} />
