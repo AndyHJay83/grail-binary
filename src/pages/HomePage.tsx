@@ -4,6 +4,7 @@ import { useAppContext } from '../context/AppContext';
 import { WordListCard } from '../types';
 import { getSequenceById } from '../data/letterSequences';
 
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { getAllWordLists, selectWordList, state } = useAppContext();
@@ -11,26 +12,47 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const loadWordLists = async () => {
+    const loadSelectedWordList = async () => {
       try {
-        const lists = await getAllWordLists();
-        const cards = lists.map(list => ({
-          id: list.id,
-          name: list.name,
-          wordCount: list.words.length,
-          preview: list.words.slice(0, 5),
-          description: list.description
-        }));
-        setWordLists(cards);
+        const selectedWordListId = state.userPreferences.selectedWordListId;
+        if (!selectedWordListId) {
+          setLoading(false);
+          return;
+        }
+
+        const allWordLists = getAllWordLists();
+        const selectedWordList = allWordLists.find(wl => wl.id === selectedWordListId);
+        
+        if (selectedWordList) {
+          // If it's the default EN-UK word list and words aren't loaded yet, load them
+          if (selectedWordList.id === 'en-uk' && selectedWordList.words.length === 0) {
+            try {
+              const { loadWordList } = await import('../data/wordLists');
+              const words = await loadWordList('EN-UK.txt');
+              selectedWordList.words = words;
+            } catch (error) {
+              console.error('Failed to load EN-UK word list:', error);
+            }
+          }
+
+          const card = {
+            id: selectedWordList.id,
+            name: selectedWordList.name,
+            wordCount: selectedWordList.words.length,
+            preview: selectedWordList.words.slice(0, 5),
+            description: selectedWordList.description
+          };
+          setWordLists([card]);
+        }
       } catch (error) {
-        console.error('Error loading word lists:', error);
+        console.error('Error loading word list:', error);
       } finally {
         setLoading(false);
       }
     };
     
-    loadWordLists();
-  }, [getAllWordLists]);
+    loadSelectedWordList();
+  }, [state.userPreferences.selectedWordListId]);
 
   const handleWordListSelect = (wordListId: string) => {
     selectWordList(wordListId);
@@ -57,8 +79,22 @@ const HomePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-2xl mb-4">Loading word lists...</div>
+          <div className="text-2xl mb-4">Loading word list...</div>
           <div className="text-gray-400">Please wait</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (wordListCards.length === 0) {
+    return (
+      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-4">No Word List Selected</div>
+          <div className="text-gray-400 mb-4">Please select a word list in Settings</div>
+          <button onClick={handleSettingsClick} className="btn-primary">
+            Go to Settings
+          </button>
         </div>
       </div>
     );

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import LetterSequenceManager from '../components/LetterSequenceManager';
+import WordListManager from '../components/WordListManager';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -61,6 +62,9 @@ const SettingsPage: React.FC = () => {
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Letter Sequences */}
         <LetterSequenceManager />
+
+        {/* Word Lists */}
+        <WordListManager />
 
         {/* Most Frequent Filter Toggle */}
         <div className="bg-black border-2 border-white rounded-lg p-6">

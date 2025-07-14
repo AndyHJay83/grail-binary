@@ -6,6 +6,36 @@ export const wordLists: WordList[] = [
     name: 'EN-UK Dictionary',
     words: [], // Will be loaded dynamically
     description: 'English (UK) word list for binary filtering'
+  },
+  {
+    id: '134k',
+    name: '134K Word List',
+    words: [], // Will be loaded dynamically
+    description: 'Large comprehensive word list (134K words)'
+  },
+  {
+    id: '19k',
+    name: '19K Word List',
+    words: [], // Will be loaded dynamically
+    description: 'Medium-sized word list (19K words)'
+  },
+  {
+    id: 'all-names',
+    name: 'All Names',
+    words: [], // Will be loaded dynamically
+    description: 'Comprehensive list of names'
+  },
+  {
+    id: 'boys-names',
+    name: 'Boys Names',
+    words: [], // Will be loaded dynamically
+    description: 'List of boys names'
+  },
+  {
+    id: 'girls-names',
+    name: 'Girls Names',
+    words: [], // Will be loaded dynamically
+    description: 'List of girls names'
   }
 ];
 
@@ -48,9 +78,24 @@ export const getWordListById = async (id: string): Promise<WordList | undefined>
     return wordList;
   }
   
+  // Map word list IDs to their corresponding filenames
+  const filenameMap: Record<string, string> = {
+    'en-uk': 'EN-UK.txt',
+    '134k': '134K.txt',
+    '19k': '19K.txt',
+    'all-names': 'AllNames.txt',
+    'boys-names': 'BoysNames.txt',
+    'girls-names': 'GirlsNames.txt'
+  };
+  
+  const filename = filenameMap[id];
+  if (!filename) {
+    throw new Error(`Unknown word list ID: ${id}`);
+  }
+  
   // Load words from file
   try {
-    const words = await loadWordList('EN-UK.txt');
+    const words = await loadWordList(filename);
     wordList.words = words;
     return wordList;
   } catch (error) {
@@ -60,12 +105,27 @@ export const getWordListById = async (id: string): Promise<WordList | undefined>
 };
 
 export const getAllWordLists = async (): Promise<WordList[]> => {
+  // Map word list IDs to their corresponding filenames
+  const filenameMap: Record<string, string> = {
+    'en-uk': 'EN-UK.txt',
+    '134k': '134K.txt',
+    '19k': '19K.txt',
+    'all-names': 'AllNames.txt',
+    'boys-names': 'BoysNames.txt',
+    'girls-names': 'GirlsNames.txt'
+  };
+  
   // Load words for all word lists
   const loadedWordLists = await Promise.all(
     wordLists.map(async (wordList) => {
       if (wordList.words.length === 0) {
         try {
-          const words = await loadWordList('EN-UK.txt');
+          const filename = filenameMap[wordList.id];
+          if (!filename) {
+            console.error(`Unknown word list ID: ${wordList.id}`);
+            return wordList;
+          }
+          const words = await loadWordList(filename);
           wordList.words = words;
         } catch (error) {
           console.error('Error loading word list:', error);

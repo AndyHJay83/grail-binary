@@ -10,6 +10,7 @@ export interface WordList {
   name: string;
   words: string[];
   description?: string;
+  isDefault?: boolean;
 }
 
 export interface FilterState {
@@ -38,6 +39,7 @@ export interface UserPreferences {
   };
   selectedLetterSequence: string; // ID of the selected sequence
   mostFrequentFilter: boolean; // NEW: Toggle for dynamic letter selection
+  selectedWordListId?: string; // ID of the selected word list
 }
 
 export type BinaryChoice = 'L' | 'R';

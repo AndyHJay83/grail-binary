@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { AppState, WordList, UserPreferences, BinaryChoice } from '../types';
 import { filterWords, resetFilter, getNextLetterWithDynamic } from '../utils/binaryFilter';
-import { getAllWordLists, getWordListById } from '../data/wordLists';
+
+import { getAllWordLists, getWordListById } from '../data/wordListManager';
 import { getSequenceById } from '../data/letterSequences';
 
 interface AppAction {
@@ -28,7 +29,8 @@ const initialState: AppState = {
       includeTimestamp: false
     },
     selectedLetterSequence: 'full-alphabet',
-    mostFrequentFilter: true // Default to ON
+    mostFrequentFilter: true, // Default to ON
+    selectedWordListId: 'en-uk' // Default to EN-UK
   }
 };
 
@@ -178,7 +180,7 @@ interface AppContextType {
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
   updateMostFrequentFilter: (enabled: boolean) => void;
-  getAllWordLists: () => Promise<WordList[]>;
+  getAllWordLists: () => WordList[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -200,8 +202,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const selectWordList = async (id: string) => {
     dispatch({ type: 'SELECT_WORD_LIST', payload: id });
-    const wordList = await getWordListById(id);
+    
+    // Get word list from the new management system
+    const wordList = getWordListById(id);
     if (wordList) {
+      // If words aren't loaded yet, load them
+      if (wordList.words.length === 0) {
+        try {
+          const loadedWordList = await getWordListById(id);
+          if (loadedWordList) {
+            wordList.words = loadedWordList.words;
+          }
+        } catch (error) {
+          console.error('Failed to load word list:', error);
+        }
+      }
+      
       dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: wordList });
     }
   };
