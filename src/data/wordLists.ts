@@ -5,37 +5,43 @@ export const wordLists: WordList[] = [
     id: 'en-uk',
     name: 'EN-UK Dictionary',
     words: [], // Will be loaded dynamically
-    description: 'English (UK) word list for binary filtering'
+    description: 'English (UK) word list for binary filtering',
+    isDefault: true
   },
   {
     id: '134k',
     name: '134K Word List',
     words: [], // Will be loaded dynamically
-    description: 'Large comprehensive word list (134K words)'
+    description: 'Large comprehensive word list (134K words)',
+    isDefault: true
   },
   {
     id: '19k',
     name: '19K Word List',
     words: [], // Will be loaded dynamically
-    description: 'Medium-sized word list (19K words)'
+    description: 'Medium-sized word list (19K words)',
+    isDefault: true
   },
   {
     id: 'all-names',
     name: 'All Names',
     words: [], // Will be loaded dynamically
-    description: 'Comprehensive list of names'
+    description: 'Comprehensive list of names',
+    isDefault: true
   },
   {
     id: 'boys-names',
     name: 'Boys Names',
     words: [], // Will be loaded dynamically
-    description: 'List of boys names'
+    description: 'List of boys names',
+    isDefault: true
   },
   {
     id: 'girls-names',
     name: 'Girls Names',
     words: [], // Will be loaded dynamically
-    description: 'List of girls names'
+    description: 'List of girls names',
+    isDefault: true
   }
 ];
 

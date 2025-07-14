@@ -1,21 +1,13 @@
 import { WordList } from '../types';
+import { wordLists as defaultWordLists } from './wordLists';
 
 // Storage key for custom word lists
 const CUSTOM_WORDLISTS_KEY = 'word-filter-custom-wordlists';
 
-// Default word list (EN-UK)
-const defaultWordList: WordList = {
-  id: 'en-uk',
-  name: 'EN-UK Dictionary',
-  words: [], // Will be loaded dynamically
-  description: 'English (UK) word list for binary filtering',
-  isDefault: true
-};
-
 // Get all word lists (default + custom)
 export const getAllWordLists = (): WordList[] => {
   const customWordLists = getCustomWordLists();
-  return [defaultWordList, ...customWordLists];
+  return [...defaultWordLists, ...customWordLists];
 };
 
 // Get custom word lists from localStorage

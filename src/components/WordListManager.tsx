@@ -208,17 +208,35 @@ const WordListManager: React.FC = () => {
     const loadWordLists = async () => {
       const lists = getAllWordLists();
       
-      // Load the default EN-UK word list if it's empty
-      if (lists[0] && lists[0].id === 'en-uk' && lists[0].words.length === 0) {
-        try {
-          const words = await loadWordList('EN-UK.txt');
-          lists[0].words = words;
-        } catch (error) {
-          console.error('Failed to load EN-UK word list:', error);
-        }
-      }
+      // Load all default word lists that don't have words loaded yet
+      const updatedLists = await Promise.all(
+        lists.map(async (wordList) => {
+          if (wordList.isDefault && wordList.words.length === 0) {
+            try {
+              // Map word list IDs to their corresponding filenames
+              const filenameMap: Record<string, string> = {
+                'en-uk': 'EN-UK.txt',
+                '134k': '134K.txt',
+                '19k': '19K.txt',
+                'all-names': 'AllNames.txt',
+                'boys-names': 'BoysNames.txt',
+                'girls-names': 'GirlsNames.txt'
+              };
+              
+              const filename = filenameMap[wordList.id];
+              if (filename) {
+                const words = await loadWordList(filename);
+                return { ...wordList, words };
+              }
+            } catch (error) {
+              console.error(`Failed to load word list ${wordList.id}:`, error);
+            }
+          }
+          return wordList;
+        })
+      );
       
-      setWordLists(lists);
+      setWordLists(updatedLists);
     };
     
     loadWordLists();
