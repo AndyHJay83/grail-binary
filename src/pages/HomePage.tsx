@@ -15,17 +15,24 @@ const HomePage: React.FC = () => {
     const loadSelectedWordList = async () => {
       try {
         const selectedWordListId = state.userPreferences.selectedWordListId;
+        console.log('HomePage: selectedWordListId =', selectedWordListId);
+        
         if (!selectedWordListId) {
+          console.log('HomePage: No selected word list ID, showing "No Word List Selected"');
           setLoading(false);
           return;
         }
 
         const allWordLists = getAllWordLists();
+        console.log('HomePage: allWordLists =', allWordLists.map(wl => ({ id: wl.id, name: wl.name, wordCount: wl.words.length })));
+        
         const selectedWordList = allWordLists.find(wl => wl.id === selectedWordListId);
+        console.log('HomePage: selectedWordList =', selectedWordList);
         
         if (selectedWordList) {
           // If words aren't loaded yet, load them
           if (selectedWordList.words.length === 0) {
+            console.log('HomePage: Loading words for', selectedWordList.id);
             try {
               // Map word list IDs to their corresponding filenames
               const filenameMap: Record<string, string> = {
@@ -37,14 +44,18 @@ const HomePage: React.FC = () => {
               };
               
               const filename = filenameMap[selectedWordList.id];
+              console.log('HomePage: filename =', filename);
               if (filename) {
                 const { loadWordList } = await import('../data/wordLists');
                 const words = await loadWordList(filename);
                 selectedWordList.words = words;
+                console.log('HomePage: Loaded', words.length, 'words');
               }
             } catch (error) {
               console.error(`Failed to load word list ${selectedWordList.id}:`, error);
             }
+          } else {
+            console.log('HomePage: Words already loaded, count =', selectedWordList.words.length);
           }
 
           const card = {
@@ -54,7 +65,10 @@ const HomePage: React.FC = () => {
             preview: selectedWordList.words.slice(0, 5),
             description: selectedWordList.description
           };
+          console.log('HomePage: Created card =', card);
           setWordLists([card]);
+        } else {
+          console.log('HomePage: No selected word list found');
         }
       } catch (error) {
         console.error('Error loading word list:', error);
