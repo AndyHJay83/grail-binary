@@ -1,0 +1,13 @@
+# Placeholder for EN-UK.txt word list
+# This file should contain one word per line
+# Example format:
+# aardvark
+# abacus
+# abandon
+# ability
+# able
+# about
+# above
+# abroad
+# absolute
+# accept 

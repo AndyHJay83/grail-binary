@@ -1,0 +1,137 @@
+import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { AppState, WordList, FilterState, UserPreferences, BinaryChoice } from '../types';
+import { filterWords, resetFilter } from '../utils/binaryFilter';
+import { getAllWordLists, getWordListById } from '../data/wordLists';
+
+interface AppAction {
+  type: string;
+  payload?: any;
+}
+
+const initialState: AppState = {
+  selectedWordList: null,
+  filterState: {
+    currentLetter: 'A',
+    sequence: [],
+    leftWords: [],
+    rightWords: [],
+    letterIndex: 0
+  },
+  userPreferences: {
+    theme: 'dark',
+    exportPreferences: {
+      defaultFilename: 'WORDLIST-RESULTS',
+      includeTimestamp: false
+    }
+  }
+};
+
+function appReducer(state: AppState, action: AppAction): AppState {
+  switch (action.type) {
+    case 'SELECT_WORD_LIST':
+      const wordList = getWordListById(action.payload);
+      return {
+        ...state,
+        selectedWordList: wordList || null,
+        filterState: resetFilter()
+      };
+    
+    case 'MAKE_BINARY_CHOICE':
+      const { choice } = action.payload;
+      const newSequence = [...state.filterState.sequence, choice];
+      const newLetterIndex = state.filterState.letterIndex + 1;
+      
+      const filterResult = state.selectedWordList 
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex)
+        : resetFilter();
+      
+      return {
+        ...state,
+        filterState: {
+          currentLetter: filterResult.currentLetter,
+          sequence: newSequence,
+          leftWords: filterResult.leftWords,
+          rightWords: filterResult.rightWords,
+          letterIndex: newLetterIndex
+        }
+      };
+    
+    case 'RESET_FILTER':
+      return {
+        ...state,
+        filterState: resetFilter()
+      };
+    
+    case 'UPDATE_PREFERENCES':
+      return {
+        ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          ...action.payload
+        }
+      };
+    
+    default:
+      return state;
+  }
+}
+
+interface AppContextType {
+  state: AppState;
+  dispatch: React.Dispatch<AppAction>;
+  selectWordList: (id: string) => void;
+  makeBinaryChoice: (choice: BinaryChoice) => void;
+  resetFilter: () => void;
+  updatePreferences: (preferences: Partial<UserPreferences>) => void;
+  getAllWordLists: () => WordList[];
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useAppContext must be used within an AppProvider');
+  }
+  return context;
+};
+
+interface AppProviderProps {
+  children: ReactNode;
+}
+
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [state, dispatch] = useReducer(appReducer, initialState);
+
+  const selectWordList = (id: string) => {
+    dispatch({ type: 'SELECT_WORD_LIST', payload: id });
+  };
+
+  const makeBinaryChoice = (choice: BinaryChoice) => {
+    dispatch({ type: 'MAKE_BINARY_CHOICE', payload: { choice } });
+  };
+
+  const resetFilter = () => {
+    dispatch({ type: 'RESET_FILTER' });
+  };
+
+  const updatePreferences = (preferences: Partial<UserPreferences>) => {
+    dispatch({ type: 'UPDATE_PREFERENCES', payload: preferences });
+  };
+
+  const value: AppContextType = {
+    state,
+    dispatch,
+    selectWordList,
+    makeBinaryChoice,
+    resetFilter,
+    updatePreferences,
+    getAllWordLists
+  };
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
+}; 

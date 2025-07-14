@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-white font-mono;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-black border-2 border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-black transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border-2 border-white text-white px-4 py-2 rounded-lg hover:bg-white hover:text-black transition-colors duration-200;
+  }
+  
+  .word-list {
+    @apply bg-black border border-white rounded-lg p-4 h-full overflow-y-auto;
+  }
+  
+  .letter-bubble {
+    @apply bg-white text-black rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold;
+  }
+  
+  .binary-button {
+    @apply bg-black border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-black transition-colors duration-200 text-lg font-bold;
+  }
+  
+  .word-count {
+    @apply bg-dark-grey text-white px-3 py-1 rounded-full text-sm font-bold;
+  }
+  
+  .export-btn {
+    @apply bg-transparent border border-white text-white px-3 py-1 rounded text-sm hover:bg-white hover:text-black transition-colors duration-200;
+  }
+} 
