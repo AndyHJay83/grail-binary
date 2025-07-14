@@ -52,9 +52,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const letterSequence = currentSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       
-      // Get current letter and determine if it's dynamic
+      // Get current letter
       const currentLetter = state.filterState.currentLetter;
-      const isCurrentLetterDynamic = state.filterState.isDynamicMode;
       
       // Add current letter to used letters
       const newUsedLetters = new Set(state.filterState.usedLetters);
