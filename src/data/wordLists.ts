@@ -11,8 +11,10 @@ export const wordLists: WordList[] = [
 
 export const loadWordList = async (filename: string): Promise<string[]> => {
   try {
-    console.log(`Attempting to load word list from: /wordlist/${filename}`);
-    const response = await fetch(`/wordlist/${filename}`);
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const url = `${baseUrl}wordlist/${filename}`;
+    console.log(`Attempting to load word list from: ${url}`);
+    const response = await fetch(url);
     console.log(`Response status: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
