@@ -128,9 +128,9 @@ const FilterPage: React.FC = () => {
             onClick={() => handleBinaryChoice('L')}
             className="binary-button w-full max-w-xs"
             disabled={filterState.letterIndex >= 26}
-            aria-label="Left choice"
+            aria-label="Choose left option"
           >
-            YES
+            {/* Unlabelled button */}
           </button>
         </div>
 
@@ -147,9 +147,9 @@ const FilterPage: React.FC = () => {
             onClick={() => handleBinaryChoice('R')}
             className="binary-button w-full max-w-xs"
             disabled={filterState.letterIndex >= 26}
-            aria-label="Right choice"
+            aria-label="Choose right option"
           >
-            NO
+            {/* Unlabelled button */}
           </button>
         </div>
       </div>
@@ -164,6 +164,9 @@ const FilterPage: React.FC = () => {
             Sequence: {filterState.sequence.join(' ')}
           </div>
         )}
+        <div className="text-xs text-gray-500 mt-2">
+          <span className="inline-block bg-dark-grey px-2 py-1 rounded">Both lists below are valid interpretations of your choices.</span>
+        </div>
       </div>
     </div>
   );
