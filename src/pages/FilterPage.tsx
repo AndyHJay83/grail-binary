@@ -80,8 +80,7 @@ const FilterPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4" style={{ height: '50vh' }}>
         {/* Left Results */}
         <div className={`word-list ${getLeftBackgroundColor()}`}>
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Left Pattern</h2>
+          <div className="flex justify-end mb-2">
             <button
               onClick={() => handleExport(filterState.leftWords, 'left')}
               className="export-btn"
@@ -104,8 +103,7 @@ const FilterPage: React.FC = () => {
 
         {/* Right Results */}
         <div className={`word-list ${getRightBackgroundColor()}`}>
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Right Pattern</h2>
+          <div className="flex justify-end mb-2">
             <button
               onClick={() => handleExport(filterState.rightWords, 'right')}
               className="export-btn"
