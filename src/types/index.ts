@@ -28,7 +28,6 @@ export interface AppState {
   selectedWordList: WordList | null;
   filterState: FilterState;
   userPreferences: UserPreferences;
-  undoStack: FilterState[]; // Array of previous filter states for undo functionality
 }
 
 export interface UserPreferences {

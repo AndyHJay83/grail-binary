@@ -4,24 +4,10 @@ import { wordLists as defaultWordLists } from './wordLists';
 // Storage key for custom word lists
 const CUSTOM_WORDLISTS_KEY = 'word-filter-custom-wordlists';
 
-// Cache for loaded word lists
-const wordListCache = new Map<string, string[]>();
-
 // Get all word lists (default + custom)
 export const getAllWordLists = (): WordList[] => {
   const customWordLists = getCustomWordLists();
-  const allWordLists = [...defaultWordLists, ...customWordLists];
-  
-  // Update word lists with cached words
-  return allWordLists.map(wordList => ({
-    ...wordList,
-    words: wordListCache.get(wordList.id) || wordList.words
-  }));
-};
-
-// Update word list cache
-export const updateWordListCache = (id: string, words: string[]): void => {
-  wordListCache.set(id, words);
+  return [...defaultWordLists, ...customWordLists];
 };
 
 // Get custom word lists from localStorage

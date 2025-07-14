@@ -8,7 +8,7 @@ import { getSequenceById } from '../data/letterSequences';
 
 const FilterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state, makeBinaryChoice, resetFilter, undo } = useAppContext();
+  const { state, makeBinaryChoice, resetFilter } = useAppContext();
   const { selectedWordList, filterState, userPreferences } = state;
 
   const handleBinaryChoice = (choice: BinaryChoice) => {
@@ -21,10 +21,6 @@ const FilterPage: React.FC = () => {
 
   const handleReset = () => {
     resetFilter();
-  };
-
-  const handleUndo = () => {
-    undo();
   };
 
   const handleExport = (words: string[], side: 'left' | 'right') => {
@@ -153,17 +149,10 @@ const FilterPage: React.FC = () => {
         </div>
 
         {/* Current Letter - Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button
-            onClick={handleUndo}
-            disabled={state.undoStack.length === 0}
-            className={`letter-bubble ${filterState.isDynamicMode ? 'text-red-500' : ''} ${
-              state.undoStack.length === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-            }`}
-            aria-label="Undo last choice"
-          >
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className={`letter-bubble ${filterState.isDynamicMode ? 'text-red-500' : ''}`}>
             {filterState.currentLetter}
-          </button>
+          </div>
         </div>
       </div>
 

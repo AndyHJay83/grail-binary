@@ -9,6 +9,13 @@ export const wordLists: WordList[] = [
     isDefault: true
   },
   {
+    id: '134k',
+    name: '134K Word List',
+    words: [], // Will be loaded dynamically
+    description: 'Large comprehensive word list (134K words)',
+    isDefault: true
+  },
+  {
     id: '19k',
     name: '19K Word List',
     words: [], // Will be loaded dynamically
@@ -42,9 +49,6 @@ export const loadWordList = async (filename: string): Promise<string[]> => {
   try {
     const baseUrl = import.meta.env.BASE_URL || '/';
     const url = `${baseUrl}wordlist/${filename}`;
-    console.log(`Base URL: ${baseUrl}`);
-    console.log(`Filename: ${filename}`);
-    console.log(`Full URL: ${url}`);
     console.log(`Attempting to load word list from: ${url}`);
     const response = await fetch(url);
     console.log(`Response status: ${response.status} ${response.statusText}`);
@@ -83,6 +87,7 @@ export const getWordListById = async (id: string): Promise<WordList | undefined>
   // Map word list IDs to their corresponding filenames
   const filenameMap: Record<string, string> = {
     'en-uk': 'EN-UK.txt',
+    '134k': '134K.txt',
     '19k': '19K.txt',
     'all-names': 'AllNames.txt',
     'boys-names': 'BoysNames.txt',
@@ -109,6 +114,7 @@ export const getAllWordLists = async (): Promise<WordList[]> => {
   // Map word list IDs to their corresponding filenames
   const filenameMap: Record<string, string> = {
     'en-uk': 'EN-UK.txt',
+    '134k': '134K.txt',
     '19k': '19K.txt',
     'all-names': 'AllNames.txt',
     'boys-names': 'BoysNames.txt',

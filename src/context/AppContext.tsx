@@ -31,8 +31,7 @@ const initialState: AppState = {
     selectedLetterSequence: 'full-alphabet',
     mostFrequentFilter: true, // Default to ON
     selectedWordListId: 'en-uk' // Default to EN-UK
-  },
-  undoStack: [] // Initialize empty undo stack
+  }
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -48,19 +47,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
     
     case 'MAKE_BINARY_CHOICE':
       const { choice } = action.payload;
-      
-      // Save current state to undo stack before making choice
-      const currentState = {
-        currentLetter: state.filterState.currentLetter,
-        sequence: [...state.filterState.sequence],
-        leftWords: [...state.filterState.leftWords],
-        rightWords: [...state.filterState.rightWords],
-        letterIndex: state.filterState.letterIndex,
-        usedLetters: new Set(state.filterState.usedLetters),
-        dynamicSequence: [...state.filterState.dynamicSequence],
-        isDynamicMode: state.filterState.isDynamicMode
-      };
-      
       const newSequence = [...state.filterState.sequence, choice];
       const newLetterIndex = state.filterState.letterIndex + 1;
       
@@ -100,7 +86,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       return {
         ...state,
-        undoStack: [...state.undoStack, currentState], // Add current state to undo stack
         filterState: {
           currentLetter: nextLetterInfo.letter,
           sequence: newSequence,
@@ -138,7 +123,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const resetFilterResult = resetFilter(resetLetterSequence);
       return {
         ...state,
-        undoStack: [], // Clear undo stack when resetting
         filterState: {
           currentLetter: resetFilterResult.currentLetter,
           sequence: resetFilterResult.sequence,
@@ -182,27 +166,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
         }
       };
     
-    case 'UNDO':
-      if (state.undoStack.length === 0) {
-        return state; // Nothing to undo
-      }
-      
-      // Get the previous state from the undo stack
-      const previousState = state.undoStack[state.undoStack.length - 1];
-      const newUndoStack = state.undoStack.slice(0, -1); // Remove the last item
-      
-      return {
-        ...state,
-        undoStack: newUndoStack,
-        filterState: previousState
-      };
-    
-    case 'RESET_UNDO':
-      return {
-        ...state,
-        undoStack: []
-      };
-    
     default:
       return state;
   }
@@ -213,7 +176,6 @@ interface AppContextType {
   dispatch: React.Dispatch<AppAction>;
   selectWordList: (id: string) => void;
   makeBinaryChoice: (choice: BinaryChoice) => void;
-  undo: () => void;
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
@@ -241,39 +203,34 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const selectWordList = async (id: string) => {
     dispatch({ type: 'SELECT_WORD_LIST', payload: id });
     
-    try {
-      // Map word list IDs to their corresponding filenames
-      const filenameMap: Record<string, string> = {
-        'en-uk': 'EN-UK.txt',
-        '19k': '19K.txt',
-        'all-names': 'AllNames.txt',
-        'boys-names': 'BoysNames.txt',
-        'girls-names': 'GirlsNames.txt'
-      };
-      
-      const filename = filenameMap[id];
-      if (filename) {
-        const { loadWordList } = await import('../data/wordLists');
-        const words = await loadWordList(filename);
-        
-        // Get the word list definition from the manager
-        const wordList = getWordListById(id);
-        if (wordList) {
-          // Create a new word list object with the loaded words
-          const loadedWordList = {
-            ...wordList,
-            words: words
+    // Get word list from the new management system
+    const wordList = getWordListById(id);
+    if (wordList) {
+      // If words aren't loaded yet, load them
+      if (wordList.words.length === 0) {
+        try {
+          // Map word list IDs to their corresponding filenames
+          const filenameMap: Record<string, string> = {
+            'en-uk': 'EN-UK.txt',
+            '134k': '134K.txt',
+            '19k': '19K.txt',
+            'all-names': 'AllNames.txt',
+            'boys-names': 'BoysNames.txt',
+            'girls-names': 'GirlsNames.txt'
           };
           
-          // Update the word list cache
-          const { updateWordListCache } = await import('../data/wordListManager');
-          updateWordListCache(id, words);
-          
-          dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: loadedWordList });
+          const filename = filenameMap[id];
+          if (filename) {
+            const { loadWordList } = await import('../data/wordLists');
+            const words = await loadWordList(filename);
+            wordList.words = words;
+          }
+        } catch (error) {
+          console.error('Failed to load word list:', error);
         }
       }
-    } catch (error) {
-      console.error('Failed to load word list:', error);
+      
+      dispatch({ type: 'SET_SELECTED_WORD_LIST', payload: wordList });
     }
   };
 
@@ -281,13 +238,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'MAKE_BINARY_CHOICE', payload: { choice } });
   };
 
-  const undo = () => {
-    dispatch({ type: 'UNDO' });
-  };
-
   const resetFilter = () => {
     dispatch({ type: 'RESET_FILTER' });
-    dispatch({ type: 'RESET_UNDO' }); // Clear undo stack when resetting
   };
 
   const updatePreferences = (preferences: Partial<UserPreferences>) => {
@@ -307,7 +259,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch,
     selectWordList,
     makeBinaryChoice,
-    undo,
     resetFilter,
     updatePreferences,
     updateLetterSequence,
