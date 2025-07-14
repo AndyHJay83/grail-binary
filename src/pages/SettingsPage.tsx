@@ -107,31 +107,6 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* PWA Information */}
-        <div className="bg-black border-2 border-white rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">PWA Information</h2>
-          
-          <div className="space-y-2 text-sm">
-            <p><strong>Version:</strong> 1.0.0</p>
-            <p><strong>Offline Support:</strong> Available</p>
-            <p><strong>Installable:</strong> Yes</p>
-            <p><strong>Word List:</strong> EN-UK Dictionary</p>
-          </div>
-        </div>
-
-        {/* Future Settings Placeholder */}
-        <div className="bg-black border-2 border-white rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Future Features</h2>
-          
-          <div className="space-y-2 text-sm text-gray-400">
-            <p>• Theme preferences</p>
-            <p>• Default word list selection</p>
-            <p>• Filter sensitivity settings</p>
-            <p>• Custom word list upload</p>
-            <p>• Advanced export options</p>
-          </div>
-        </div>
       </div>
     </div>
   );
