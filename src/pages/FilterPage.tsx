@@ -18,6 +18,9 @@ const FilterPage: React.FC = () => {
   const rightPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const longPressCompletedRef = useRef<boolean>(false);
   const longPressDelayRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Touch detection to prevent double clicks
+  const touchOccurredRef = useRef<boolean>(false);
 
   // Handle "Most Frequent" sequence initialization
   React.useEffect(() => {
@@ -108,12 +111,24 @@ const FilterPage: React.FC = () => {
 
   // Touch/click handlers for left button
   const handleLeftMouseDown = () => {
+    // Ignore mouse events if a touch occurred recently
+    if (touchOccurredRef.current) {
+      touchOccurredRef.current = false;
+      return;
+    }
+    
     if (filterState.sideOfferLetter) {
       startLongPress('L', leftPressTimerRef);
     }
   };
 
   const handleLeftMouseUp = () => {
+    // Ignore mouse events if a touch occurred recently
+    if (touchOccurredRef.current) {
+      touchOccurredRef.current = false;
+      return;
+    }
+    
     endLongPress(leftPressTimerRef);
     // Only make binary choice if no long press delay is active
     if (!longPressCompletedRef.current) {
@@ -122,6 +137,7 @@ const FilterPage: React.FC = () => {
   };
 
   const handleLeftTouchStart = () => {
+    touchOccurredRef.current = true;
     if (filterState.sideOfferLetter) {
       startLongPress('L', leftPressTimerRef);
     }
@@ -137,12 +153,24 @@ const FilterPage: React.FC = () => {
 
   // Touch/click handlers for right button
   const handleRightMouseDown = () => {
+    // Ignore mouse events if a touch occurred recently
+    if (touchOccurredRef.current) {
+      touchOccurredRef.current = false;
+      return;
+    }
+    
     if (filterState.sideOfferLetter) {
       startLongPress('R', rightPressTimerRef);
     }
   };
 
   const handleRightMouseUp = () => {
+    // Ignore mouse events if a touch occurred recently
+    if (touchOccurredRef.current) {
+      touchOccurredRef.current = false;
+      return;
+    }
+    
     endLongPress(rightPressTimerRef);
     // Only make binary choice if no long press delay is active
     if (!longPressCompletedRef.current) {
@@ -151,6 +179,7 @@ const FilterPage: React.FC = () => {
   };
 
   const handleRightTouchStart = () => {
+    touchOccurredRef.current = true;
     if (filterState.sideOfferLetter) {
       startLongPress('R', rightPressTimerRef);
     }
