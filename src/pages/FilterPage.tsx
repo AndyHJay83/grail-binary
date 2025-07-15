@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fileExport';
-import { getBackgroundColor } from '../utils/binaryFilter';
+import { getBackgroundColor, selectNextDynamicLetter } from '../utils/binaryFilter';
 import { BinaryChoice } from '../types';
 import { getSequenceById } from '../data/letterSequences';
 
@@ -10,6 +10,22 @@ const FilterPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, makeBinaryChoice, resetFilter } = useAppContext();
   const { selectedWordList, filterState, userPreferences } = state;
+
+  // Handle "Most Frequent" sequence initialization
+  React.useEffect(() => {
+    if (selectedWordList && filterState.isDynamicMode && filterState.currentLetter === 'A') {
+      // This is likely the "Most Frequent" sequence that needs initialization
+      const sequence = getSequenceById(userPreferences.selectedLetterSequence);
+      if (sequence?.sequence === '') {
+        // Get the first dynamic letter
+        const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set<string>());
+        if (firstLetter && firstLetter !== filterState.currentLetter) {
+          // Update the current letter by triggering a reset
+          resetFilter();
+        }
+      }
+    }
+  }, [selectedWordList, filterState.isDynamicMode, filterState.currentLetter, userPreferences.selectedLetterSequence, resetFilter]);
 
   const handleBinaryChoice = (choice: BinaryChoice) => {
     makeBinaryChoice(choice);

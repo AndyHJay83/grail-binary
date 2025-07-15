@@ -102,18 +102,30 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const setSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const setLetterSequence = setSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const resetResult = resetFilter(setLetterSequence);
+      
+      // Special handling for "Most Frequent" sequence
+      let setCurrentLetter = resetResult.currentLetter;
+      let setIsDynamicMode = resetResult.isDynamicMode;
+      
+      if (setLetterSequence === '' && action.payload?.words.length > 0) {
+        // For "Most Frequent" sequence, we'll get the first letter in the component
+        // For now, use a placeholder that will be updated
+        setCurrentLetter = 'A'; // Will be updated when component loads
+        setIsDynamicMode = true;
+      }
+      
       return {
         ...state,
         selectedWordList: action.payload,
         filterState: {
-          currentLetter: resetResult.currentLetter,
+          currentLetter: setCurrentLetter,
           sequence: resetResult.sequence,
           leftWords: resetResult.leftWords,
           rightWords: resetResult.rightWords,
           letterIndex: resetResult.letterIndex,
           usedLetters: resetResult.usedLetters,
           dynamicSequence: resetResult.dynamicSequence,
-          isDynamicMode: resetResult.isDynamicMode
+          isDynamicMode: setIsDynamicMode
         }
       };
     

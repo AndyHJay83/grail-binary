@@ -139,7 +139,15 @@ export const selectNextDynamicLetter = (
   words: string[], 
   usedLetters: Set<string>
 ): string | null => {
+  console.log('selectNextDynamicLetter called with:', {
+    wordsCount: words.length,
+    usedLetters: Array.from(usedLetters),
+    sampleWords: words.slice(0, 5)
+  });
+  
   const frequency = analyzeLetterFrequency(words);
+  
+  console.log('Letter frequency:', Object.fromEntries(frequency));
   
   // Find most frequent unused letter
   let maxFreq = 0;
@@ -152,6 +160,7 @@ export const selectNextDynamicLetter = (
     }
   }
   
+  console.log('Selected letter:', selectedLetter, 'with frequency:', maxFreq);
   return selectedLetter;
 };
 
@@ -163,34 +172,64 @@ export const getNextLetterWithDynamic = (
   usedLetters: Set<string>,
   mostFrequentFilter: boolean
 ): { letter: string; isDynamic: boolean } => {
+  console.log('getNextLetterWithDynamic:', {
+    currentIndex,
+    letterSequence,
+    letterSequenceLength: letterSequence.length,
+    remainingWordsCount: remainingWords.length,
+    usedLetters: Array.from(usedLetters),
+    mostFrequentFilter
+  });
+  
+  // Special handling for "Most Frequent" sequence (empty sequence)
+  if (letterSequence === '') {
+    console.log('Detected empty sequence - using Most Frequent mode');
+    const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
+    console.log('Selected dynamic letter:', dynamicLetter);
+    return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
+  }
+  
   // If still within predefined sequence
   if (currentIndex < letterSequence.length) {
     const letter = letterSequence[currentIndex];
+    console.log('Using predefined letter:', letter);
     return { letter, isDynamic: false };
   }
   
   // If most frequent filter is OFF, stop
   if (!mostFrequentFilter) {
+    console.log('Most frequent filter OFF - stopping');
     return { letter: '', isDynamic: false };
   }
   
   // If most frequent filter is ON, find next dynamic letter
   const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
+  console.log('Using dynamic letter (after predefined):', dynamicLetter);
   return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
 };
 
 export const resetFilter = (letterSequence: string = DEFAULT_ALPHABET) => {
+  // For "Most Frequent" sequence (empty), we need to get the first dynamic letter
+  let currentLetter = letterSequence[0] || 'A';
+  let isDynamicMode = false;
+  
+  if (letterSequence === '') {
+    // This will be set properly when we have the word list
+    currentLetter = 'A'; // Placeholder
+    isDynamicMode = true;
+  }
+  
   return {
     leftWords: [],
     rightWords: [],
     leftCount: 0,
     rightCount: 0,
-    currentLetter: letterSequence[0] || 'A',
+    currentLetter,
     letterIndex: 0,
     isComplete: false,
     sequence: [],
     usedLetters: new Set<string>(),
     dynamicSequence: [],
-    isDynamicMode: false
+    isDynamicMode
   };
 }; 

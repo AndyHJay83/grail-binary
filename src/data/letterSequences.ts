@@ -19,6 +19,12 @@ export const defaultSequences: LetterSequence[] = [
     name: 'Vowels Only',
     sequence: 'AEIOU',
     isDefault: true
+  },
+  {
+    id: 'most-frequent',
+    name: 'Most Frequent',
+    sequence: '', // Empty sequence - will be handled specially
+    isDefault: true
   }
 ];
 
