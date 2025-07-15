@@ -17,11 +17,14 @@ const FilterPage: React.FC = () => {
       // This is likely the "Most Frequent" sequence that needs initialization
       const sequence = getSequenceById(userPreferences.selectedLetterSequence);
       if (sequence?.sequence === '') {
-        // Initialize the Most Frequent sequence with the first dynamic letter
-        initializeMostFrequent();
+        // Only initialize if we don't already have a dynamic sequence
+        if (filterState.dynamicSequence.length === 0) {
+          console.log('Initializing Most Frequent sequence');
+          initializeMostFrequent();
+        }
       }
     }
-  }, [selectedWordList, filterState.isDynamicMode, filterState.currentLetter, userPreferences.selectedLetterSequence, initializeMostFrequent]);
+  }, [selectedWordList, filterState.isDynamicMode, filterState.currentLetter, userPreferences.selectedLetterSequence, filterState.dynamicSequence.length, initializeMostFrequent]);
 
   const handleBinaryChoice = (choice: BinaryChoice) => {
     makeBinaryChoice(choice);
