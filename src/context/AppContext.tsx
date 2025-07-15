@@ -30,7 +30,8 @@ const initialState: AppState = {
     },
     selectedLetterSequence: 'full-alphabet',
     mostFrequentFilter: true, // Default to ON
-    selectedWordListId: 'en-uk' // Default to EN-UK
+    selectedWordListId: 'en-uk', // Default to EN-UK
+    confirmNoLetter: true // NEW: Default to ON
   }
 };
 
@@ -40,9 +41,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // This will be handled asynchronously in the component
       const selectSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const selectLetterSequence = selectSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const selectFilterResult = resetFilter(selectLetterSequence);
       return {
         ...state,
-        filterState: resetFilter(selectLetterSequence)
+        filterState: selectFilterResult
       };
     
     case 'MAKE_BINARY_CHOICE':
@@ -91,7 +93,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       } else {
         // For predefined sequences, use the normal filtered words
         const tempFilterResult = state.selectedWordList 
-          ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
+          ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
           : resetFilter();
         wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
       }
@@ -140,7 +142,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // Now get the filtered words for the current state
       const currentFilterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, newDynamicSequence)
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, newDynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
         : resetFilter();
       
       return {
@@ -153,7 +155,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           letterIndex: newLetterIndex,
           usedLetters: newUsedLetters,
           dynamicSequence: newDynamicSequence,
-          isDynamicMode: nextLetterInfo.isDynamic
+          isDynamicMode: nextLetterInfo.isDynamic,
+          sideOfferLetter: state.filterState.sideOfferLetter,
+          confirmedSide: state.filterState.confirmedSide,
+          confirmedSideValue: state.filterState.confirmedSideValue
         }
       };
     
@@ -184,7 +189,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           letterIndex: resetResult.letterIndex,
           usedLetters: resetResult.usedLetters,
           dynamicSequence: resetResult.dynamicSequence,
-          isDynamicMode: setIsDynamicMode
+          isDynamicMode: setIsDynamicMode,
+          sideOfferLetter: resetResult.sideOfferLetter,
+          confirmedSide: resetResult.confirmedSide,
+          confirmedSideValue: resetResult.confirmedSideValue
         }
       };
     
@@ -202,7 +210,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           letterIndex: resetFilterResult.letterIndex,
           usedLetters: resetFilterResult.usedLetters,
           dynamicSequence: resetFilterResult.dynamicSequence,
-          isDynamicMode: resetFilterResult.isDynamicMode
+          isDynamicMode: resetFilterResult.isDynamicMode,
+          sideOfferLetter: resetFilterResult.sideOfferLetter,
+          confirmedSide: resetFilterResult.confirmedSide,
+          confirmedSideValue: resetFilterResult.confirmedSideValue
         }
       };
     
@@ -233,7 +244,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           letterIndex: updateFilterResult.letterIndex,
           usedLetters: updateFilterResult.usedLetters,
           dynamicSequence: updateFilterResult.dynamicSequence,
-          isDynamicMode: updateFilterResult.isDynamicMode
+          isDynamicMode: updateFilterResult.isDynamicMode,
+          sideOfferLetter: updateFilterResult.sideOfferLetter,
+          confirmedSide: updateFilterResult.confirmedSide,
+          confirmedSideValue: updateFilterResult.confirmedSideValue
         }
       };
     
@@ -266,6 +280,30 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     }
     
+    case 'SET_SIDE_OFFER_LETTER': {
+      const { letter } = action.payload;
+      return {
+        ...state,
+        filterState: {
+          ...state.filterState,
+          sideOfferLetter: letter
+        }
+      };
+    }
+    
+    case 'CONFIRM_SIDE': {
+      const { side, value } = action.payload;
+      return {
+        ...state,
+        filterState: {
+          ...state.filterState,
+          confirmedSide: side,
+          confirmedSideValue: value,
+          sideOfferLetter: undefined // Clear the side offer letter
+        }
+      };
+    }
+    
     default:
       return state;
   }
@@ -282,6 +320,8 @@ interface AppContextType {
   updateMostFrequentFilter: (enabled: boolean) => void;
   initializeMostFrequent: () => void;
   getAllWordLists: () => WordList[];
+  setSideOfferLetter: (letter: string) => void;
+  confirmSide: (side: 'L' | 'R', value: 'YES' | 'NO') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -364,6 +404,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
+  const setSideOfferLetter = (letter: string) => {
+    dispatch({ type: 'SET_SIDE_OFFER_LETTER', payload: { letter } });
+  };
+
+  const confirmSide = (side: 'L' | 'R', value: 'YES' | 'NO') => {
+    dispatch({ type: 'CONFIRM_SIDE', payload: { side, value } });
+  };
+
   const value: AppContextType = {
     state,
     dispatch,
@@ -374,7 +422,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     updateLetterSequence,
     updateMostFrequentFilter,
     initializeMostFrequent,
-    getAllWordLists
+    getAllWordLists,
+    setSideOfferLetter,
+    confirmSide
   };
 
   return (

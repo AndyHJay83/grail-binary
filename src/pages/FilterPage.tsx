@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fileExport';
-import { getBackgroundColor } from '../utils/binaryFilter';
+import { getBackgroundColor, findSideOfferLetter } from '../utils/binaryFilter';
 import { BinaryChoice } from '../types';
 import { getSequenceById } from '../data/letterSequences';
 
 const FilterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state, makeBinaryChoice, resetFilter, initializeMostFrequent } = useAppContext();
+  const { state, makeBinaryChoice, resetFilter, initializeMostFrequent, setSideOfferLetter, confirmSide } = useAppContext();
   const { selectedWordList, filterState, userPreferences } = state;
+  
+  // Refs for long press detection
+  const leftButtonRef = useRef<HTMLButtonElement>(null);
+  const rightButtonRef = useRef<HTMLButtonElement>(null);
+  const leftPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const rightPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressCompletedRef = useRef<boolean>(false);
+  const longPressDelayRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle "Most Frequent" sequence initialization
   React.useEffect(() => {
@@ -25,6 +33,136 @@ const FilterPage: React.FC = () => {
       }
     }
   }, [selectedWordList, filterState.isDynamicMode, filterState.currentLetter, userPreferences.selectedLetterSequence, filterState.dynamicSequence.length, initializeMostFrequent]);
+
+  // Check for side offer letter when filtered words change
+  React.useEffect(() => {
+    console.log('Checking for side offer letter:', {
+      confirmNoLetter: userPreferences.confirmNoLetter,
+      confirmedSide: filterState.confirmedSide,
+      leftWordsCount: filterState.leftWords.length,
+      rightWordsCount: filterState.rightWords.length
+    });
+
+    if (!userPreferences.confirmNoLetter || filterState.confirmedSide) {
+      console.log('Side offer letter disabled:', {
+        confirmNoLetter: userPreferences.confirmNoLetter,
+        confirmedSide: filterState.confirmedSide
+      });
+      // Clear side offer letter if it exists
+      if (filterState.sideOfferLetter) {
+        setSideOfferLetter('');
+      }
+      return;
+    }
+
+    const allWords = [...filterState.leftWords, ...filterState.rightWords];
+    if (allWords.length === 0) {
+      console.log('No words to check for side offer letter');
+      // Clear side offer letter if it exists
+      if (filterState.sideOfferLetter) {
+        setSideOfferLetter('');
+      }
+      return;
+    }
+
+    console.log('Looking for side offer letter in', allWords.length, 'words');
+    const sideOfferLetter = findSideOfferLetter(allWords);
+    console.log('Side offer letter found:', sideOfferLetter);
+    
+    // Only update if the letter has changed
+    if (sideOfferLetter !== filterState.sideOfferLetter) {
+      if (sideOfferLetter) {
+        setSideOfferLetter(sideOfferLetter);
+      } else {
+        setSideOfferLetter('');
+      }
+    }
+  }, [filterState.leftWords, filterState.rightWords, userPreferences.confirmNoLetter, filterState.confirmedSide, filterState.sideOfferLetter, setSideOfferLetter]);
+
+  // Long press handlers
+  const startLongPress = (side: 'L' | 'R', timerRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
+    if (!filterState.sideOfferLetter) return;
+    
+    console.log('Starting long press for side:', side);
+    
+    timerRef.current = setTimeout(() => {
+      console.log('Long press completed for side:', side, 'confirming as NO');
+      // Confirm the pressed side as NO
+      confirmSide(side, 'NO');
+      
+      // Set a delay to prevent accidental clicks
+      longPressCompletedRef.current = true;
+      longPressDelayRef.current = setTimeout(() => {
+        longPressCompletedRef.current = false;
+        longPressDelayRef.current = null;
+      }, 500); // 500ms delay
+    }, 500); // 0.5 seconds
+  };
+
+  const endLongPress = (timerRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // Touch/click handlers for left button
+  const handleLeftMouseDown = () => {
+    if (filterState.sideOfferLetter) {
+      startLongPress('L', leftPressTimerRef);
+    }
+  };
+
+  const handleLeftMouseUp = () => {
+    endLongPress(leftPressTimerRef);
+    // Only make binary choice if no long press delay is active
+    if (!longPressCompletedRef.current) {
+      handleBinaryChoice('L');
+    }
+  };
+
+  const handleLeftTouchStart = () => {
+    if (filterState.sideOfferLetter) {
+      startLongPress('L', leftPressTimerRef);
+    }
+  };
+
+  const handleLeftTouchEnd = () => {
+    endLongPress(leftPressTimerRef);
+    // Only make binary choice if no long press delay is active
+    if (!longPressCompletedRef.current) {
+      handleBinaryChoice('L');
+    }
+  };
+
+  // Touch/click handlers for right button
+  const handleRightMouseDown = () => {
+    if (filterState.sideOfferLetter) {
+      startLongPress('R', rightPressTimerRef);
+    }
+  };
+
+  const handleRightMouseUp = () => {
+    endLongPress(rightPressTimerRef);
+    // Only make binary choice if no long press delay is active
+    if (!longPressCompletedRef.current) {
+      handleBinaryChoice('R');
+    }
+  };
+
+  const handleRightTouchStart = () => {
+    if (filterState.sideOfferLetter) {
+      startLongPress('R', rightPressTimerRef);
+    }
+  };
+
+  const handleRightTouchEnd = () => {
+    endLongPress(rightPressTimerRef);
+    // Only make binary choice if no long press delay is active
+    if (!longPressCompletedRef.current) {
+      handleBinaryChoice('R');
+    }
+  };
 
   const handleBinaryChoice = (choice: BinaryChoice) => {
     makeBinaryChoice(choice);
@@ -49,20 +187,61 @@ const FilterPage: React.FC = () => {
 
   const getLeftBackgroundColor = () => {
     if (!selectedWordList) return 'bg-black';
-    return getBackgroundColor(filterState.leftWords.length, selectedWordList.words.length);
+    return getBackgroundColor(filterState.leftWords.length);
   };
 
   const getRightBackgroundColor = () => {
     if (!selectedWordList) return 'bg-black';
-    return getBackgroundColor(filterState.rightWords.length, selectedWordList.words.length);
+    return getBackgroundColor(filterState.rightWords.length);
   };
 
   const getTextColor = (backgroundColor: string): string => {
-    if (backgroundColor.includes('success-green') || backgroundColor.includes('warning-red')) {
+    if (backgroundColor.includes('success-green') || backgroundColor.includes('orange-400') || backgroundColor.includes('red-400')) {
       return 'text-black';
     }
     return 'text-white';
   };
+
+  // Determine which words to show based on confirmed side
+  const getWordsToShow = () => {
+    console.log('getWordsToShow called with:', {
+      confirmedSide: filterState.confirmedSide,
+      confirmedSideValue: filterState.confirmedSideValue,
+      leftWordsCount: filterState.leftWords.length,
+      rightWordsCount: filterState.rightWords.length
+    });
+
+    if (!filterState.confirmedSide) {
+      return {
+        leftWords: filterState.leftWords,
+        rightWords: filterState.rightWords
+      };
+    }
+
+    // If side is confirmed, only show the confirmed interpretation
+    if (filterState.confirmedSide === 'L') {
+      console.log('Showing only left words (right confirmed as NO)');
+      return {
+        leftWords: filterState.leftWords,
+        rightWords: []
+      };
+    } else {
+      console.log('Showing only right words (left confirmed as NO)');
+      return {
+        leftWords: [],
+        rightWords: filterState.rightWords
+      };
+    }
+  };
+
+  const { leftWords: displayLeftWords, rightWords: displayRightWords } = getWordsToShow();
+
+  // Debug side offer letter display
+  console.log('Side offer letter display check:', {
+    sideOfferLetter: filterState.sideOfferLetter,
+    confirmedSide: filterState.confirmedSide,
+    shouldShow: filterState.sideOfferLetter && !filterState.confirmedSide
+  });
 
   if (!selectedWordList) {
     navigate('/');
@@ -90,18 +269,18 @@ const FilterPage: React.FC = () => {
         <div className={`word-list ${getLeftBackgroundColor()}`}>
           <div className="flex justify-between items-center mb-2">
             <div className="word-count">
-              {filterState.leftWords.length.toLocaleString()} words
+              {displayLeftWords.length.toLocaleString()} words
             </div>
             <button
-              onClick={() => handleExport(filterState.leftWords, 'left')}
+              onClick={() => handleExport(displayLeftWords, 'left')}
               className="export-btn"
-              disabled={filterState.leftWords.length === 0}
+              disabled={displayLeftWords.length === 0}
             >
               Export
             </button>
           </div>
           <div className="overflow-y-auto h-full">
-            {filterState.leftWords.map((word, index) => (
+            {displayLeftWords.map((word, index) => (
               <div key={index} className={`text-base py-1 ${getTextColor(getLeftBackgroundColor())}`}>
                 {word}
               </div>
@@ -113,19 +292,19 @@ const FilterPage: React.FC = () => {
         <div className={`word-list ${getRightBackgroundColor()}`}>
           <div className="flex justify-between items-center mb-2">
             <div className="word-count">
-              {filterState.rightWords.length.toLocaleString()} words
+              {displayRightWords.length.toLocaleString()} words
           </div>
             <button
-              onClick={() => handleExport(filterState.rightWords, 'right')}
+              onClick={() => handleExport(displayRightWords, 'right')}
               className="export-btn"
-              disabled={filterState.rightWords.length === 0}
+              disabled={displayRightWords.length === 0}
             >
               Export
             </button>
           </div>
 
           <div className="overflow-y-auto h-full">
-            {filterState.rightWords.map((word, index) => (
+            {displayRightWords.map((word, index) => (
               <div key={index} className={`text-base py-1 ${getTextColor(getRightBackgroundColor())}`}>
                 {word}
               </div>
@@ -141,24 +320,40 @@ const FilterPage: React.FC = () => {
           {/* Left Button - 50% width */}
           <div className="h-full w-1/2">
             <button
-              onClick={() => handleBinaryChoice('L')}
-              className="binary-button w-full h-full"
+              ref={leftButtonRef}
+              onMouseDown={handleLeftMouseDown}
+              onMouseUp={handleLeftMouseUp}
+              onTouchStart={handleLeftTouchStart}
+              onTouchEnd={handleLeftTouchEnd}
+              className="binary-button w-full h-full flex items-center justify-center"
               disabled={filterState.letterIndex >= 26}
               aria-label="Choose left option"
             >
-              {/* Unlabelled button */}
+              {filterState.confirmedSide && (
+                <span className={`text-2xl font-bold ${filterState.confirmedSide === 'L' ? 'text-red-400' : 'text-green-400'}`}>
+                  {filterState.confirmedSide === 'L' ? 'NO' : 'YES'}
+                </span>
+              )}
             </button>
           </div>
 
           {/* Right Button - 50% width */}
           <div className="h-full w-1/2">
             <button
-              onClick={() => handleBinaryChoice('R')}
-              className="binary-button w-full h-full"
+              ref={rightButtonRef}
+              onMouseDown={handleRightMouseDown}
+              onMouseUp={handleRightMouseUp}
+              onTouchStart={handleRightTouchStart}
+              onTouchEnd={handleRightTouchEnd}
+              className="binary-button w-full h-full flex items-center justify-center"
               disabled={filterState.letterIndex >= 26}
               aria-label="Choose right option"
             >
-              {/* Unlabelled button */}
+              {filterState.confirmedSide && (
+                <span className={`text-2xl font-bold ${filterState.confirmedSide === 'R' ? 'text-red-400' : 'text-green-400'}`}>
+                  {filterState.confirmedSide === 'R' ? 'NO' : 'YES'}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -169,6 +364,15 @@ const FilterPage: React.FC = () => {
             {filterState.currentLetter}
           </div>
         </div>
+
+        {/* Side Offer Letter - Center Overlay */}
+        {filterState.sideOfferLetter && !filterState.confirmedSide && (
+          <div className="absolute left-0 w-full flex items-center justify-center pointer-events-none" style={{ top: '5%', position: 'absolute' }}>
+            <div className="letter-bubble text-red-600 font-bold">
+              {filterState.sideOfferLetter}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Progress Indicator */}
@@ -181,9 +385,16 @@ const FilterPage: React.FC = () => {
             Sequence: {filterState.sequence.join(' ')}
           </div>
         )}
-        <div className="text-xs text-gray-500 mt-2">
-          <span className="inline-block bg-dark-grey px-2 py-1 rounded">Both lists below are valid interpretations of your choices.</span>
-        </div>
+        {!filterState.confirmedSide && (
+          <div className="text-xs text-gray-500 mt-2">
+            <span className="inline-block bg-dark-grey px-2 py-1 rounded">Both lists below are valid interpretations of your choices.</span>
+          </div>
+        )}
+        {filterState.confirmedSide && (
+          <div className="text-xs text-green-400 mt-2">
+            <span className="inline-block bg-green-900 px-2 py-1 rounded">Side confirmed: {filterState.confirmedSide === 'L' ? 'Left' : 'Right'} = {filterState.confirmedSideValue}</span>
+          </div>
+        )}
       </div>
     </div>
   );

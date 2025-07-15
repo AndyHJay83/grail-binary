@@ -22,6 +22,9 @@ export interface FilterState {
   usedLetters: Set<string>;
   dynamicSequence: string[];
   isDynamicMode: boolean;
+  sideOfferLetter?: string; // NEW: Letter offered for side confirmation
+  confirmedSide?: 'L' | 'R'; // NEW: Which side is confirmed as NO
+  confirmedSideValue?: 'YES' | 'NO'; // NEW: What the confirmed side represents
 }
 
 export interface AppState {
@@ -40,6 +43,7 @@ export interface UserPreferences {
   selectedLetterSequence: string; // ID of the selected sequence
   mostFrequentFilter: boolean; // NEW: Toggle for dynamic letter selection
   selectedWordListId?: string; // ID of the selected word list
+  confirmNoLetter: boolean; // NEW: Toggle for side confirmation feature
 }
 
 export type BinaryChoice = 'L' | 'R';

@@ -19,7 +19,9 @@ export const filterWords = (
   sequence: BinaryChoice[],
   currentLetterIndex: number,
   letterSequence: string = DEFAULT_ALPHABET,
-  dynamicSequence: string[] = []
+  dynamicSequence: string[] = [],
+  confirmedSide?: 'L' | 'R',
+  confirmedSideValue?: 'YES' | 'NO'
 ): FilterResult => {
   // Determine the current letter based on whether we're in predefined or dynamic mode
   let currentLetter: string;
@@ -53,7 +55,76 @@ export const filterWords = (
     };
   }
 
-  // For each word, determine if it matches the user's binary pattern
+  // If a side is confirmed, use simple YES/NO filtering
+  if (confirmedSide && confirmedSideValue) {
+    console.log('Using confirmed side filtering:', { confirmedSide, confirmedSideValue });
+    
+    // Determine which words to filter (the confirmed side's words)
+    const wordsToFilter = confirmedSide === 'L' ? wordList : wordList;
+    
+    // Apply simple YES/NO filtering
+    const filteredWords: string[] = [];
+    
+    wordsToFilter.forEach(word => {
+      const upperWord = word.toUpperCase();
+      let matchesPattern = true;
+      
+      // Check each letter in the sequence
+      for (let i = 0; i < sequence.length; i++) {
+        let letter: string;
+        
+        // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
+        if (letterSequence === '') {
+          letter = dynamicSequence[i] || '';
+        } else if (i < letterSequence.length) {
+          // Predefined sequence letter
+          letter = letterSequence[i];
+        } else {
+          // Dynamic sequence letter (after predefined sequence)
+          const dynamicIndex = i - letterSequence.length;
+          letter = dynamicSequence[dynamicIndex] || '';
+        }
+        
+        const choice = sequence[i];
+        const hasLetter = upperWord.includes(letter);
+        
+        // Simple YES/NO logic based on confirmed side
+        const isYesChoice = (choice === 'L' && confirmedSide === 'R') || (choice === 'R' && confirmedSide === 'L');
+        
+        if (isYesChoice && !hasLetter) matchesPattern = false;
+        if (!isYesChoice && hasLetter) matchesPattern = false;
+      }
+      
+      if (matchesPattern) filteredWords.push(word);
+    });
+    
+    // Return only the confirmed side's words
+    if (confirmedSide === 'L') {
+      return {
+        leftWords: filteredWords,
+        rightWords: [],
+        leftCount: filteredWords.length,
+        rightCount: 0,
+        currentLetter,
+        letterIndex: currentLetterIndex,
+        isComplete,
+        sequence
+      };
+    } else {
+      return {
+        leftWords: [],
+        rightWords: filteredWords,
+        leftCount: 0,
+        rightCount: filteredWords.length,
+        currentLetter,
+        letterIndex: currentLetterIndex,
+        isComplete,
+        sequence
+      };
+    }
+  }
+
+  // Original dual-interpretation logic for when no side is confirmed
   const leftWords: string[] = [];
   const rightWords: string[] = [];
 
@@ -107,12 +178,11 @@ export const filterWords = (
   };
 };
 
-export const getBackgroundColor = (count: number, totalCount: number): string => {
-  const percentage = count / totalCount;
-  
-  if (percentage <= 0.1) return 'bg-success-green'; // Light green for fewer words
-  if (percentage >= 0.5) return 'bg-warning-red'; // Light red for more words
-  return 'bg-black'; // Default black
+export const getBackgroundColor = (count: number): string => {
+  if (count === 1) return 'bg-success-green'; // Green for single word
+  if (count >= 2 && count <= 5) return 'bg-orange-400'; // Orange for 2-5 words
+  if (count >= 6 && count <= 10) return 'bg-red-400'; // Light red for 6-10 words
+  return 'bg-black'; // Default black for 11+ words
 };
 
 export const getNextLetter = (currentIndex: number, letterSequence: string = DEFAULT_ALPHABET): string => {
@@ -250,6 +320,34 @@ export const resetFilter = (letterSequence: string = DEFAULT_ALPHABET) => {
     sequence: [],
     usedLetters: new Set<string>(),
     dynamicSequence: [],
-    isDynamicMode
+    isDynamicMode,
+    sideOfferLetter: undefined,
+    confirmedSide: undefined,
+    confirmedSideValue: undefined
   };
+};
+
+// Find a letter that doesn't appear in any of the remaining words (for side offer)
+export const findSideOfferLetter = (words: string[]): string | null => {
+  if (words.length === 0) return null;
+  
+  // Get all unique letters from all words
+  const lettersInWords = new Set<string>();
+  for (const word of words) {
+    for (const char of word.toUpperCase()) {
+      if (char >= 'A' && char <= 'Z') {
+        lettersInWords.add(char);
+      }
+    }
+  }
+  
+  // Find first alphabetical letter that's not in any words (excluding X and Z)
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWY'; // Excluding X and Z
+  for (const letter of alphabet) {
+    if (!lettersInWords.has(letter)) {
+      return letter;
+    }
+  }
+  
+  return null; // No suitable letter found
 }; 

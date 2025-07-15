@@ -37,6 +37,12 @@ const SettingsPage: React.FC = () => {
     });
   };
 
+  const handleConfirmNoLetterToggle = (enabled: boolean) => {
+    updatePreferences({
+      confirmNoLetter: enabled
+    });
+  };
+
   const handleClearCache = () => {
     if ('caches' in window) {
       caches.keys().then(names => {
@@ -66,7 +72,7 @@ const SettingsPage: React.FC = () => {
         {/* Word Lists */}
         <WordListManager />
 
-        {/* Most Frequent Filter Toggle */}
+        {/* Filtering Options */}
         <div className="bg-black border-2 border-white rounded-lg p-6">
           <h2 className="text-2xl font-bold mb-4">Filtering Options</h2>
           
@@ -86,6 +92,23 @@ const SettingsPage: React.FC = () => {
             
             <div className="text-sm text-gray-400">
               <p>When enabled, after exhausting the letter sequence, automatically select the most frequent unused letter from remaining words.</p>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="confirmNoLetter"
+                checked={userPreferences.confirmNoLetter}
+                onChange={(e) => handleConfirmNoLetterToggle(e.target.checked)}
+                className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
+              />
+              <label htmlFor="confirmNoLetter" className="text-sm">
+                Confirm NO Letter
+              </label>
+            </div>
+            
+            <div className="text-sm text-gray-400">
+              <p>When enabled, offers a letter that doesn't appear in any remaining words. Long press (0.5s) on either side to confirm that side as NO.</p>
             </div>
           </div>
         </div>
