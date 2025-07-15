@@ -107,11 +107,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
         sequenceLength: newSequence.length
       });
       
+      // Create a temporary used letters set that includes the current letter for frequency analysis
+      const tempUsedLetters = new Set(state.filterState.usedLetters);
+      tempUsedLetters.add(currentLetter);
+      
       const nextLetterInfo = getNextLetterWithDynamic(
         letterIndexForNext,
         letterSequence,
         wordsForAnalysis,
-        state.filterState.usedLetters, // Use current used letters, not including current letter yet
+        tempUsedLetters, // Use used letters including current letter
         state.userPreferences.mostFrequentFilter
       );
       
