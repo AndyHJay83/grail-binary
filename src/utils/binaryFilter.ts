@@ -197,6 +197,7 @@ export const getNextLetterWithDynamic = (
   // Special handling for "Most Frequent" sequence (empty sequence)
   if (letterSequence === '') {
     console.log('Detected empty sequence - using Most Frequent mode');
+    console.log('Current index:', currentIndex, 'Used letters:', Array.from(usedLetters));
     const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
     console.log('Selected dynamic letter:', dynamicLetter);
     return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
