@@ -52,7 +52,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // Get the current letter sequence
       const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-      const letterSequence = currentSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const letterSequence = currentSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       
       // Get current letter
       const currentLetter = state.filterState.currentLetter;
@@ -100,7 +100,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     
     case 'SET_SELECTED_WORD_LIST':
       const setSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-      const setLetterSequence = setSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const setLetterSequence = setSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const resetResult = resetFilter(setLetterSequence);
       
       // Special handling for "Most Frequent" sequence
@@ -131,7 +131,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     
     case 'RESET_FILTER':
       const resetSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-      const resetLetterSequence = resetSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const resetLetterSequence = resetSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const resetFilterResult = resetFilter(resetLetterSequence);
       return {
         ...state,
@@ -158,7 +158,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     
     case 'UPDATE_LETTER_SEQUENCE':
       const updateSequence = getSequenceById(action.payload);
-      const updateLetterSequence = updateSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const updateFilterResult = resetFilter(updateLetterSequence);
       return {
         ...state,
