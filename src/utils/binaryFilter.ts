@@ -25,12 +25,16 @@ export const filterWords = (
   let currentLetter: string;
   let isComplete: boolean;
   
-  if (currentLetterIndex < letterSequence.length) {
+  // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
+  if (letterSequence === '') {
+    currentLetter = dynamicSequence[currentLetterIndex] || '';
+    isComplete = currentLetterIndex >= dynamicSequence.length;
+  } else if (currentLetterIndex < letterSequence.length) {
     // Still in predefined sequence
     currentLetter = letterSequence[currentLetterIndex] || '';
     isComplete = currentLetterIndex >= letterSequence.length;
   } else {
-    // In dynamic mode
+    // In dynamic mode (after predefined sequence)
     const dynamicIndex = currentLetterIndex - letterSequence.length;
     currentLetter = dynamicSequence[dynamicIndex] || '';
     isComplete = dynamicIndex >= dynamicSequence.length;
@@ -62,11 +66,14 @@ export const filterWords = (
     for (let i = 0; i < sequence.length; i++) {
       let letter: string;
       
-      if (i < letterSequence.length) {
+      // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
+      if (letterSequence === '') {
+        letter = dynamicSequence[i] || '';
+      } else if (i < letterSequence.length) {
         // Predefined sequence letter
         letter = letterSequence[i];
       } else {
-        // Dynamic sequence letter
+        // Dynamic sequence letter (after predefined sequence)
         const dynamicIndex = i - letterSequence.length;
         letter = dynamicSequence[dynamicIndex] || '';
       }
@@ -149,12 +156,18 @@ export const selectNextDynamicLetter = (
   
   console.log('Letter frequency:', Object.fromEntries(frequency));
   
-  // Find most frequent unused letter
+  // Find most frequent unused letter (each letter can only be used once)
   let maxFreq = 0;
   let selectedLetter = null;
   
   for (const [letter, freq] of frequency) {
-    if (!usedLetters.has(letter) && freq > maxFreq) {
+    // Skip letters we've already used
+    if (usedLetters.has(letter)) {
+      console.log('Skipping used letter:', letter);
+      continue;
+    }
+    
+    if (freq > maxFreq) {
       maxFreq = freq;
       selectedLetter = letter;
     }

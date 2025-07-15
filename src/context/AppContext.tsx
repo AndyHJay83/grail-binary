@@ -178,6 +178,22 @@ function appReducer(state: AppState, action: AppAction): AppState {
         }
       };
     
+    case 'INITIALIZE_MOST_FREQUENT':
+      // REMOVE all logic from here, handled in provider
+      return state;
+    case 'SET_MOST_FREQUENT_INITIALIZED': {
+      const { firstLetter } = action.payload;
+      return {
+        ...state,
+        filterState: {
+          ...state.filterState,
+          currentLetter: firstLetter,
+          dynamicSequence: [firstLetter],
+          isDynamicMode: true
+        }
+      };
+    }
+    
     default:
       return state;
   }
@@ -192,6 +208,7 @@ interface AppContextType {
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
   updateMostFrequentFilter: (enabled: boolean) => void;
+  initializeMostFrequent: () => void;
   getAllWordLists: () => WordList[];
 }
 
@@ -265,6 +282,15 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     updatePreferences({ mostFrequentFilter: enabled });
   };
 
+  const initializeMostFrequent = async () => {
+    if (!state.selectedWordList) return;
+    const { selectNextDynamicLetter } = await import('../utils/binaryFilter');
+    const firstLetter = selectNextDynamicLetter(state.selectedWordList.words, new Set<string>());
+    if (firstLetter) {
+      dispatch({ type: 'SET_MOST_FREQUENT_INITIALIZED', payload: { firstLetter } });
+    }
+  };
+
   const value: AppContextType = {
     state,
     dispatch,
@@ -274,6 +300,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     updatePreferences,
     updateLetterSequence,
     updateMostFrequentFilter,
+    initializeMostFrequent,
     getAllWordLists
   };
 
