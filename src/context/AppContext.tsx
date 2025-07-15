@@ -236,7 +236,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           ...state.filterState,
           currentLetter: firstLetter,
           dynamicSequence: [firstLetter],
-          isDynamicMode: true
+          isDynamicMode: true,
+          usedLetters: new Set<string>([firstLetter]) // Add the first letter to used letters
         }
       };
     }
