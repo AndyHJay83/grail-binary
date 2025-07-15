@@ -61,14 +61,36 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newUsedLetters = new Set(state.filterState.usedLetters);
       newUsedLetters.add(currentLetter);
       
-      // For "Most Frequent" sequence, analyze frequency on the filtered words (not original)
-      // First get the current filtered words to analyze frequency
-      const tempFilterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
-        : resetFilter();
+      // For "Most Frequent" sequence, analyze frequency on the remaining words
+      // For dynamic letter selection, we need to analyze frequency on the words that remain
+      // after the current choice, but before we know the next letter
+      let wordsForAnalysis: string[] = [];
       
-      // Use the filtered words for frequency analysis - combine both left and right words
-      let wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
+      if (letterSequence === '') {
+        // For "Most Frequent" sequence, analyze frequency on the original word list
+        // but exclude words that don't match the current sequence
+        wordsForAnalysis = state.selectedWordList?.words || [];
+        
+        // Filter out words that don't match the current sequence
+        wordsForAnalysis = wordsForAnalysis.filter(word => {
+          const upperWord = word.toUpperCase();
+          for (let i = 0; i < newSequence.length; i++) {
+            const letter = state.filterState.dynamicSequence[i] || '';
+            const choice = newSequence[i];
+            const hasLetter = upperWord.includes(letter);
+            
+            if (choice === 'L' && !hasLetter) return false;
+            if (choice === 'R' && hasLetter) return false;
+          }
+          return true;
+        });
+      } else {
+        // For predefined sequences, use the normal filtered words
+        const tempFilterResult = state.selectedWordList 
+          ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
+          : resetFilter();
+        wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
+      }
       
       // Get next letter (predefined or dynamic)
       // For "Most Frequent" sequence, use the sequence length as the index

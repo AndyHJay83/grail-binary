@@ -152,6 +152,11 @@ export const selectNextDynamicLetter = (
     sampleWords: words.slice(0, 5)
   });
   
+  if (words.length === 0) {
+    console.log('No words to analyze - returning null');
+    return null;
+  }
+  
   const frequency = analyzeLetterFrequency(words);
   
   console.log('Letter frequency:', Object.fromEntries(frequency));
