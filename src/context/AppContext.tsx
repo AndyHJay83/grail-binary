@@ -61,8 +61,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newUsedLetters = new Set(state.filterState.usedLetters);
       newUsedLetters.add(currentLetter);
       
-      // For "Most Frequent" sequence, analyze frequency on the original word list
-      let wordsForAnalysis = state.selectedWordList?.words || [];
+      // For "Most Frequent" sequence, analyze frequency on the filtered words (not original)
+      // First get the current filtered words to analyze frequency
+      const tempFilterResult = state.selectedWordList 
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
+        : resetFilter();
+      
+      // Use the filtered words for frequency analysis
+      let wordsForAnalysis = tempFilterResult.leftWords.length > 0 ? tempFilterResult.leftWords : tempFilterResult.rightWords;
       
       // Get next letter (predefined or dynamic)
       const nextLetterInfo = getNextLetterWithDynamic(
