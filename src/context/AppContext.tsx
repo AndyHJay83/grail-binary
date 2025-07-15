@@ -57,10 +57,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // Get current letter
       const currentLetter = state.filterState.currentLetter;
       
-      // Add current letter to used letters
-      const newUsedLetters = new Set(state.filterState.usedLetters);
-      newUsedLetters.add(currentLetter);
-      
       // For "Most Frequent" sequence, analyze frequency on the remaining words
       // For dynamic letter selection, we need to analyze frequency on the words that remain
       // after the current choice, but before we know the next letter
@@ -99,9 +95,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
         letterIndexForNext,
         letterSequence,
         wordsForAnalysis,
-        newUsedLetters,
+        state.filterState.usedLetters, // Use current used letters, not including current letter yet
         state.userPreferences.mostFrequentFilter
       );
+      
+      // Add current letter to used letters AFTER getting the next letter
+      const newUsedLetters = new Set(state.filterState.usedLetters);
+      newUsedLetters.add(currentLetter);
       
       // Update dynamic sequence if needed
       const newDynamicSequence = [...state.filterState.dynamicSequence];

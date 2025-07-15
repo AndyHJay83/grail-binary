@@ -179,6 +179,7 @@ export const selectNextDynamicLetter = (
   }
   
   console.log('Selected letter:', selectedLetter, 'with frequency:', maxFreq);
+  console.log('Used letters after selection:', Array.from(usedLetters));
   return selectedLetter;
 };
 
