@@ -99,6 +99,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // Get next letter (predefined or dynamic)
       // For "Most Frequent" sequence, use the sequence length as the index
       const letterIndexForNext = letterSequence === '' ? newSequence.length : newLetterIndex;
+      
+      console.log('Getting next letter with:', {
+        letterIndexForNext,
+        currentUsedLetters: Array.from(state.filterState.usedLetters),
+        currentLetter,
+        sequenceLength: newSequence.length
+      });
+      
       const nextLetterInfo = getNextLetterWithDynamic(
         letterIndexForNext,
         letterSequence,
@@ -230,6 +238,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return state;
     case 'SET_MOST_FREQUENT_INITIALIZED': {
       const { firstLetter } = action.payload;
+      
+      // Only initialize if we don't already have used letters
+      const usedLetters = state.filterState.usedLetters.size > 0 
+        ? state.filterState.usedLetters 
+        : new Set<string>([firstLetter]);
+      
+      console.log('SET_MOST_FREQUENT_INITIALIZED:', {
+        firstLetter,
+        existingUsedLetters: Array.from(state.filterState.usedLetters),
+        newUsedLetters: Array.from(usedLetters)
+      });
+      
       return {
         ...state,
         filterState: {
@@ -237,7 +257,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           currentLetter: firstLetter,
           dynamicSequence: [firstLetter],
           isDynamicMode: true,
-          usedLetters: new Set<string>([firstLetter]) // Add the first letter to used letters
+          usedLetters: usedLetters
         }
       };
     }
