@@ -21,6 +21,7 @@ const FilterPage: React.FC = () => {
   
   // Touch detection to prevent double clicks
   const touchOccurredRef = useRef<boolean>(false);
+  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle "Most Frequent" sequence initialization
   React.useEffect(() => {
@@ -36,6 +37,15 @@ const FilterPage: React.FC = () => {
       }
     }
   }, [selectedWordList, filterState.isDynamicMode, filterState.currentLetter, userPreferences.selectedLetterSequence, filterState.dynamicSequence.length, initializeMostFrequent]);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Check for side offer letter when filtered words change
   React.useEffect(() => {
@@ -136,14 +146,27 @@ const FilterPage: React.FC = () => {
     }
   };
 
-  const handleLeftTouchStart = () => {
+  const handleLeftTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent mouse events from firing
     touchOccurredRef.current = true;
+    
+    // Clear any existing timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+    
+    // Set a timeout to reset the touch flag after mouse events would have fired
+    touchTimeoutRef.current = setTimeout(() => {
+      touchOccurredRef.current = false;
+    }, 300);
+    
     if (filterState.sideOfferLetter) {
       startLongPress('L', leftPressTimerRef);
     }
   };
 
-  const handleLeftTouchEnd = () => {
+  const handleLeftTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent mouse events from firing
     endLongPress(leftPressTimerRef);
     // Only make binary choice if no long press delay is active
     if (!longPressCompletedRef.current) {
@@ -178,14 +201,27 @@ const FilterPage: React.FC = () => {
     }
   };
 
-  const handleRightTouchStart = () => {
+  const handleRightTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent mouse events from firing
     touchOccurredRef.current = true;
+    
+    // Clear any existing timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+    
+    // Set a timeout to reset the touch flag after mouse events would have fired
+    touchTimeoutRef.current = setTimeout(() => {
+      touchOccurredRef.current = false;
+    }, 300);
+    
     if (filterState.sideOfferLetter) {
       startLongPress('R', rightPressTimerRef);
     }
   };
 
-  const handleRightTouchEnd = () => {
+  const handleRightTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent mouse events from firing
     endLongPress(rightPressTimerRef);
     // Only make binary choice if no long press delay is active
     if (!longPressCompletedRef.current) {
