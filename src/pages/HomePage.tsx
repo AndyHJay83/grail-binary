@@ -33,7 +33,8 @@ const HomePage: React.FC = () => {
                 '19k': '19K.txt',
                 'all-names': 'AllNames.txt',
                 'boys-names': 'BoysNames.txt',
-                'girls-names': 'GirlsNames.txt'
+                'girls-names': 'GirlsNames.txt',
+                'months-starsigns': 'MONTHS_STARSIGNS.txt'
               };
               
               const filename = filenameMap[selectedWordList.id];

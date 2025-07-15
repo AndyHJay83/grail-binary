@@ -35,6 +35,13 @@ export const wordLists: WordList[] = [
     words: [], // Will be loaded dynamically
     description: 'List of girls names',
     isDefault: true
+  },
+  {
+    id: 'months-starsigns',
+    name: 'Months & Star Signs',
+    words: [], // Will be loaded dynamically
+    description: 'List of months and zodiac star signs',
+    isDefault: true
   }
 ];
 
@@ -83,7 +90,8 @@ export const getWordListById = async (id: string): Promise<WordList | undefined>
     '19k': '19K.txt',
     'all-names': 'AllNames.txt',
     'boys-names': 'BoysNames.txt',
-    'girls-names': 'GirlsNames.txt'
+    'girls-names': 'GirlsNames.txt',
+    'months-starsigns': 'MONTHS_STARSIGNS.txt'
   };
   
   const filename = filenameMap[id];
@@ -109,7 +117,8 @@ export const getAllWordLists = async (): Promise<WordList[]> => {
     '19k': '19K.txt',
     'all-names': 'AllNames.txt',
     'boys-names': 'BoysNames.txt',
-    'girls-names': 'GirlsNames.txt'
+    'girls-names': 'GirlsNames.txt',
+    'months-starsigns': 'MONTHS_STARSIGNS.txt'
   };
   
   // Load words for all word lists
