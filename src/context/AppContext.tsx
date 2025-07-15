@@ -67,6 +67,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         // but exclude words that don't match the current sequence
         wordsForAnalysis = state.selectedWordList?.words || [];
         
+        console.log('Filtering words for Most Frequent sequence:', {
+          originalWordCount: wordsForAnalysis.length,
+          sequence: newSequence,
+          dynamicSequence: state.filterState.dynamicSequence
+        });
+        
         // Filter out words that don't match the current sequence
         wordsForAnalysis = wordsForAnalysis.filter(word => {
           const upperWord = word.toUpperCase();
@@ -80,6 +86,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           }
           return true;
         });
+        
+        console.log('Filtered word count:', wordsForAnalysis.length);
       } else {
         // For predefined sequences, use the normal filtered words
         const tempFilterResult = state.selectedWordList 
@@ -102,6 +110,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // Add current letter to used letters AFTER getting the next letter
       const newUsedLetters = new Set(state.filterState.usedLetters);
       newUsedLetters.add(currentLetter);
+      
+      console.log('Used letters tracking:', {
+        currentLetter,
+        previousUsedLetters: Array.from(state.filterState.usedLetters),
+        newUsedLetters: Array.from(newUsedLetters)
+      });
       
       // Update dynamic sequence if needed
       const newDynamicSequence = [...state.filterState.dynamicSequence];
