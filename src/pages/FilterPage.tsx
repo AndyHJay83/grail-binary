@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fileExport';
 import { getBackgroundColor, findSideOfferLetter } from '../utils/binaryFilter';
-import { generateAiReading } from '../utils/aiService';
+// import { generateAiReading } from '../utils/aiService';
 import { BinaryChoice } from '../types';
 import { getSequenceById } from '../data/letterSequences';
 
@@ -19,7 +19,7 @@ const FilterPage: React.FC = () => {
   
   // NEW: AI reading state
   const [aiReading, setAiReading] = React.useState<string>('');
-  const [isGeneratingReading, setIsGeneratingReading] = React.useState<boolean>(false);
+  // const [isGeneratingReading, setIsGeneratingReading] = React.useState<boolean>(false);
   
   // Get enabled psychological questions
   const enabledPsychologicalQuestions = userPreferences.psychologicalProfiling.enabled 
@@ -329,26 +329,26 @@ const FilterPage: React.FC = () => {
   };
 
   // NEW: AI reading generation function
-  const handleGenerateAiReading = async (profileAnswers: string[]) => {
-    if (profileAnswers.length === 0) return;
+  // const handleGenerateAiReading = async (profileAnswers: string[]) => {
+  //   if (profileAnswers.length === 0) return;
     
-    setIsGeneratingReading(true);
-    setAiReading(''); // Clear previous reading
+  //   setIsGeneratingReading(true);
+  //   setAiReading(''); // Clear previous reading
     
-    try {
-      const response = await generateAiReading({
-        prompt: 'Generate a psychological reading based on the user\'s binary choice responses.',
-        profileAnswers: profileAnswers
-      });
+  //   try {
+  //     const response = await generateAiReading({
+  //       prompt: 'Generate a psychological reading based on the user\'s binary choice responses.',
+  //       profileAnswers: profileAnswers
+  //     });
       
-      setAiReading(response.reading);
-    } catch (error) {
-      console.error('Error generating AI reading:', error);
-      setAiReading('Unable to generate reading at this time. Please try again later.');
-    } finally {
-      setIsGeneratingReading(false);
-    }
-  };
+  //     setAiReading(response.reading);
+  //   } catch (error) {
+  //     console.error('Error generating AI reading:', error);
+  //     setAiReading('Unable to generate reading at this time. Please try again later.');
+  //   } finally {
+  //     setIsGeneratingReading(false);
+  //   }
+  // };
 
   const getLeftBackgroundColor = () => {
     if (!selectedWordList) return 'bg-black';
