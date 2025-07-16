@@ -19,7 +19,7 @@ const FilterPage: React.FC = () => {
   
   // NEW: AI reading state
   const [aiReading, setAiReading] = React.useState<string>('');
-  const [isGeneratingReading, setIsGeneratingReading] = React.useState<boolean>(false);
+  // const [isGeneratingReading, setIsGeneratingReading] = React.useState<boolean>(false);
   
   // Get enabled psychological questions
   const enabledPsychologicalQuestions = userPreferences.psychologicalProfiling.enabled 
@@ -328,36 +328,7 @@ const FilterPage: React.FC = () => {
     exportWordList(words, filename);
   };
 
-  // NEW: Generate AI reading based on psychological profile
-  const generateAiReading = async (profileAnswers: string[]) => {
-    setIsGeneratingReading(true);
-    
-    try {
-      // Extract the questions and answers for the AI
-      const questionsAndAnswers = profileAnswers.map(answer => answer.trim());
-      
-      // Create a prompt for the AI
-      const prompt = `Based on these psychological profile responses, generate a short, personalized reading (2-3 sentences) that feels insightful and positive. Focus on the personality traits and patterns revealed by these answers:
-
-${questionsAndAnswers.join('\n')}
-
-Please provide a warm, encouraging reading that feels personal and meaningful.`;
-
-      // Use the AI service to generate the reading
-      const aiResponse = await generateAiReadingService({
-        prompt,
-        profileAnswers: questionsAndAnswers,
-        config: defaultAiConfig // Can be customized per user or environment
-      });
-      
-      setAiReading(aiResponse.reading);
-    } catch (error) {
-      console.error('Failed to generate AI reading:', error);
-      setAiReading('Unable to generate reading at this time. Please try again.');
-    } finally {
-      setIsGeneratingReading(false);
-    }
-  };
+  // AI reading function temporarily removed since AI button is hidden
 
   const getLeftBackgroundColor = () => {
     if (!selectedWordList) return 'bg-black';

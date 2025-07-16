@@ -92,7 +92,7 @@ export const filterWords = (
           
           // Skip the side offer letter that was confirmed as NO
           // This letter should be excluded from consideration entirely
-          const isSideOfferLetter = false; // We'll determine this based on the sequence context
+          // const isSideOfferLetter = false; // We'll determine this based on the sequence context
           
           if (confirmedSide === 'R' && confirmedSideValue === 'NO') {
             // R=NO, L=YES interpretation

@@ -163,7 +163,7 @@ async function generateOllamaReading(request: AiReadingRequest, config: AiServic
 }
 
 // Mock AI reading for development/testing
-async function generateMockReading(request: AiReadingRequest, config: AiServiceConfig): Promise<AiReadingResponse> {
+async function generateMockReading(request: AiReadingRequest, _config: AiServiceConfig): Promise<AiReadingResponse> {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 2000));
   

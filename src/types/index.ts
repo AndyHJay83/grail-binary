@@ -4,12 +4,15 @@ export interface WordList {
   id: string;
   name: string;
   words: string[];
+  description?: string;
+  isDefault?: boolean;
 }
 
 export interface LetterSequence {
   id: string;
   name: string;
   sequence: string;
+  isDefault?: boolean;
 }
 
 export interface UserPreferences {
