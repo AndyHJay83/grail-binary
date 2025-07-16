@@ -601,8 +601,8 @@ const FilterPage: React.FC = () => {
         {/* Side Offer Letter - Overlay */}
         {filterState.sideOfferLetter && !shouldShowPsychologicalQuestions && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
-            <div className="bg-yellow-600 text-black px-3 py-1 rounded-lg text-sm font-semibold no-highlight">
-              Side Offer: {filterState.sideOfferLetter}
+            <div className="letter-bubble no-highlight bg-yellow-600 text-black">
+              {filterState.sideOfferLetter}
             </div>
           </div>
         )}
