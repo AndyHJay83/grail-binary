@@ -1,215 +1,219 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { getAllWordLists } from '../data/wordListManager';
-import { getAllSequences } from '../data/letterSequences';
+import LetterSequenceManager from '../components/LetterSequenceManager';
+import WordListManager from '../components/WordListManager';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, updatePreferences, updateLetterSequence, updateMostFrequentFilter, togglePsychologicalProfiling, updatePsychologicalQuestion } = useAppContext();
   const { userPreferences } = state;
-  
-  const wordLists = getAllWordLists();
-  const letterSequences = getAllSequences();
 
   const handleHomeClick = () => {
     navigate('/');
   };
 
+  const handleExportFilenameChange = (filename: string) => {
+    updatePreferences({
+      exportPreferences: {
+        ...userPreferences.exportPreferences,
+        defaultFilename: filename
+      }
+    });
+  };
+
+  const handleTimestampToggle = (includeTimestamp: boolean) => {
+    updatePreferences({
+      exportPreferences: {
+        ...userPreferences.exportPreferences,
+        includeTimestamp
+      }
+    });
+  };
+
+  const handleMostFrequentFilterToggle = (enabled: boolean) => {
+    updateMostFrequentFilter(enabled);
+  };
+
+  const handleConfirmNoLetterToggle = (enabled: boolean) => {
+    updatePreferences({
+      confirmNoLetter: enabled
+    });
+  };
+
+  const handleClearCache = () => {
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => {
+          caches.delete(name);
+        });
+      });
+    }
+    localStorage.clear();
+    alert('Cache cleared successfully!');
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Settings</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">Settings</h1>
         <button onClick={handleHomeClick} className="btn-secondary">
           🏠 Home
         </button>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Word List Selection */}
-        <div className="bg-dark-grey p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Word List</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {wordLists.map((wordList) => (
-              <button
-                key={wordList.id}
-                onClick={() => updatePreferences({ selectedWordListId: wordList.id })}
-                className={`p-4 rounded-lg text-left transition-colors ${
-                  userPreferences.selectedWordListId === wordList.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                <div className="font-semibold">{wordList.name}</div>
-                <div className="text-sm opacity-75">
-                  {wordList.words.length.toLocaleString()} words
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="max-w-2xl mx-auto space-y-8">
+        {/* Letter Sequences */}
+        <LetterSequenceManager />
 
-        {/* Letter Sequence Selection */}
-        <div className="bg-dark-grey p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Letter Sequence</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {letterSequences.map((sequence) => (
-              <button
-                key={sequence.id}
-                onClick={() => updateLetterSequence(sequence.id)}
-                className={`p-4 rounded-lg text-left transition-colors ${
-                  userPreferences.selectedLetterSequence === sequence.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                <div className="font-semibold">{sequence.name}</div>
-                <div className="text-sm opacity-75">
-                  {sequence.sequence || 'Dynamic'}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Word Lists */}
+        <WordListManager />
 
-        {/* Most Frequent Filter Toggle */}
-        <div className="bg-dark-grey p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Most Frequent Filter</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Enable Most Frequent Letter Selection</div>
-              <div className="text-sm opacity-75">
-                Automatically select the most frequent unused letter in remaining words
-              </div>
+        {/* Filtering Options */}
+        <div className="bg-black border-2 border-white rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-4">Filtering Options</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="mostFrequentFilter"
+                checked={userPreferences.mostFrequentFilter}
+                onChange={(e) => handleMostFrequentFilterToggle(e.target.checked)}
+                className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
+              />
+              <label htmlFor="mostFrequentFilter" className="text-sm">
+                Most Frequent Filter
+              </label>
             </div>
-            <button
-              onClick={() => updateMostFrequentFilter(!userPreferences.mostFrequentFilter)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                userPreferences.mostFrequentFilter
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              {userPreferences.mostFrequentFilter ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-
-        {/* Confirm NO Letter Toggle */}
-        <div className="bg-dark-grey p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Confirm NO Letter</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Enable Side Offer Letter</div>
-              <div className="text-sm opacity-75">
-                Offer a letter that doesn't appear in any remaining words for side confirmation
-              </div>
+            
+            <div className="text-sm text-gray-400">
+              <p>When enabled, after exhausting the letter sequence, automatically select the most frequent unused letter from remaining words.</p>
             </div>
-            <button
-              onClick={() => updatePreferences({ confirmNoLetter: !userPreferences.confirmNoLetter })}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                userPreferences.confirmNoLetter
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              {userPreferences.confirmNoLetter ? 'ON' : 'OFF'}
-            </button>
+            
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="confirmNoLetter"
+                checked={userPreferences.confirmNoLetter}
+                onChange={(e) => handleConfirmNoLetterToggle(e.target.checked)}
+                className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
+              />
+              <label htmlFor="confirmNoLetter" className="text-sm">
+                Confirm NO Letter
+              </label>
+            </div>
+            
+            <div className="text-sm text-gray-400">
+              <p>When enabled, offers a letter that doesn't appear in any remaining words. Long press (0.5s) on either side to confirm that side as NO.</p>
+            </div>
           </div>
         </div>
 
         {/* NEW: Psychological Profiling Section */}
-        <div className="bg-dark-grey p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Psychological Profiling</h2>
+        <div className="bg-black border-2 border-white rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-4">Psychological Profiling</h2>
           
-          {/* Enable/Disable Toggle */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className="font-medium">Enable Psychological Profiling</div>
-              <div className="text-sm opacity-75">
-                Ask custom Yes/No questions before letter sequence to gather psychological insights
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="psychologicalProfiling"
+                checked={userPreferences.psychologicalProfiling.enabled}
+                onChange={(e) => togglePsychologicalProfiling(e.target.checked)}
+                className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
+              />
+              <label htmlFor="psychologicalProfiling" className="text-sm">
+                Enable Psychological Profiling
+              </label>
             </div>
-            <button
-              onClick={() => togglePsychologicalProfiling(!userPreferences.psychologicalProfiling.enabled)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                userPreferences.psychologicalProfiling.enabled
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              {userPreferences.psychologicalProfiling.enabled ? 'ON' : 'OFF'}
-            </button>
-          </div>
+            
+            <div className="text-sm text-gray-400">
+              <p>Ask custom Yes/No questions before letter sequence to gather psychological insights.</p>
+            </div>
 
-          {/* Questions Management */}
-          {userPreferences.psychologicalProfiling.enabled && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Custom Questions (1-5 enabled)</h3>
-              <div className="space-y-3">
-                {userPreferences.psychologicalProfiling.questions.map((question) => (
-                  <div key={question.id} className="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
-                    <input
-                      type="checkbox"
-                      checked={question.enabled}
-                      onChange={(e) => updatePsychologicalQuestion(question.id, { enabled: e.target.checked })}
-                      className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-                    />
-                    <input
-                      type="text"
-                      value={question.text}
-                      onChange={(e) => updatePsychologicalQuestion(question.id, { text: e.target.value })}
-                      className="flex-1 bg-gray-600 text-white px-3 py-2 rounded border border-gray-500 focus:border-blue-500 focus:outline-none"
-                      placeholder="Enter your question..."
-                    />
-                  </div>
-                ))}
+            {/* Questions Management */}
+            {userPreferences.psychologicalProfiling.enabled && (
+              <div className="space-y-4 mt-4">
+                <h3 className="text-lg font-bold">Custom Questions (1-5 enabled)</h3>
+                <div className="space-y-3">
+                  {userPreferences.psychologicalProfiling.questions.map((question) => (
+                    <div key={question.id} className="flex items-center space-x-3 p-3 bg-dark-grey rounded">
+                      <input
+                        type="checkbox"
+                        checked={question.enabled}
+                        onChange={(e) => updatePsychologicalQuestion(question.id, { enabled: e.target.checked })}
+                        className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
+                      />
+                      <input
+                        type="text"
+                        value={question.text}
+                        onChange={(e) => updatePsychologicalQuestion(question.id, { text: e.target.value })}
+                        className="flex-1 bg-black border-2 border-white rounded px-3 py-2 text-white focus:border-success-green outline-none text-sm"
+                        placeholder="Enter your question..."
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="text-sm text-gray-400">
+                  <p>• Questions will be asked before the letter sequence begins</p>
+                  <p>• User makes L/R choices for each enabled question</p>
+                  <p>• After long press confirmation, psychological profile will be revealed</p>
+                </div>
               </div>
-              <div className="text-sm opacity-75">
-                <p>• Questions will be asked before the letter sequence begins</p>
-                <p>• User makes L/R choices for each enabled question</p>
-                <p>• After long press confirmation, psychological profile will be revealed</p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Export Preferences */}
-        <div className="bg-dark-grey p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Export Preferences</h2>
+        <div className="bg-black border-2 border-white rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-4">Export Preferences</h2>
+          
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Default Filename</label>
+              <label htmlFor="filename" className="block text-sm font-medium mb-2">
+                Default Export Filename
+              </label>
               <input
                 type="text"
+                id="filename"
                 value={userPreferences.exportPreferences.defaultFilename}
-                onChange={(e) =>
-                  updatePreferences({
-                    exportPreferences: {
-                      ...userPreferences.exportPreferences,
-                      defaultFilename: e.target.value
-                    }
-                  })
-                }
-                className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                onChange={(e) => handleExportFilenameChange(e.target.value)}
+                className="w-full bg-black border-2 border-white rounded-lg px-4 py-2 text-white focus:border-success-green outline-none"
+                placeholder="Enter default filename"
               />
             </div>
-            <div className="flex items-center">
+            
+            <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
+                id="timestamp"
                 checked={userPreferences.exportPreferences.includeTimestamp}
-                onChange={(e) =>
-                  updatePreferences({
-                    exportPreferences: {
-                      ...userPreferences.exportPreferences,
-                      includeTimestamp: e.target.checked
-                    }
-                  })
-                }
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                onChange={(e) => handleTimestampToggle(e.target.checked)}
+                className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
               />
-              <label className="ml-2 text-sm">Include timestamp in filename</label>
+              <label htmlFor="timestamp" className="text-sm">
+                Include timestamp in export filenames
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* App Management */}
+        <div className="bg-black border-2 border-white rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-4">App Management</h2>
+          
+          <div className="space-y-4">
+            <button
+              onClick={handleClearCache}
+              className="btn-secondary w-full"
+            >
+              Clear Cache & Reset App
+            </button>
+            
+            <div className="text-sm text-gray-400">
+              <p>This will clear all cached data and reset the app to its initial state.</p>
             </div>
           </div>
         </div>
