@@ -5,11 +5,40 @@ import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fil
 import { getBackgroundColor, findSideOfferLetter } from '../utils/binaryFilter';
 import { BinaryChoice } from '../types';
 import { getSequenceById } from '../data/letterSequences';
+import { generateAiReading as generateAiReadingService, defaultAiConfig } from '../utils/aiService';
 
 const FilterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state, makeBinaryChoice, resetFilter, initializeMostFrequent, setSideOfferLetter, confirmSide } = useAppContext();
+  const { state, makeBinaryChoice, resetFilter, initializeMostFrequent, setSideOfferLetter, confirmSide, setPsychologicalAnswers } = useAppContext();
   const { selectedWordList, filterState, userPreferences } = state;
+  
+  // NEW: Psychological profiling state
+  const [currentPsychologicalQuestionIndex, setCurrentPsychologicalQuestionIndex] = React.useState<number>(-1);
+  const [psychologicalAnswers, setPsychologicalAnswersLocal] = React.useState<{ [questionId: string]: BinaryChoice }>({});
+  const [psychologicalQuestionsCompleted, setPsychologicalQuestionsCompleted] = React.useState<boolean>(false);
+  
+  // NEW: AI reading state
+  const [aiReading, setAiReading] = React.useState<string>('');
+  const [isGeneratingReading, setIsGeneratingReading] = React.useState<boolean>(false);
+  
+  // Get enabled psychological questions
+  const enabledPsychologicalQuestions = userPreferences.psychologicalProfiling.enabled 
+    ? userPreferences.psychologicalProfiling.questions.filter(q => q.enabled)
+    : [];
+  
+  // Check if we should show psychological questions
+  const shouldShowPsychologicalQuestions = enabledPsychologicalQuestions.length > 0 && 
+    currentPsychologicalQuestionIndex >= 0 && 
+    currentPsychologicalQuestionIndex < enabledPsychologicalQuestions.length &&
+    !psychologicalQuestionsCompleted;
+  
+  // Initialize psychological questions when component mounts
+  React.useEffect(() => {
+    if (enabledPsychologicalQuestions.length > 0 && currentPsychologicalQuestionIndex === -1 && !psychologicalQuestionsCompleted) {
+      console.log('Starting psychological profiling with', enabledPsychologicalQuestions.length, 'questions');
+      setCurrentPsychologicalQuestionIndex(0);
+    }
+  }, [enabledPsychologicalQuestions.length, psychologicalQuestionsCompleted]);
   
   // Refs for long press detection
   const leftButtonRef = useRef<HTMLButtonElement>(null);
@@ -247,6 +276,34 @@ const FilterPage: React.FC = () => {
   };
 
   const handleBinaryChoice = (choice: BinaryChoice) => {
+    console.log('Binary choice made:', choice);
+    
+    // NEW: Handle psychological questions first
+    if (shouldShowPsychologicalQuestions) {
+      const currentQuestion = enabledPsychologicalQuestions[currentPsychologicalQuestionIndex];
+      console.log('Answering psychological question:', currentQuestion.text, 'with choice:', choice);
+      
+      // Store the answer
+      const newAnswers = { ...psychologicalAnswers, [currentQuestion.id]: choice };
+      setPsychologicalAnswersLocal(newAnswers);
+      
+      // Move to next question or start letter sequence
+      const nextIndex = currentPsychologicalQuestionIndex + 1;
+      if (nextIndex < enabledPsychologicalQuestions.length) {
+        console.log('Moving to next psychological question:', nextIndex);
+        setCurrentPsychologicalQuestionIndex(nextIndex);
+      } else {
+        console.log('All psychological questions answered, starting letter sequence');
+        setCurrentPsychologicalQuestionIndex(-1); // Hide questions
+        setPsychologicalAnswers(newAnswers); // Save to context
+        setPsychologicalQuestionsCompleted(true); // Mark questions as completed
+        // Reset filter to start letter sequence
+        resetFilter();
+      }
+      return;
+    }
+    
+    // Normal letter sequence logic
     makeBinaryChoice(choice);
   };
 
@@ -256,6 +313,10 @@ const FilterPage: React.FC = () => {
 
   const handleReset = () => {
     resetFilter();
+    // Reset psychological questions state
+    setCurrentPsychologicalQuestionIndex(-1);
+    setPsychologicalAnswersLocal({});
+    setPsychologicalQuestionsCompleted(false);
   };
 
   const handleExport = (words: string[], side: 'left' | 'right') => {
@@ -265,6 +326,37 @@ const FilterPage: React.FC = () => {
       userPreferences.exportPreferences.includeTimestamp
     );
     exportWordList(words, filename);
+  };
+
+  // NEW: Generate AI reading based on psychological profile
+  const generateAiReading = async (profileAnswers: string[]) => {
+    setIsGeneratingReading(true);
+    
+    try {
+      // Extract the questions and answers for the AI
+      const questionsAndAnswers = profileAnswers.map(answer => answer.trim());
+      
+      // Create a prompt for the AI
+      const prompt = `Based on these psychological profile responses, generate a short, personalized reading (2-3 sentences) that feels insightful and positive. Focus on the personality traits and patterns revealed by these answers:
+
+${questionsAndAnswers.join('\n')}
+
+Please provide a warm, encouraging reading that feels personal and meaningful.`;
+
+      // Use the AI service to generate the reading
+      const aiResponse = await generateAiReadingService({
+        prompt,
+        profileAnswers: questionsAndAnswers,
+        config: defaultAiConfig // Can be customized per user or environment
+      });
+      
+      setAiReading(aiResponse.reading);
+    } catch (error) {
+      console.error('Failed to generate AI reading:', error);
+      setAiReading('Unable to generate reading at this time. Please try again.');
+    } finally {
+      setIsGeneratingReading(false);
+    }
   };
 
   const getLeftBackgroundColor = () => {
@@ -290,7 +382,9 @@ const FilterPage: React.FC = () => {
       confirmedSide: filterState.confirmedSide,
       confirmedSideValue: filterState.confirmedSideValue,
       leftWordsCount: filterState.leftWords.length,
-      rightWordsCount: filterState.rightWords.length
+      rightWordsCount: filterState.rightWords.length,
+      psychologicalAnswers: filterState.psychologicalAnswers,
+      psychologicalProfile: filterState.psychologicalProfile
     });
 
     if (!filterState.confirmedSide) {
@@ -306,12 +400,32 @@ const FilterPage: React.FC = () => {
     // When L is confirmed as NO, R becomes YES, so show right words
     if (filterState.confirmedSide === 'R' && filterState.confirmedSideValue === 'NO') {
       console.log('R confirmed as NO, L is YES - showing left words');
+      
+      // Check if we have psychological profile to display
+      if (filterState.psychologicalProfile && filterState.psychologicalProfile.decodedProfile) {
+        console.log('Showing psychological profile in right wordlist');
+        return {
+          leftWords: filterState.leftWords,
+          rightWords: filterState.psychologicalProfile.decodedProfile // Show profile in right (empty) wordlist
+        };
+      }
+      
       return {
         leftWords: filterState.leftWords,
         rightWords: []
       };
     } else if (filterState.confirmedSide === 'L' && filterState.confirmedSideValue === 'NO') {
       console.log('L confirmed as NO, R is YES - showing right words');
+      
+      // Check if we have psychological profile to display
+      if (filterState.psychologicalProfile && filterState.psychologicalProfile.decodedProfile) {
+        console.log('Showing psychological profile in left wordlist');
+        return {
+          leftWords: filterState.psychologicalProfile.decodedProfile, // Show profile in left (empty) wordlist
+          rightWords: filterState.rightWords
+        };
+      }
+      
       return {
         leftWords: [],
         rightWords: filterState.rightWords
@@ -347,13 +461,35 @@ const FilterPage: React.FC = () => {
         </div>
       </div>
 
+      {/* NEW: Psychological Question Display */}
+      {shouldShowPsychologicalQuestions && (
+        <div className="bg-dark-grey p-6 rounded-lg mb-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4">Psychological Profiling</h2>
+            <div className="mb-4">
+              <div className="text-lg font-medium mb-2">
+                {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
+              </div>
+              <div className="text-sm opacity-75">
+                Question {currentPsychologicalQuestionIndex + 1} of {enabledPsychologicalQuestions.length}
+              </div>
+            </div>
+            <div className="text-sm opacity-75 mb-4">
+              Choose L or R for your answer (you'll confirm YES/NO later)
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Results Area - Top 50% */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4" style={{ height: '50vh' }}>
         {/* Left Results */}
-        <div className={`word-list ${getLeftBackgroundColor()}`}>
+        <div className={`word-list ${getLeftBackgroundColor()} relative`}>
           <div className="flex justify-between items-center mb-2">
             <div className="word-count">
-              {displayLeftWords.length.toLocaleString()} words
+              {displayLeftWords.length > 0 && displayLeftWords.length <= 10 && displayLeftWords.every(word => word.includes(': '))
+                ? 'Profile Results' 
+                : `${displayLeftWords.length.toLocaleString()} words`}
             </div>
             <button
               onClick={() => handleExport(displayLeftWords, 'left')}
@@ -370,14 +506,27 @@ const FilterPage: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* AI Button temporarily hidden */}
+          {/* {displayLeftWords.length > 0 && displayLeftWords.length <= 10 && displayLeftWords.every(word => word.includes(': ')) && (
+            <button
+              onClick={() => generateAiReading(displayLeftWords)}
+              disabled={isGeneratingReading}
+              className="absolute bottom-4 right-4 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isGeneratingReading ? '🤖 Thinking...' : '🤖 AI Reading'}
+            </button>
+          )} */}
         </div>
 
         {/* Right Results */}
-        <div className={`word-list ${getRightBackgroundColor()}`}>
+        <div className={`word-list ${getRightBackgroundColor()} relative`}>
           <div className="flex justify-between items-center mb-2">
             <div className="word-count">
-              {displayRightWords.length.toLocaleString()} words
-          </div>
+              {displayRightWords.length > 0 && displayRightWords.length <= 10 && displayRightWords.every(word => word.includes(': '))
+                ? 'Profile Results' 
+                : `${displayRightWords.length.toLocaleString()} words`}
+            </div>
             <button
               onClick={() => handleExport(displayRightWords, 'right')}
               className="export-btn"
@@ -394,8 +543,36 @@ const FilterPage: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* AI Button temporarily hidden */}
+          {/* {displayRightWords.length > 0 && displayRightWords.length <= 10 && displayRightWords.every(word => word.includes(': ')) && (
+            <button
+              onClick={() => generateAiReading(displayRightWords)}
+              disabled={isGeneratingReading}
+              className="absolute bottom-4 right-4 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isGeneratingReading ? '🤖 Thinking...' : '🤖 AI Reading'}
+            </button>
+          )} */}
         </div>
       </div>
+
+      {/* NEW: AI Reading Display */}
+      {aiReading && (
+        <div className="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg mb-4 border border-purple-500">
+          <div className="flex items-center mb-3">
+            <span className="text-2xl mr-2">🤖</span>
+            <h3 className="text-xl font-semibold text-white">AI Reading</h3>
+          </div>
+          <p className="text-white text-lg leading-relaxed">{aiReading}</p>
+          <button
+            onClick={() => setAiReading('')}
+            className="mt-3 text-purple-300 hover:text-white text-sm underline"
+          >
+            Clear Reading
+          </button>
+        </div>
+      )}
 
       {/* Binary Input Area - Bottom 50% */}
       <div className="relative" style={{ height: '40vh' }}>
@@ -447,15 +624,33 @@ const FilterPage: React.FC = () => {
         {/* Current Letter - Overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className={`letter-bubble ${filterState.isDynamicMode ? 'text-red-500' : ''}`}>
-            {filterState.currentLetter}
+            {shouldShowPsychologicalQuestions ? 'L' : filterState.currentLetter}
           </div>
         </div>
 
-        {/* Side Offer Letter - Center Overlay */}
-        {filterState.sideOfferLetter && !filterState.confirmedSide && (
-          <div className="absolute left-0 w-full flex items-center justify-center pointer-events-none" style={{ top: '5%', position: 'absolute' }}>
-            <div className="letter-bubble text-red-600 font-bold">
-              {filterState.sideOfferLetter}
+        {/* Right Button Label - Overlay */}
+        {shouldShowPsychologicalQuestions && (
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <div className="letter-bubble text-blue-400">
+              R
+            </div>
+          </div>
+        )}
+
+        {/* Side Offer Letter - Overlay */}
+        {filterState.sideOfferLetter && !shouldShowPsychologicalQuestions && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
+            <div className="bg-yellow-600 text-black px-3 py-1 rounded-lg text-sm font-semibold">
+              Side Offer: {filterState.sideOfferLetter}
+            </div>
+          </div>
+        )}
+
+        {/* Long Press Instructions - Overlay */}
+        {filterState.sideOfferLetter && !shouldShowPsychologicalQuestions && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
+            <div className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
+              Long press to confirm side
             </div>
           </div>
         )}

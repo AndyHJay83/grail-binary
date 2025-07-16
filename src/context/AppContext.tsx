@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { AppState, WordList, UserPreferences, BinaryChoice } from '../types';
+import { AppState, WordList, UserPreferences, BinaryChoice, PresetQuestion } from '../types';
 import { filterWords, resetFilter, getNextLetterWithDynamic } from '../utils/binaryFilter';
 
 import { getAllWordLists, getWordListById } from '../data/wordListManager';
@@ -31,7 +31,43 @@ const initialState: AppState = {
     selectedLetterSequence: 'full-alphabet',
     mostFrequentFilter: true, // Default to ON
     selectedWordListId: 'en-uk', // Default to EN-UK
-    confirmNoLetter: true // NEW: Default to ON
+    confirmNoLetter: true, // NEW: Default to ON
+    // NEW: Psychological profiling preferences
+    psychologicalProfiling: {
+      enabled: false, // Default to OFF
+      questions: [
+        {
+          id: 'q1',
+          text: 'Do you like sports?',
+          enabled: false,
+          order: 1
+        },
+        {
+          id: 'q2',
+          text: 'Are you an introvert?',
+          enabled: false,
+          order: 2
+        },
+        {
+          id: 'q3',
+          text: 'Do you prefer coffee over tea?',
+          enabled: false,
+          order: 3
+        },
+        {
+          id: 'q4',
+          text: 'Are you a morning person?',
+          enabled: false,
+          order: 4
+        },
+        {
+          id: 'q5',
+          text: 'Do you enjoy traveling?',
+          enabled: false,
+          order: 5
+        }
+      ]
+    }
   }
 };
 
@@ -44,7 +80,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const selectFilterResult = resetFilter(selectLetterSequence);
       return {
         ...state,
-        filterState: selectFilterResult
+        filterState: {
+          ...selectFilterResult,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
+        }
       };
     
     case 'MAKE_BINARY_CHOICE':
@@ -140,7 +181,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           isDynamicMode: nextLetterInfo.isDynamic,
           sideOfferLetter: state.filterState.sideOfferLetter,
           confirmedSide: state.filterState.confirmedSide,
-          confirmedSideValue: state.filterState.confirmedSideValue
+          confirmedSideValue: state.filterState.confirmedSideValue,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
     
@@ -174,7 +218,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           isDynamicMode: setIsDynamicMode,
           sideOfferLetter: resetResult.sideOfferLetter,
           confirmedSide: resetResult.confirmedSide,
-          confirmedSideValue: resetResult.confirmedSideValue
+          confirmedSideValue: resetResult.confirmedSideValue,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
     
@@ -195,7 +242,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           isDynamicMode: resetFilterResult.isDynamicMode,
           sideOfferLetter: resetFilterResult.sideOfferLetter,
           confirmedSide: resetFilterResult.confirmedSide,
-          confirmedSideValue: resetFilterResult.confirmedSideValue
+          confirmedSideValue: resetFilterResult.confirmedSideValue,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
     
@@ -229,7 +279,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           isDynamicMode: updateFilterResult.isDynamicMode,
           sideOfferLetter: updateFilterResult.sideOfferLetter,
           confirmedSide: updateFilterResult.confirmedSide,
-          confirmedSideValue: updateFilterResult.confirmedSideValue
+          confirmedSideValue: updateFilterResult.confirmedSideValue,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
     
@@ -253,7 +306,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           currentLetter: firstLetter,
           dynamicSequence: [firstLetter],
           isDynamicMode: true,
-          usedLetters: usedLetters
+          usedLetters: usedLetters,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
     }
@@ -264,7 +320,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         filterState: {
           ...state.filterState,
-          sideOfferLetter: letter
+          sideOfferLetter: letter,
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
     }
@@ -368,10 +427,142 @@ function appReducer(state: AppState, action: AppAction): AppState {
         currentLetter: newFilterState.currentLetter
       });
 
-      return {
+      // NEW: Decode psychological profile after side confirmation
+      const updatedState = {
         ...state,
         userPreferences: updatedPreferences,
         filterState: newFilterState
+      };
+
+      // If we have psychological answers, decode the profile
+      if (state.filterState.psychologicalAnswers && Object.keys(state.filterState.psychologicalAnswers).length > 0) {
+        const answers = state.filterState.psychologicalAnswers;
+        const questions = updatedState.userPreferences.psychologicalProfiling.questions.filter(q => q.enabled);
+        
+        const decodedProfile: string[] = [];
+        
+        questions.forEach(question => {
+          const choice = answers[question.id];
+          if (choice) {
+            // Decode the answer based on confirmed side
+            let answer: boolean;
+            if (side === 'R' && value === 'NO') {
+              // R=NO, L=YES
+              answer = choice === 'L';
+            } else if (side === 'L' && value === 'NO') {
+              // L=NO, R=YES
+              answer = choice === 'R';
+            } else if (side === 'R' && value === 'YES') {
+              // R=YES, L=NO
+              answer = choice === 'R';
+            } else {
+              // L=YES, R=NO
+              answer = choice === 'L';
+            }
+            
+            decodedProfile.push(`${question.text}: ${answer ? 'YES' : 'NO'}`);
+          }
+        });
+        
+        return {
+          ...updatedState,
+          filterState: {
+            ...newFilterState,
+            psychologicalAnswers: state.filterState.psychologicalAnswers, // Preserve the answers
+            psychologicalProfile: {
+              questions,
+              answers,
+              decodedProfile
+            }
+          }
+        };
+      }
+
+      return updatedState;
+    }
+    
+    // NEW: Psychological profiling actions
+    case 'TOGGLE_PSYCHOLOGICAL_PROFILING': {
+      return {
+        ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          psychologicalProfiling: {
+            ...state.userPreferences.psychologicalProfiling,
+            enabled: action.payload
+          }
+        }
+      };
+    }
+    
+    case 'UPDATE_PSYCHOLOGICAL_QUESTION': {
+      const { questionId, updates } = action.payload;
+      const updatedQuestions = state.userPreferences.psychologicalProfiling.questions.map(q => 
+        q.id === questionId ? { ...q, ...updates } : q
+      );
+      
+      return {
+        ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          psychologicalProfiling: {
+            ...state.userPreferences.psychologicalProfiling,
+            questions: updatedQuestions
+          }
+        }
+      };
+    }
+    
+    case 'SET_PSYCHOLOGICAL_ANSWERS': {
+      return {
+        ...state,
+        filterState: {
+          ...state.filterState,
+          psychologicalAnswers: action.payload
+        }
+      };
+    }
+    
+    case 'DECODE_PSYCHOLOGICAL_PROFILE': {
+      const { confirmedSide, confirmedSideValue } = action.payload;
+      const answers = state.filterState.psychologicalAnswers || {};
+      const questions = state.userPreferences.psychologicalProfiling.questions.filter(q => q.enabled);
+      
+      const decodedProfile: string[] = [];
+      
+      questions.forEach(question => {
+        const choice = answers[question.id];
+        if (choice) {
+          // Decode the answer based on confirmed side
+          let answer: boolean;
+          if (confirmedSide === 'R' && confirmedSideValue === 'NO') {
+            // R=NO, L=YES
+            answer = choice === 'L';
+          } else if (confirmedSide === 'L' && confirmedSideValue === 'NO') {
+            // L=NO, R=YES
+            answer = choice === 'R';
+          } else if (confirmedSide === 'R' && confirmedSideValue === 'YES') {
+            // R=YES, L=NO
+            answer = choice === 'R';
+          } else {
+            // L=YES, R=NO
+            answer = choice === 'L';
+          }
+          
+          decodedProfile.push(`${question.text}: ${answer ? 'YES' : 'NO'}`);
+        }
+      });
+      
+      return {
+        ...state,
+        filterState: {
+          ...state.filterState,
+          psychologicalProfile: {
+            questions,
+            answers,
+            decodedProfile
+          }
+        }
       };
     }
     
@@ -393,6 +584,11 @@ interface AppContextType {
   getAllWordLists: () => WordList[];
   setSideOfferLetter: (letter: string) => void;
   confirmSide: (side: 'L' | 'R', value: 'YES' | 'NO') => void;
+  // NEW: Psychological profiling functions
+  togglePsychologicalProfiling: (enabled: boolean) => void;
+  updatePsychologicalQuestion: (questionId: string, updates: Partial<PresetQuestion>) => void;
+  setPsychologicalAnswers: (answers: { [questionId: string]: BinaryChoice }) => void;
+  decodePsychologicalProfile: (confirmedSide: 'L' | 'R', confirmedSideValue: 'YES' | 'NO') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -483,6 +679,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'CONFIRM_SIDE', payload: { side, value } });
   };
 
+  const togglePsychologicalProfiling = (enabled: boolean) => {
+    dispatch({ type: 'TOGGLE_PSYCHOLOGICAL_PROFILING', payload: enabled });
+  };
+
+  const updatePsychologicalQuestion = (questionId: string, updates: Partial<PresetQuestion>) => {
+    dispatch({ type: 'UPDATE_PSYCHOLOGICAL_QUESTION', payload: { questionId, updates } });
+  };
+
+  const setPsychologicalAnswers = (answers: { [questionId: string]: BinaryChoice }) => {
+    dispatch({ type: 'SET_PSYCHOLOGICAL_ANSWERS', payload: answers });
+  };
+
+  const decodePsychologicalProfile = (confirmedSide: 'L' | 'R', confirmedSideValue: 'YES' | 'NO') => {
+    dispatch({ type: 'DECODE_PSYCHOLOGICAL_PROFILE', payload: { confirmedSide, confirmedSideValue } });
+  };
+
   const value: AppContextType = {
     state,
     dispatch,
@@ -495,7 +707,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     initializeMostFrequent,
     getAllWordLists,
     setSideOfferLetter,
-    confirmSide
+    confirmSide,
+    togglePsychologicalProfiling,
+    updatePsychologicalQuestion,
+    setPsychologicalAnswers,
+    decodePsychologicalProfile
   };
 
   return (
