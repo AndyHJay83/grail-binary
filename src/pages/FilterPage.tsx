@@ -5,7 +5,6 @@ import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fil
 import { getBackgroundColor, findSideOfferLetter } from '../utils/binaryFilter';
 import { BinaryChoice } from '../types';
 import { getSequenceById } from '../data/letterSequences';
-import { generateAiReading as generateAiReadingService, defaultAiConfig } from '../utils/aiService';
 
 const FilterPage: React.FC = () => {
   const navigate = useNavigate();
