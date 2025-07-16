@@ -49,18 +49,19 @@ const FilterPage: React.FC = () => {
 
   // Check for side offer letter when filtered words change
   React.useEffect(() => {
-    console.log('Checking for side offer letter:', {
+    console.log('=== SIDE OFFER LETTER EFFECT TRIGGERED ===');
+    console.log('Side offer letter effect:', {
       confirmNoLetter: userPreferences.confirmNoLetter,
       confirmedSide: filterState.confirmedSide,
       leftWordsCount: filterState.leftWords.length,
-      rightWordsCount: filterState.rightWords.length
+      rightWordsCount: filterState.rightWords.length,
+      currentSideOfferLetter: filterState.sideOfferLetter,
+      sampleLeftWords: filterState.leftWords.slice(0, 3),
+      sampleRightWords: filterState.rightWords.slice(0, 3)
     });
 
     if (!userPreferences.confirmNoLetter || filterState.confirmedSide) {
-      console.log('Side offer letter disabled:', {
-        confirmNoLetter: userPreferences.confirmNoLetter,
-        confirmedSide: filterState.confirmedSide
-      });
+      console.log('Side offer letter disabled or side already confirmed');
       // Clear side offer letter if it exists
       if (filterState.sideOfferLetter) {
         setSideOfferLetter('');
@@ -69,6 +70,8 @@ const FilterPage: React.FC = () => {
     }
 
     const allWords = [...filterState.leftWords, ...filterState.rightWords];
+    console.log('All words for side offer analysis:', allWords);
+    
     if (allWords.length === 0) {
       console.log('No words to check for side offer letter');
       // Clear side offer letter if it exists
@@ -79,25 +82,33 @@ const FilterPage: React.FC = () => {
     }
 
     console.log('Looking for side offer letter in', allWords.length, 'words');
+    console.log('Sample words:', allWords.slice(0, 5));
     const sideOfferLetter = findSideOfferLetter(allWords);
     console.log('Side offer letter found:', sideOfferLetter);
     
     // Only update if the letter has changed
     if (sideOfferLetter !== filterState.sideOfferLetter) {
       if (sideOfferLetter) {
+        console.log('Setting side offer letter:', sideOfferLetter);
         setSideOfferLetter(sideOfferLetter);
       } else {
+        console.log('Clearing side offer letter');
         setSideOfferLetter('');
       }
+    } else {
+      console.log('Side offer letter unchanged:', sideOfferLetter);
     }
   }, [filterState.leftWords, filterState.rightWords, userPreferences.confirmNoLetter, filterState.confirmedSide, filterState.sideOfferLetter, setSideOfferLetter]);
 
   // Long press handlers
   const startLongPress = (side: 'L' | 'R', timerRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
-    if (!filterState.sideOfferLetter) return;
+    console.log('startLongPress called:', { side, sideOfferLetter: filterState.sideOfferLetter });
+    if (!filterState.sideOfferLetter) {
+      console.log('No side offer letter - returning');
+      return;
+    }
     
-    console.log('Starting long press for side:', side);
-    
+    console.log('Starting long press timer for side:', side);
     timerRef.current = setTimeout(() => {
       console.log('Long press completed for side:', side, 'confirming as NO');
       // Confirm the pressed side as NO
@@ -121,13 +132,16 @@ const FilterPage: React.FC = () => {
 
   // Touch/click handlers for left button
   const handleLeftMouseDown = () => {
+    console.log('handleLeftMouseDown called');
     // Ignore mouse events if a touch occurred recently
     if (touchOccurredRef.current) {
+      console.log('Touch occurred recently - ignoring mouse event');
       touchOccurredRef.current = false;
       return;
     }
     
     if (filterState.sideOfferLetter) {
+      console.log('Starting long press for left button');
       startLongPress('L', leftPressTimerRef);
     }
   };
@@ -176,13 +190,16 @@ const FilterPage: React.FC = () => {
 
   // Touch/click handlers for right button
   const handleRightMouseDown = () => {
+    console.log('handleRightMouseDown called');
     // Ignore mouse events if a touch occurred recently
     if (touchOccurredRef.current) {
+      console.log('Touch occurred recently - ignoring mouse event');
       touchOccurredRef.current = false;
       return;
     }
     
     if (filterState.sideOfferLetter) {
+      console.log('Starting long press for right button');
       startLongPress('R', rightPressTimerRef);
     }
   };
@@ -269,7 +286,7 @@ const FilterPage: React.FC = () => {
 
   // Determine which words to show based on confirmed side
   const getWordsToShow = () => {
-    console.log('getWordsToShow called with:', {
+    console.log('getWordsToShow called:', {
       confirmedSide: filterState.confirmedSide,
       confirmedSideValue: filterState.confirmedSideValue,
       leftWordsCount: filterState.leftWords.length,
@@ -277,36 +294,38 @@ const FilterPage: React.FC = () => {
     });
 
     if (!filterState.confirmedSide) {
+      console.log('No side confirmed - showing both interpretations');
       return {
         leftWords: filterState.leftWords,
         rightWords: filterState.rightWords
       };
     }
 
-    // If side is confirmed, only show the confirmed interpretation
-    if (filterState.confirmedSide === 'L') {
-      console.log('Showing only left words (right confirmed as NO)');
+    // If side is confirmed, show only the correct interpretation
+    // When R is confirmed as NO, L becomes YES, so show left words
+    // When L is confirmed as NO, R becomes YES, so show right words
+    if (filterState.confirmedSide === 'R' && filterState.confirmedSideValue === 'NO') {
+      console.log('R confirmed as NO, L is YES - showing left words');
       return {
         leftWords: filterState.leftWords,
         rightWords: []
       };
-    } else {
-      console.log('Showing only right words (left confirmed as NO)');
+    } else if (filterState.confirmedSide === 'L' && filterState.confirmedSideValue === 'NO') {
+      console.log('L confirmed as NO, R is YES - showing right words');
       return {
         leftWords: [],
+        rightWords: filterState.rightWords
+      };
+    } else {
+      console.log('Unexpected confirmed side state:', { confirmedSide: filterState.confirmedSide, confirmedSideValue: filterState.confirmedSideValue });
+      return {
+        leftWords: filterState.leftWords,
         rightWords: filterState.rightWords
       };
     }
   };
 
   const { leftWords: displayLeftWords, rightWords: displayRightWords } = getWordsToShow();
-
-  // Debug side offer letter display
-  console.log('Side offer letter display check:', {
-    sideOfferLetter: filterState.sideOfferLetter,
-    confirmedSide: filterState.confirmedSide,
-    shouldShow: filterState.sideOfferLetter && !filterState.confirmedSide
-  });
 
   if (!selectedWordList) {
     navigate('/');
@@ -390,6 +409,7 @@ const FilterPage: React.FC = () => {
               onMouseUp={handleLeftMouseUp}
               onTouchStart={handleLeftTouchStart}
               onTouchEnd={handleLeftTouchEnd}
+
               className="binary-button w-full h-full flex items-center justify-center"
               disabled={filterState.letterIndex >= 26}
               aria-label="Choose left option"
@@ -410,6 +430,7 @@ const FilterPage: React.FC = () => {
               onMouseUp={handleRightMouseUp}
               onTouchStart={handleRightTouchStart}
               onTouchEnd={handleRightTouchEnd}
+
               className="binary-button w-full h-full flex items-center justify-center"
               disabled={filterState.letterIndex >= 26}
               aria-label="Choose right option"
@@ -443,11 +464,19 @@ const FilterPage: React.FC = () => {
       {/* Progress Indicator */}
       <div className="text-center mt-4">
         <div className="text-sm text-gray-400">
-          Progress: {filterState.letterIndex}/{getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence.length || 26} letters
+          {filterState.isDynamicMode && filterState.confirmedSide ? (
+            <>Progress: {filterState.letterIndex} letters (Most Frequent mode)</>
+          ) : (
+            <>Progress: {filterState.letterIndex}/{getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence.length || 26} letters</>
+          )}
         </div>
         {filterState.sequence.length > 0 && (
           <div className="text-xs text-gray-500 mt-2">
-            Sequence: {filterState.sequence.join(' ')}
+            {filterState.isDynamicMode && filterState.confirmedSide ? (
+              <>Dynamic Sequence: {filterState.dynamicSequence.join(' ')}</>
+            ) : (
+              <>Sequence: {filterState.sequence.join(' ')}</>
+            )}
           </div>
         )}
         {!filterState.confirmedSide && (
