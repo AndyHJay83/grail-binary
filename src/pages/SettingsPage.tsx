@@ -6,7 +6,7 @@ import WordListManager from '../components/WordListManager';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state, updatePreferences, updateLetterSequence, updateMostFrequentFilter, togglePsychologicalProfiling, updatePsychologicalQuestion } = useAppContext();
+  const { state, updatePreferences, updateMostFrequentFilter, togglePsychologicalProfiling, updatePsychologicalQuestion } = useAppContext();
   const { userPreferences } = state;
 
   const handleHomeClick = () => {

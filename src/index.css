@@ -36,4 +36,11 @@
   .export-btn {
     @apply bg-transparent border border-white text-white px-3 py-1 rounded text-sm hover:bg-white hover:text-black transition-colors duration-200;
   }
+  
+  .no-highlight {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
 } 

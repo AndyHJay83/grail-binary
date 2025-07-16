@@ -417,15 +417,15 @@ const FilterPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4 no-highlight">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{selectedWordList.name}</h1>
+        <h1 className="text-2xl font-bold no-highlight">{selectedWordList.name}</h1>
         <div className="flex gap-2">
-          <button onClick={handleReset} className="btn-secondary">
+          <button onClick={handleReset} className="btn-secondary no-highlight">
             Reset
           </button>
-          <button onClick={handleHomeClick} className="btn-secondary">
+          <button onClick={handleHomeClick} className="btn-secondary no-highlight">
             🏠 Home
           </button>
         </div>
@@ -433,37 +433,28 @@ const FilterPage: React.FC = () => {
 
       {/* NEW: Psychological Question Display */}
       {shouldShowPsychologicalQuestions && (
-        <div className="bg-dark-grey p-6 rounded-lg mb-4">
+        <div className="bg-dark-grey p-6 rounded-lg mb-4 no-highlight">
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-4">Psychological Profiling</h2>
-            <div className="mb-4">
-              <div className="text-lg font-medium mb-2">
-                {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
-              </div>
-              <div className="text-sm opacity-75">
-                Question {currentPsychologicalQuestionIndex + 1} of {enabledPsychologicalQuestions.length}
-              </div>
-            </div>
-            <div className="text-sm opacity-75 mb-4">
-              Choose L or R for your answer (you'll confirm YES/NO later)
+            <div className="text-lg font-medium no-highlight">
+              {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
             </div>
           </div>
         </div>
       )}
 
-      {/* Results Area - Top 50% */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4" style={{ height: '50vh' }}>
+      {/* Results Area - Dynamic height based on psychological questions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4" style={{ height: shouldShowPsychologicalQuestions ? '20vh' : '50vh' }}>
         {/* Left Results */}
-        <div className={`word-list ${getLeftBackgroundColor()} relative`}>
+        <div className={`word-list ${getLeftBackgroundColor()} relative no-highlight`}>
           <div className="flex justify-between items-center mb-2">
-            <div className="word-count">
+            <div className="word-count no-highlight">
               {displayLeftWords.length > 0 && displayLeftWords.length <= 10 && displayLeftWords.every(word => word.includes(': '))
                 ? 'Profile Results' 
                 : `${displayLeftWords.length.toLocaleString()} words`}
             </div>
             <button
               onClick={() => handleExport(displayLeftWords, 'left')}
-              className="export-btn"
+              className="export-btn no-highlight"
               disabled={displayLeftWords.length === 0}
             >
               Export
@@ -471,7 +462,7 @@ const FilterPage: React.FC = () => {
           </div>
           <div className="overflow-y-auto h-full">
             {displayLeftWords.map((word, index) => (
-              <div key={index} className={`text-base py-1 ${getTextColor(getLeftBackgroundColor())}`}>
+              <div key={index} className={`text-base py-1 no-highlight ${getTextColor(getLeftBackgroundColor())}`}>
                 {word}
               </div>
             ))}
@@ -490,16 +481,16 @@ const FilterPage: React.FC = () => {
         </div>
 
         {/* Right Results */}
-        <div className={`word-list ${getRightBackgroundColor()} relative`}>
+        <div className={`word-list ${getRightBackgroundColor()} relative no-highlight`}>
           <div className="flex justify-between items-center mb-2">
-            <div className="word-count">
+            <div className="word-count no-highlight">
               {displayRightWords.length > 0 && displayRightWords.length <= 10 && displayRightWords.every(word => word.includes(': '))
                 ? 'Profile Results' 
                 : `${displayRightWords.length.toLocaleString()} words`}
             </div>
             <button
               onClick={() => handleExport(displayRightWords, 'right')}
-              className="export-btn"
+              className="export-btn no-highlight"
               disabled={displayRightWords.length === 0}
             >
               Export
@@ -508,7 +499,7 @@ const FilterPage: React.FC = () => {
 
           <div className="overflow-y-auto h-full">
             {displayRightWords.map((word, index) => (
-              <div key={index} className={`text-base py-1 ${getTextColor(getRightBackgroundColor())}`}>
+              <div key={index} className={`text-base py-1 no-highlight ${getTextColor(getRightBackgroundColor())}`}>
                 {word}
               </div>
             ))}
@@ -529,15 +520,15 @@ const FilterPage: React.FC = () => {
 
       {/* NEW: AI Reading Display */}
       {aiReading && (
-        <div className="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg mb-4 border border-purple-500">
+        <div className="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg mb-4 border border-purple-500 no-highlight">
           <div className="flex items-center mb-3">
-            <span className="text-2xl mr-2">🤖</span>
-            <h3 className="text-xl font-semibold text-white">AI Reading</h3>
+            <span className="text-2xl mr-2 no-highlight">🤖</span>
+            <h3 className="text-xl font-semibold text-white no-highlight">AI Reading</h3>
           </div>
-          <p className="text-white text-lg leading-relaxed">{aiReading}</p>
+          <p className="text-white text-lg leading-relaxed no-highlight">{aiReading}</p>
           <button
             onClick={() => setAiReading('')}
-            className="mt-3 text-purple-300 hover:text-white text-sm underline"
+            className="mt-3 text-purple-300 hover:text-white text-sm underline no-highlight"
           >
             Clear Reading
           </button>
@@ -562,7 +553,7 @@ const FilterPage: React.FC = () => {
               aria-label="Choose left option"
             >
               {filterState.confirmedSide && (
-                <span className={`text-2xl font-bold ${filterState.confirmedSide === 'L' ? 'text-red-400' : 'text-green-400'}`}>
+                <span className={`text-2xl font-bold no-highlight ${filterState.confirmedSide === 'L' ? 'text-red-400' : 'text-green-400'}`}>
                   {filterState.confirmedSide === 'L' ? 'NO' : 'YES'}
                 </span>
               )}
@@ -583,7 +574,7 @@ const FilterPage: React.FC = () => {
               aria-label="Choose right option"
             >
               {filterState.confirmedSide && (
-                <span className={`text-2xl font-bold ${filterState.confirmedSide === 'R' ? 'text-red-400' : 'text-green-400'}`}>
+                <span className={`text-2xl font-bold no-highlight ${filterState.confirmedSide === 'R' ? 'text-red-400' : 'text-green-400'}`}>
                   {filterState.confirmedSide === 'R' ? 'NO' : 'YES'}
                 </span>
               )}
@@ -593,7 +584,7 @@ const FilterPage: React.FC = () => {
 
         {/* Current Letter - Overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={`letter-bubble ${filterState.isDynamicMode ? 'text-red-500' : ''}`}>
+          <div className={`letter-bubble no-highlight ${filterState.isDynamicMode ? 'text-red-500' : ''}`}>
             {shouldShowPsychologicalQuestions ? 'L' : filterState.currentLetter}
           </div>
         </div>
@@ -601,7 +592,7 @@ const FilterPage: React.FC = () => {
         {/* Right Button Label - Overlay */}
         {shouldShowPsychologicalQuestions && (
           <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
-            <div className="letter-bubble text-blue-400">
+            <div className="letter-bubble no-highlight text-blue-400">
               R
             </div>
           </div>
@@ -610,7 +601,7 @@ const FilterPage: React.FC = () => {
         {/* Side Offer Letter - Overlay */}
         {filterState.sideOfferLetter && !shouldShowPsychologicalQuestions && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
-            <div className="bg-yellow-600 text-black px-3 py-1 rounded-lg text-sm font-semibold">
+            <div className="bg-yellow-600 text-black px-3 py-1 rounded-lg text-sm font-semibold no-highlight">
               Side Offer: {filterState.sideOfferLetter}
             </div>
           </div>
@@ -619,42 +610,14 @@ const FilterPage: React.FC = () => {
         {/* Long Press Instructions - Overlay */}
         {filterState.sideOfferLetter && !shouldShowPsychologicalQuestions && (
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
-            <div className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
+            <div className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm no-highlight">
               Long press to confirm side
             </div>
           </div>
         )}
       </div>
 
-      {/* Progress Indicator */}
-      <div className="text-center mt-4">
-        <div className="text-sm text-gray-400">
-          {filterState.isDynamicMode && filterState.confirmedSide ? (
-            <>Progress: {filterState.letterIndex} letters (Most Frequent mode)</>
-          ) : (
-            <>Progress: {filterState.letterIndex}/{getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence.length || 26} letters</>
-          )}
-        </div>
-        {filterState.sequence.length > 0 && (
-          <div className="text-xs text-gray-500 mt-2">
-            {filterState.isDynamicMode && filterState.confirmedSide ? (
-              <>Dynamic Sequence: {filterState.dynamicSequence.join(' ')}</>
-            ) : (
-              <>Sequence: {filterState.sequence.join(' ')}</>
-            )}
-          </div>
-        )}
-        {!filterState.confirmedSide && (
-          <div className="text-xs text-gray-500 mt-2">
-            <span className="inline-block bg-dark-grey px-2 py-1 rounded">Both lists below are valid interpretations of your choices.</span>
-          </div>
-        )}
-        {filterState.confirmedSide && (
-          <div className="text-xs text-green-400 mt-2">
-            <span className="inline-block bg-green-900 px-2 py-1 rounded">Side confirmed: {filterState.confirmedSide === 'L' ? 'Left' : 'Right'} = {filterState.confirmedSideValue}</span>
-          </div>
-        )}
-      </div>
+      {/* Progress Indicator - Removed to prevent text highlighting during long press */}
     </div>
   );
 };
