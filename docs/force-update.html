@@ -3,32 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deployment Test</title>
+    <title>Force Update Test</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .success { color: green; }
-        .error { color: red; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
     </style>
 </head>
 <body>
-    <h1>Deployment Test Page</h1>
-    <p>If you can see this page, the deployment is working.</p>
-    
-    <h2>Cache Clearing</h2>
-    <button onclick="clearCache()">Clear Cache</button>
-    <div id="status"></div>
-    
-    <h2>Asset Test</h2>
-    <p>Testing if new assets load:</p>
-    <div id="asset-test"></div>
+    <div class="container">
+        <h1>🚀 Force Update Test</h1>
+        <p>This page was created at: <strong>$(date)</strong></p>
+        
+        <h2>Current Status</h2>
+        <div id="status">Checking deployment...</div>
+        
+        <h2>Actions</h2>
+        <button onclick="clearAllCaches()">Clear All Caches</button>
+        <button onclick="testMainApp()">Test Main App</button>
+        
+        <h2>Asset Test</h2>
+        <div id="asset-test"></div>
+    </div>
     
     <script>
-        async function clearCache() {
+        // Check if this page loads (deployment test)
+        document.getElementById('status').innerHTML = '<p class="success">✅ This page loaded successfully - deployment is working!</p>';
+        
+        async function clearAllCaches() {
             const status = document.getElementById('status');
-            status.innerHTML = '<p>Clearing cache...</p>';
+            status.innerHTML = '<p>Clearing all caches...</p>';
             
             try {
-                // Unregister service worker
+                // Unregister all service workers
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
                     for (let registration of registrations) {
@@ -51,12 +61,15 @@
                 sessionStorage.clear();
                 status.innerHTML += '<p class="success">✓ Local storage cleared</p>';
                 
-                status.innerHTML += '<p class="success"><strong>Cache cleared successfully!</strong></p>';
-                status.innerHTML += '<p><a href="index.html">Go to main app</a></p>';
+                status.innerHTML += '<p class="success"><strong>🎉 All caches cleared successfully!</strong></p>';
                 
             } catch (error) {
                 status.innerHTML += `<p class="error">Error: ${error.message}</p>`;
             }
+        }
+        
+        function testMainApp() {
+            window.open('index.html', '_blank');
         }
         
         // Test asset loading
@@ -64,20 +77,20 @@
             const assetTest = document.getElementById('asset-test');
             
             try {
-                // Test loading the new JS file
+                // Test loading the main JS file
                 const response = await fetch('assets/main-b927b066.js');
                 if (response.ok) {
-                    assetTest.innerHTML += '<p class="success">✓ New JS file loads successfully</p>';
+                    assetTest.innerHTML += '<p class="success">✅ New JS file loads successfully</p>';
                 } else {
-                    assetTest.innerHTML += '<p class="error">✗ New JS file failed to load</p>';
+                    assetTest.innerHTML += '<p class="error">❌ New JS file failed to load</p>';
                 }
                 
                 // Test loading the CSS file
                 const cssResponse = await fetch('assets/index-a68370b0.css');
                 if (cssResponse.ok) {
-                    assetTest.innerHTML += '<p class="success">✓ New CSS file loads successfully</p>';
+                    assetTest.innerHTML += '<p class="success">✅ New CSS file loads successfully</p>';
                 } else {
-                    assetTest.innerHTML += '<p class="error">✗ New CSS file failed to load</p>';
+                    assetTest.innerHTML += '<p class="error">❌ New CSS file failed to load</p>';
                 }
                 
             } catch (error) {
