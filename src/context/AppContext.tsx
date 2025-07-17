@@ -130,7 +130,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // Apply the current choice to get the remaining words
       const tempFilterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
         : resetFilter();
       wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
       
@@ -193,7 +193,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // Now get the filtered words for the current state
       const currentFilterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, newDynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, newDynamicSequence)
         : resetFilter();
       
       return {
@@ -254,18 +254,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     
     case 'RESET_FILTER':
-      // Always use the original letter sequence for reset
-      const resetSequence = getSequenceById(state.userPreferences.originalLetterSequence);
+      // Use the current selected letter sequence for reset (not the original)
+      const resetSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const resetLetterSequence = resetSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const resetFilterResult = resetFilter(resetLetterSequence);
       
-      // Also reset the selectedLetterSequence back to the original
       return {
         ...state,
-        userPreferences: {
-          ...state.userPreferences,
-          selectedLetterSequence: state.userPreferences.originalLetterSequence
-        },
         filterState: {
           currentLetter: resetFilterResult.currentLetter,
           sequence: resetFilterResult.sequence,
