@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Deployment Test Page</h1>
+    <p>If you can see this page, the deployment is working.</p>
+    
+    <h2>Cache Clearing</h2>
+    <button onclick="clearCache()">Clear Cache</button>
+    <div id="status"></div>
+    
+    <h2>Asset Test</h2>
+    <p>Testing if new assets load:</p>
+    <div id="asset-test"></div>
+    
+    <script>
+        async function clearCache() {
+            const status = document.getElementById('status');
+            status.innerHTML = '<p>Clearing cache...</p>';
+            
+            try {
+                // Unregister service worker
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        status.innerHTML += '<p class="success">✓ Service worker unregistered</p>';
+                    }
+                }
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (let cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        status.innerHTML += `<p class="success">✓ Cache "${cacheName}" deleted</p>`;
+                    }
+                }
+                
+                // Clear localStorage and sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                status.innerHTML += '<p class="success">✓ Local storage cleared</p>';
+                
+                status.innerHTML += '<p class="success"><strong>Cache cleared successfully!</strong></p>';
+                status.innerHTML += '<p><a href="index.html">Go to main app</a></p>';
+                
+            } catch (error) {
+                status.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Test asset loading
+        async function testAssets() {
+            const assetTest = document.getElementById('asset-test');
+            
+            try {
+                // Test loading the new JS file
+                const response = await fetch('assets/main-b927b066.js');
+                if (response.ok) {
+                    assetTest.innerHTML += '<p class="success">✓ New JS file loads successfully</p>';
+                } else {
+                    assetTest.innerHTML += '<p class="error">✗ New JS file failed to load</p>';
+                }
+                
+                // Test loading the CSS file
+                const cssResponse = await fetch('assets/index-a68370b0.css');
+                if (cssResponse.ok) {
+                    assetTest.innerHTML += '<p class="success">✓ New CSS file loads successfully</p>';
+                } else {
+                    assetTest.innerHTML += '<p class="error">✗ New CSS file failed to load</p>';
+                }
+                
+            } catch (error) {
+                assetTest.innerHTML += `<p class="error">Asset test error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run asset test on page load
+        testAssets();
+    </script>
+</body>
+</html> 
