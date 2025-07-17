@@ -93,6 +93,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newSequence = [...state.filterState.sequence, choice];
       const newLetterIndex = state.filterState.letterIndex + 1;
       
+      console.log('🎯 BINARY CHOICE:', {
+        choice,
+        currentLetter: state.filterState.currentLetter,
+        sequence: newSequence.join(''),
+        letterIndex: newLetterIndex
+      });
+      
       // Get the current letter sequence
       const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       let letterSequence = currentSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -116,13 +123,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         : resetFilter();
       wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
       
-      console.log('MAKE_BINARY_CHOICE: Words for analysis:', {
-        leftWordsCount: tempFilterResult.leftWords.length,
-        rightWordsCount: tempFilterResult.rightWords.length,
-        totalWordsForAnalysis: wordsForAnalysis.length,
-        confirmedSide: state.filterState.confirmedSide,
-        confirmedSideValue: state.filterState.confirmedSideValue
-      });
+      // Debug info for binary choice
       
       // Get next letter (predefined or dynamic)
       // For "Most Frequent" sequence, use the sequence length as the index
@@ -357,12 +358,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // Apply the current sequence filtering to preserve the previous choices
       if (state.filterState.sequence.length > 0) {
-        console.log('CONFIRM_SIDE: Applying sequence filtering:', {
-          sequence: state.filterState.sequence,
-          originalSequence: getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence,
-          wordCount: wordsForAnalysis.length
-        });
-        
         wordsForAnalysis = wordsForAnalysis.filter(word => {
           const upperWord = word.toUpperCase();
           for (let i = 0; i < state.filterState.sequence.length; i++) {
@@ -373,17 +368,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
             const choice = state.filterState.sequence[i];
             const hasLetter = upperWord.includes(letter);
             
-            console.log(`Checking word "${word}": letter="${letter}", choice="${choice}", hasLetter=${hasLetter}`);
-            
             if (choice === 'L' && !hasLetter) return false;
             if (choice === 'R' && hasLetter) return false;
           }
           return true;
-        });
-        
-        console.log('CONFIRM_SIDE: After filtering:', {
-          filteredWordCount: wordsForAnalysis.length,
-          filteredWords: wordsForAnalysis.slice(0, 10) // Show first 10 for debugging
         });
       }
       
@@ -419,13 +407,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         letterIndex: newDynamicSequence.length // Update letter index
       };
 
-      console.log('CONFIRM_SIDE: Final state update:', {
-        confirmedSide: newFilterState.confirmedSide,
-        confirmedSideValue: newFilterState.confirmedSideValue,
-        sideOfferLetter: newFilterState.sideOfferLetter,
-        isDynamicMode: newFilterState.isDynamicMode,
-        currentLetter: newFilterState.currentLetter
-      });
+      // Final state update for side confirmation
 
       // NEW: Decode psychological profile after side confirmation
       const updatedState = {
