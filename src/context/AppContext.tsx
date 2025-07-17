@@ -105,43 +105,73 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // Get current letter
       const currentLetter = state.filterState.currentLetter;
       
-      // For "Most Frequent" sequence, analyze frequency on the remaining words
-      // For dynamic letter selection, we need to analyze frequency on the words that remain
-      // after the current choice, but before we know the next letter
+      // FIX: For Most Frequent mode, we need to handle the transition differently
+      // The issue is that we're trying to determine the next letter before properly applying the current choice
       let wordsForAnalysis: string[] = [];
+      let nextLetterInfo: { letter: string; isDynamic: boolean };
       
-      // Always use filterWords to ensure confirmed side filtering is applied correctly
-      const tempFilterResult = state.selectedWordList 
-        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
-        : resetFilter();
-      wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
-      
-      console.log('MAKE_BINARY_CHOICE: Words for analysis:', {
-        leftWordsCount: tempFilterResult.leftWords.length,
-        rightWordsCount: tempFilterResult.rightWords.length,
-        totalWordsForAnalysis: wordsForAnalysis.length,
-        confirmedSide: state.filterState.confirmedSide,
-        confirmedSideValue: state.filterState.confirmedSideValue
-      });
-      
-      // Get next letter (predefined or dynamic)
-      // For "Most Frequent" sequence, use the sequence length as the index
-      const letterIndexForNext = letterSequence === '' ? newSequence.length : newLetterIndex;
-      
-      // Create a temporary used letters set that includes the current letter for frequency analysis
-      const tempUsedLetters = new Set(state.filterState.usedLetters);
-      tempUsedLetters.add(currentLetter);
-      
-      // Ensure we use empty string for Most Frequent mode
-      const effectiveLetterSequence = letterSequence === '' ? '' : letterSequence;
-      
-      const nextLetterInfo = getNextLetterWithDynamic(
-        letterIndexForNext,
-        effectiveLetterSequence,
-        wordsForAnalysis,
-        tempUsedLetters, // Use used letters including current letter
-        state.userPreferences.mostFrequentFilter
-      );
+      if (letterSequence === '') {
+        // Most Frequent mode - handle differently
+        console.log('MAKE_BINARY_CHOICE: Most Frequent mode detected');
+        
+        // First, apply the current choice to get the remaining words
+        const tempFilterResult = state.selectedWordList 
+          ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
+          : resetFilter();
+        wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
+        
+        console.log('MAKE_BINARY_CHOICE: Words after current choice:', {
+          leftWordsCount: tempFilterResult.leftWords.length,
+          rightWordsCount: tempFilterResult.rightWords.length,
+          totalWordsForAnalysis: wordsForAnalysis.length,
+          confirmedSide: state.filterState.confirmedSide,
+          confirmedSideValue: state.filterState.confirmedSideValue
+        });
+        
+        // Create a temporary used letters set that includes the current letter for frequency analysis
+        const tempUsedLetters = new Set(state.filterState.usedLetters);
+        tempUsedLetters.add(currentLetter);
+        
+        // Get next letter from the remaining words
+        nextLetterInfo = getNextLetterWithDynamic(
+          newSequence.length, // Use sequence length as index for Most Frequent
+          '', // Empty sequence for Most Frequent
+          wordsForAnalysis,
+          tempUsedLetters,
+          state.userPreferences.mostFrequentFilter
+        );
+        
+        console.log('MAKE_BINARY_CHOICE: Next letter info for Most Frequent:', nextLetterInfo);
+      } else {
+        // Predefined sequence mode - use original logic
+        const tempFilterResult = state.selectedWordList 
+          ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
+          : resetFilter();
+        wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
+        
+        console.log('MAKE_BINARY_CHOICE: Words for analysis (predefined):', {
+          leftWordsCount: tempFilterResult.leftWords.length,
+          rightWordsCount: tempFilterResult.rightWords.length,
+          totalWordsForAnalysis: wordsForAnalysis.length,
+          confirmedSide: state.filterState.confirmedSide,
+          confirmedSideValue: state.filterState.confirmedSideValue
+        });
+        
+        // Get next letter (predefined or dynamic)
+        const letterIndexForNext = newLetterIndex;
+        
+        // Create a temporary used letters set that includes the current letter for frequency analysis
+        const tempUsedLetters = new Set(state.filterState.usedLetters);
+        tempUsedLetters.add(currentLetter);
+        
+        nextLetterInfo = getNextLetterWithDynamic(
+          letterIndexForNext,
+          letterSequence,
+          wordsForAnalysis,
+          tempUsedLetters,
+          state.userPreferences.mostFrequentFilter
+        );
+      }
       
       // Add current letter to used letters AFTER getting the next letter
       const newUsedLetters = new Set(state.filterState.usedLetters);
