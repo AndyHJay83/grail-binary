@@ -29,8 +29,23 @@ export const filterWords = (
   
   // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
   if (letterSequence === '') {
-    currentLetter = dynamicSequence[currentLetterIndex] || '';
+    // CRITICAL FIX: For Most Frequent mode, the current letter should be the last letter in the sequence
+    // that the user is currently making a choice about
+    if (sequence.length > 0) {
+      // The current letter is the one corresponding to the current choice being made
+      currentLetter = dynamicSequence[sequence.length - 1] || '';
+    } else {
+      // No sequence yet, use the first letter
+      currentLetter = dynamicSequence[0] || '';
+    }
     isComplete = currentLetterIndex >= dynamicSequence.length;
+    
+    console.log('Most Frequent mode - current letter determination:', {
+      sequenceLength: sequence.length,
+      dynamicSequence,
+      currentLetter,
+      currentLetterIndex
+    });
   } else if (currentLetterIndex < letterSequence.length) {
     // Still in predefined sequence
     currentLetter = letterSequence[currentLetterIndex] || '';
@@ -62,6 +77,15 @@ export const filterWords = (
     // Add the current letter to the working sequence if it's missing
     workingDynamicSequence.push(currentLetter);
   }
+
+  console.log('Filtering with Most Frequent mode:', {
+    letterSequence,
+    dynamicSequence,
+    workingDynamicSequence,
+    currentLetter,
+    sequenceLength: sequence.length,
+    currentLetterIndex
+  });
 
   // If a side is confirmed, use simple YES/NO filtering
   if (confirmedSide && confirmedSideValue) {
