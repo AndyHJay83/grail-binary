@@ -114,19 +114,21 @@ const FilterPage: React.FC = () => {
     const sideOfferLetter = findSideOfferLetter(allWords);
     console.log('Side offer letter found:', sideOfferLetter);
     
-    // Only update if the letter has changed
+    // FIX: Prevent infinite loop by only updating if there's an actual change
+    // and not clearing if we already have no side offer letter
     if (sideOfferLetter !== filterState.sideOfferLetter) {
       if (sideOfferLetter) {
         console.log('Setting side offer letter:', sideOfferLetter);
         setSideOfferLetter(sideOfferLetter);
-      } else {
+      } else if (filterState.sideOfferLetter) {
+        // Only clear if we currently have a side offer letter
         console.log('Clearing side offer letter');
         setSideOfferLetter('');
       }
     } else {
       console.log('Side offer letter unchanged:', sideOfferLetter);
     }
-  }, [filterState.leftWords, filterState.rightWords, userPreferences.confirmNoLetter, filterState.confirmedSide, filterState.sideOfferLetter, setSideOfferLetter]);
+  }, [filterState.leftWords, filterState.rightWords, userPreferences.confirmNoLetter, filterState.confirmedSide]);
 
   // Long press handlers
   const startLongPress = (side: 'L' | 'R', timerRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
@@ -436,7 +438,7 @@ const FilterPage: React.FC = () => {
         <div className="bg-dark-grey p-6 rounded-lg mb-4 no-highlight">
           <div className="text-center">
             <div className="text-lg font-medium no-highlight">
-              {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
+                {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
             </div>
           </div>
         </div>
