@@ -111,7 +111,8 @@ const FilterPage: React.FC = () => {
 
     console.log('Looking for side offer letter in', allWords.length, 'words');
     console.log('Sample words:', allWords.slice(0, 5));
-    const sideOfferLetter = findSideOfferLetter(allWords);
+    console.log('Used letters for side offer check:', Array.from(filterState.usedLetters));
+    const sideOfferLetter = findSideOfferLetter(allWords, filterState.usedLetters);
     console.log('Side offer letter found:', sideOfferLetter);
     
     // FIX: Prevent infinite loop by only updating if there's an actual change
@@ -348,67 +349,20 @@ const FilterPage: React.FC = () => {
     return 'text-white';
   };
 
-  // Determine which words to show based on confirmed side
+  // Always show both interpretations - no more confirmed side logic
   const getWordsToShow = () => {
     console.log('getWordsToShow called:', {
-      confirmedSide: filterState.confirmedSide,
-      confirmedSideValue: filterState.confirmedSideValue,
       leftWordsCount: filterState.leftWords.length,
       rightWordsCount: filterState.rightWords.length,
       psychologicalAnswers: filterState.psychologicalAnswers,
       psychologicalProfile: filterState.psychologicalProfile
     });
 
-    if (!filterState.confirmedSide) {
-      console.log('No side confirmed - showing both interpretations');
-      return {
-        leftWords: filterState.leftWords,
-        rightWords: filterState.rightWords
-      };
-    }
-
-    // If side is confirmed, show only the correct interpretation
-    // When R is confirmed as NO, L becomes YES, so show left words
-    // When L is confirmed as NO, R becomes YES, so show right words
-    if (filterState.confirmedSide === 'R' && filterState.confirmedSideValue === 'NO') {
-      console.log('R confirmed as NO, L is YES - showing left words');
-      
-      // Check if we have psychological profile to display
-      if (filterState.psychologicalProfile && filterState.psychologicalProfile.decodedProfile) {
-        console.log('Showing psychological profile in right wordlist');
-        return {
-          leftWords: filterState.leftWords,
-          rightWords: filterState.psychologicalProfile.decodedProfile // Show profile in right (empty) wordlist
-        };
-      }
-      
-      return {
-        leftWords: filterState.leftWords,
-        rightWords: []
-      };
-    } else if (filterState.confirmedSide === 'L' && filterState.confirmedSideValue === 'NO') {
-      console.log('L confirmed as NO, R is YES - showing right words');
-      
-      // Check if we have psychological profile to display
-      if (filterState.psychologicalProfile && filterState.psychologicalProfile.decodedProfile) {
-        console.log('Showing psychological profile in left wordlist');
-        return {
-          leftWords: filterState.psychologicalProfile.decodedProfile, // Show profile in left (empty) wordlist
-          rightWords: filterState.rightWords
-        };
-      }
-      
-      return {
-        leftWords: [],
-        rightWords: filterState.rightWords
-      };
-    } else {
-      console.log('Unexpected confirmed side state:', { confirmedSide: filterState.confirmedSide, confirmedSideValue: filterState.confirmedSideValue });
-      return {
-        leftWords: filterState.leftWords,
-        rightWords: filterState.rightWords
-      };
-    }
+    console.log('Showing both interpretations');
+    return {
+      leftWords: filterState.leftWords,
+      rightWords: filterState.rightWords
+    };
   };
 
   const { leftWords: displayLeftWords, rightWords: displayRightWords } = getWordsToShow();
@@ -587,7 +541,7 @@ const FilterPage: React.FC = () => {
         {/* Current Letter - Overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className={`letter-bubble no-highlight ${filterState.isDynamicMode ? 'text-red-500' : ''}`}>
-            {shouldShowPsychologicalQuestions ? 'L' : filterState.currentLetter}
+            {shouldShowPsychologicalQuestions ? 'L' : (filterState.currentLetter || '✓')}
           </div>
         </div>
 

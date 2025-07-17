@@ -94,29 +94,29 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newSequence = [...state.filterState.sequence, choice];
       const newLetterIndex = state.filterState.letterIndex + 1;
       
-      // OPTION 4: Smart Hybrid - Use original sequence for predefined letters, Most Frequent for beyond
-      const originalSequence = getSequenceById(state.userPreferences.originalLetterSequence);
-      const originalLetterSequence = originalSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      // FIX: Use the current selected letter sequence instead of the original
+      const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      const currentLetterSequence = currentSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       
-      // Check if we're still within the original sequence bounds
-      const hasMoreOriginalLetters = newLetterIndex < originalLetterSequence.length;
+      // Check if we're still within the current sequence bounds
+      const hasMoreCurrentLetters = newLetterIndex < currentLetterSequence.length;
       
-      console.log('MAKE_BINARY_CHOICE: Smart Hybrid Check:', {
+      console.log('MAKE_BINARY_CHOICE: Current Sequence Check:', {
         newLetterIndex,
-        originalSequenceLength: originalLetterSequence.length,
-        hasMoreOriginalLetters,
-        originalSequence: originalLetterSequence
+        currentSequenceLength: currentLetterSequence.length,
+        hasMoreCurrentLetters,
+        currentSequence: currentLetterSequence
       });
       
       let letterSequence: string;
       
-      if (hasMoreOriginalLetters) {
-        // Continue with original sequence
-        console.log('MAKE_BINARY_CHOICE: Using original sequence');
-        letterSequence = originalLetterSequence;
+      if (hasMoreCurrentLetters) {
+        // Continue with current sequence
+        console.log('MAKE_BINARY_CHOICE: Using current sequence');
+        letterSequence = currentLetterSequence;
       } else {
-        // Original sequence exhausted - use Most Frequent mode
-        console.log('MAKE_BINARY_CHOICE: Original sequence exhausted, using Most Frequent');
+        // Current sequence exhausted - use Most Frequent mode
+        console.log('MAKE_BINARY_CHOICE: Current sequence exhausted, using Most Frequent');
         letterSequence = ''; // Empty sequence for Most Frequent mode
       }
       
@@ -199,7 +199,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         filterState: {
-          currentLetter: nextLetterInfo.letter,
+          currentLetter: nextLetterInfo.letter || '', // Allow empty letters when no more letters to offer
           sequence: newSequence,
           leftWords: currentFilterResult.leftWords,
           rightWords: currentFilterResult.rightWords,
@@ -208,8 +208,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           dynamicSequence: newDynamicSequence,
           isDynamicMode: nextLetterInfo.isDynamic,
           sideOfferLetter: state.filterState.sideOfferLetter,
-          confirmedSide: state.filterState.confirmedSide,
-          confirmedSideValue: state.filterState.confirmedSideValue,
+          confirmedSide: state.filterState.confirmedSide, // RESTORED: Needed for long press functionality
+          confirmedSideValue: state.filterState.confirmedSideValue, // RESTORED: Needed for long press functionality
           // Preserve psychological profiling data
           psychologicalAnswers: state.filterState.psychologicalAnswers,
           psychologicalProfile: state.filterState.psychologicalProfile
@@ -228,7 +228,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       if (setLetterSequence === '' && action.payload?.words.length > 0) {
         // For "Most Frequent" sequence, we'll get the first letter in the component
         // For now, use a placeholder that will be updated
-        setCurrentLetter = 'A'; // Will be updated when component loads
+        setCurrentLetter = ''; // Will be updated when component loads
         setIsDynamicMode = true;
       }
       
@@ -245,8 +245,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           dynamicSequence: resetResult.dynamicSequence,
           isDynamicMode: setIsDynamicMode,
           sideOfferLetter: resetResult.sideOfferLetter,
-          confirmedSide: resetResult.confirmedSide,
-          confirmedSideValue: resetResult.confirmedSideValue,
+          confirmedSide: resetResult.confirmedSide, // RESTORED: Needed for long press functionality
+          confirmedSideValue: resetResult.confirmedSideValue, // RESTORED: Needed for long press functionality
           // Preserve psychological profiling data
           psychologicalAnswers: state.filterState.psychologicalAnswers,
           psychologicalProfile: state.filterState.psychologicalProfile
@@ -276,8 +276,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           dynamicSequence: resetFilterResult.dynamicSequence,
           isDynamicMode: resetFilterResult.isDynamicMode,
           sideOfferLetter: resetFilterResult.sideOfferLetter,
-          confirmedSide: resetFilterResult.confirmedSide,
-          confirmedSideValue: resetFilterResult.confirmedSideValue,
+          confirmedSide: resetFilterResult.confirmedSide, // RESTORED: Needed for long press functionality
+          confirmedSideValue: resetFilterResult.confirmedSideValue, // RESTORED: Needed for long press functionality
           // Preserve psychological profiling data
           psychologicalAnswers: state.filterState.psychologicalAnswers,
           psychologicalProfile: state.filterState.psychologicalProfile
@@ -320,8 +320,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           dynamicSequence: updateFilterResult.dynamicSequence,
           isDynamicMode: updateFilterResult.isDynamicMode,
           sideOfferLetter: updateFilterResult.sideOfferLetter,
-          confirmedSide: updateFilterResult.confirmedSide,
-          confirmedSideValue: updateFilterResult.confirmedSideValue,
+          confirmedSide: updateFilterResult.confirmedSide, // RESTORED: Needed for long press functionality
+          confirmedSideValue: updateFilterResult.confirmedSideValue, // RESTORED: Needed for long press functionality
           // Preserve psychological profiling data
           psychologicalAnswers: state.filterState.psychologicalAnswers,
           psychologicalProfile: state.filterState.psychologicalProfile
@@ -337,7 +337,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // Only initialize if we don't already have used letters
       const usedLetters = state.filterState.usedLetters.size > 0 
         ? state.filterState.usedLetters 
-        : new Set<string>([firstLetter]);
+        : (firstLetter ? new Set<string>([firstLetter]) : new Set<string>());
       
 
       
@@ -345,8 +345,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         filterState: {
           ...state.filterState,
-          currentLetter: firstLetter,
-          dynamicSequence: [firstLetter],
+          currentLetter: firstLetter || '',
+          dynamicSequence: firstLetter ? [firstLetter] : [],
           isDynamicMode: true,
           usedLetters: usedLetters,
           // Preserve psychological profiling data
@@ -477,14 +477,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
         };
       }
       
+      // Prevent empty letters from being set as current letter
+      const currentLetter = nextLetterInfo.letter || 'A'; // Fallback to 'A' if empty
+      
       const newFilterState = {
         ...state.filterState,
-        confirmedSide: side,
-        confirmedSideValue: value,
+        confirmedSide: side, // RESTORED: Needed for long press functionality
+        confirmedSideValue: value, // RESTORED: Needed for long press functionality
         sideOfferLetter: undefined, // Clear the side offer letter
         dynamicSequence: newDynamicSequence,
         usedLetters: newUsedLetters,
-        currentLetter: nextLetterInfo.letter,
+        currentLetter: currentLetter,
         isDynamicMode: nextLetterInfo.isDynamic, // Use the decision from nextLetterInfo
         letterIndex: currentIndex // Update letter index
       };
@@ -738,6 +741,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const firstLetter = selectNextDynamicLetter(state.selectedWordList.words, new Set<string>());
     if (firstLetter) {
       dispatch({ type: 'SET_MOST_FREQUENT_INITIALIZED', payload: { firstLetter } });
+    } else {
+      // If no letter is found (e.g., very few words), set empty letter
+      dispatch({ type: 'SET_MOST_FREQUENT_INITIALIZED', payload: { firstLetter: '' } });
     }
   };
 

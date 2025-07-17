@@ -55,126 +55,12 @@ export const filterWords = (
     };
   }
 
-  // If a side is confirmed, use simple YES/NO filtering
-  if (confirmedSide && confirmedSideValue) {
-    console.log('Using confirmed side filtering:', { confirmedSide, confirmedSideValue });
-    
-    // Apply simple YES/NO filtering based on the confirmed side
-    const filteredWords: string[] = [];
-    
-    wordList.forEach(word => {
-      const upperWord = word.toUpperCase();
-      let matchesPattern = true;
-      
-      // Check each letter in the sequence
-      for (let i = 0; i < sequence.length; i++) {
-        let letter: string;
-        
-        // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
-        if (letterSequence === '') {
-          letter = dynamicSequence[i] || '';
-        } else if (i < letterSequence.length) {
-          // Predefined sequence letter
-          letter = letterSequence[i];
-        } else {
-          // Dynamic sequence letter (after predefined sequence)
-          const dynamicIndex = i - letterSequence.length;
-          letter = dynamicSequence[dynamicIndex] || '';
-        }
-        
-        const choice = sequence[i];
-        const hasLetter = upperWord.includes(letter);
-        
-        // Apply confirmed side logic only to actual user choices
-        // The side offer letter that was confirmed as NO should be excluded entirely
-        if (confirmedSide && confirmedSideValue) {
-          console.log(`Filtering word "${word}": letter="${letter}", choice="${choice}", hasLetter=${hasLetter}, confirmedSide=${confirmedSide}, confirmedSideValue=${confirmedSideValue}`);
-          
-          // Skip the side offer letter that was confirmed as NO
-          // This letter should be excluded from consideration entirely
-          // const isSideOfferLetter = false; // We'll determine this based on the sequence context
-          
-          if (confirmedSide === 'R' && confirmedSideValue === 'NO') {
-            // R=NO, L=YES interpretation
-            if (choice === 'R' && hasLetter) {
-              console.log(`  Rejecting: R=NO but word has letter ${letter}`);
-              matchesPattern = false;
-            }
-            if (choice === 'L' && !hasLetter) {
-              console.log(`  Rejecting: L=YES but word doesn't have letter ${letter}`);
-              matchesPattern = false;
-            }
-          } else if (confirmedSide === 'L' && confirmedSideValue === 'NO') {
-            // L=NO, R=YES interpretation
-            if (choice === 'L' && hasLetter) {
-              console.log(`  Rejecting: L=NO but word has letter ${letter}`);
-              matchesPattern = false;
-            }
-            if (choice === 'R' && !hasLetter) {
-              console.log(`  Rejecting: R=YES but word doesn't have letter ${letter}`);
-              matchesPattern = false;
-            }
-          } else if (confirmedSide === 'R' && confirmedSideValue === 'YES') {
-            // R=YES, L=NO interpretation
-            if (choice === 'R' && !hasLetter) {
-              console.log(`  Rejecting: R=YES but word doesn't have letter ${letter}`);
-              matchesPattern = false;
-            }
-            if (choice === 'L' && hasLetter) {
-              console.log(`  Rejecting: L=NO but word has letter ${letter}`);
-              matchesPattern = false;
-            }
-          } else if (confirmedSide === 'L' && confirmedSideValue === 'YES') {
-            // L=YES, R=NO interpretation
-            if (choice === 'L' && !hasLetter) {
-              console.log(`  Rejecting: L=YES but word doesn't have letter ${letter}`);
-              matchesPattern = false;
-            }
-            if (choice === 'R' && hasLetter) {
-              console.log(`  Rejecting: R=NO but word has letter ${letter}`);
-              matchesPattern = false;
-            }
-          }
-        } else {
-          // No confirmed side, use normal dual-interpretation logic
-          if (choice === 'L' && !hasLetter) matchesPattern = false;
-          if (choice === 'R' && hasLetter) matchesPattern = false;
-        }
-      }
-      
-      if (matchesPattern) filteredWords.push(word);
-    });
-    
-    // Return only the correct interpretation based on confirmed side
-    // When R is confirmed as NO, L becomes YES, so show left words
-    // When L is confirmed as NO, R becomes YES, so show right words
-    if ((confirmedSide === 'R' && confirmedSideValue === 'NO') || 
-        (confirmedSide === 'L' && confirmedSideValue === 'YES')) {
-      // Show left words (L=YES interpretation)
-      return {
-        leftWords: filteredWords,
-        rightWords: [],
-        leftCount: filteredWords.length,
-        rightCount: 0,
-        currentLetter,
-        letterIndex: currentLetterIndex,
-        isComplete,
-        sequence
-      };
-    } else {
-      // Show right words (R=YES interpretation)
-      return {
-        leftWords: [],
-        rightWords: filteredWords,
-        leftCount: 0,
-        rightCount: filteredWords.length,
-        currentLetter,
-        letterIndex: currentLetterIndex,
-        isComplete,
-        sequence
-      };
-    }
-  }
+  // DISABLED: Confirmed side filtering logic - now using "no duplicate letters" approach
+  // The confirmed side logic was causing all words to be rejected because it was
+  // applying the confirmed interpretation to ALL letters in the sequence history
+  // Instead, we now use the "no duplicate letters" rule to prevent conflicts
+  
+  // Original dual-interpretation logic for when no side is confirmed
 
   // Original dual-interpretation logic for when no side is confirmed
   const leftWords: string[] = [];
@@ -209,6 +95,13 @@ export const filterWords = (
       }
       
       const choice = sequence[i];
+      
+      // Skip empty letters - they shouldn't be processed
+      if (!letter || letter === '') {
+        console.log(`  Word "${word}": skipping empty letter at position ${i}`);
+        continue;
+      }
+      
       const hasLetter = upperWord.includes(letter);
 
       console.log(`  Word "${word}": choice=${choice}, letter=${letter}, hasLetter=${hasLetter}`);
@@ -300,6 +193,56 @@ export const selectNextDynamicLetter = (
     return null;
   }
   
+  // If we have very few words left (5 or fewer), try to find a differentiating letter
+  if (words.length <= 5) {
+    console.log('Very few words left (5 or fewer) - looking for differentiating letter');
+    
+    // Get all unique letters from the remaining words
+    const lettersInWords = new Set<string>();
+    for (const word of words) {
+      for (const char of word.toUpperCase()) {
+        if (char >= 'A' && char <= 'Z') {
+          lettersInWords.add(char);
+        }
+      }
+    }
+    
+    console.log('Letters in remaining words:', Array.from(lettersInWords).sort());
+    
+    // Check each letter in the alphabet to see if it can differentiate the words
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (const letter of alphabet) {
+      if (usedLetters.has(letter)) {
+        continue; // Skip already used letters
+      }
+      
+      // Check if this letter appears in exactly one of the words
+      let wordsWithLetter = 0;
+      for (const word of words) {
+        if (word.toUpperCase().includes(letter)) {
+          wordsWithLetter++;
+        }
+      }
+      
+      // If the letter appears in exactly one word, it's perfect for differentiation
+      if (wordsWithLetter === 1) {
+        console.log('Found perfect differentiating letter:', letter);
+        return letter;
+      }
+    }
+    
+    // If no perfect differentiating letter found, look for any unused letter that appears in the words
+    for (const letter of lettersInWords) {
+      if (!usedLetters.has(letter)) {
+        console.log('Found unused letter in words:', letter);
+        return letter;
+      }
+    }
+    
+    console.log('No suitable differentiating letter found');
+    return null;
+  }
+  
   const frequency = analyzeLetterFrequency(words);
   
   console.log('Letter frequency:', Object.fromEntries(frequency));
@@ -355,6 +298,26 @@ export const getNextLetterWithDynamic = (
   // If still within predefined sequence
   if (currentIndex < letterSequence.length) {
     const letter = letterSequence[currentIndex];
+    
+    // Check if this letter is already used
+    if (usedLetters.has(letter)) {
+      console.log('Predefined letter already used:', letter, '- skipping to next unused letter');
+      
+      // Skip to next unused letter in sequence
+      for (let i = currentIndex + 1; i < letterSequence.length; i++) {
+        const nextLetter = letterSequence[i];
+        if (!usedLetters.has(nextLetter)) {
+          console.log('Using next unused predefined letter:', nextLetter);
+          return { letter: nextLetter, isDynamic: false };
+        }
+      }
+      
+      // If all predefined letters are used, switch to dynamic
+      console.log('All predefined letters used, switching to dynamic');
+      const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
+      return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
+    }
+    
     console.log('Using predefined letter:', letter);
     return { letter, isDynamic: false };
   }
@@ -373,12 +336,12 @@ export const getNextLetterWithDynamic = (
 
 export const resetFilter = (letterSequence: string = DEFAULT_ALPHABET) => {
   // For "Most Frequent" sequence (empty), we need to get the first dynamic letter
-  let currentLetter = letterSequence[0] || 'A';
+  let currentLetter = letterSequence[0] || '';
   let isDynamicMode = false;
   
   if (letterSequence === '') {
     // This will be set properly when we have the word list
-    currentLetter = 'A'; // Placeholder
+    currentLetter = ''; // No placeholder - will be set when we have words
     isDynamicMode = true;
   }
   
@@ -401,9 +364,10 @@ export const resetFilter = (letterSequence: string = DEFAULT_ALPHABET) => {
 };
 
 // Find a letter that doesn't appear in any of the remaining words (for side offer)
-export const findSideOfferLetter = (words: string[]): string | null => {
+export const findSideOfferLetter = (words: string[], usedLetters: Set<string> = new Set()): string | null => {
   console.log('=== findSideOfferLetter called ===');
   console.log('Words to analyze:', words);
+  console.log('Used letters:', Array.from(usedLetters));
   
   if (words.length === 0) {
     console.log('No words provided - returning null');
@@ -422,17 +386,17 @@ export const findSideOfferLetter = (words: string[]): string | null => {
   
   console.log('Letters found in words:', Array.from(lettersInWords).sort());
   
-  // Find first alphabetical letter that's not in any words (excluding X and Z)
+  // Find first alphabetical letter that's not in any words AND not already used (excluding X and Z)
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWY'; // Excluding X and Z
   console.log('Checking alphabet:', alphabet);
   
   for (const letter of alphabet) {
-    if (!lettersInWords.has(letter)) {
-      console.log('Found missing letter:', letter);
+    if (!lettersInWords.has(letter) && !usedLetters.has(letter)) {
+      console.log('Found unused letter:', letter);
       return letter;
     }
   }
   
-  console.log('No suitable letter found - all letters A-W, Y are present');
+  console.log('No suitable letter found - all letters A-W, Y are present or already used');
   return null; // No suitable letter found
 }; 
