@@ -110,9 +110,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
       let wordsForAnalysis: string[] = [];
       let nextLetterInfo: { letter: string; isDynamic: boolean };
       
-      if (letterSequence === '') {
+      // Check if we're in Most Frequent mode (after predefined sequence is complete)
+      if (letterSequence === '' || newLetterIndex >= letterSequence.length) {
         // Most Frequent mode - handle differently
-        console.log('MAKE_BINARY_CHOICE: Most Frequent mode detected');
+        console.log('MAKE_BINARY_CHOICE: Most Frequent mode detected', {
+          letterSequence,
+          newLetterIndex,
+          letterSequenceLength: letterSequence.length
+        });
         
         // First, apply the current choice to get the remaining words
         const tempFilterResult = state.selectedWordList 
