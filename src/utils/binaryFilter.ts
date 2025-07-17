@@ -19,9 +19,7 @@ export const filterWords = (
   sequence: BinaryChoice[],
   currentLetterIndex: number,
   letterSequence: string = DEFAULT_ALPHABET,
-  dynamicSequence: string[] = [],
-  confirmedSide?: 'L' | 'R',
-  confirmedSideValue?: 'YES' | 'NO'
+  dynamicSequence: string[] = []
 ): FilterResult => {
   // Determine the current letter based on whether we're in predefined or dynamic mode
   let currentLetter: string;
@@ -235,6 +233,15 @@ export const selectNextDynamicLetter = (
     for (const letter of lettersInWords) {
       if (!usedLetters.has(letter)) {
         console.log('Found unused letter in words:', letter);
+        return letter;
+      }
+    }
+    
+    // If no unused letters found in the words, offer any unused letter from the alphabet
+    const fullAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (const letter of fullAlphabet) {
+      if (!usedLetters.has(letter)) {
+        console.log('Found unused letter from alphabet:', letter);
         return letter;
       }
     }
