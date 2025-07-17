@@ -22,6 +22,7 @@ export interface UserPreferences {
     includeTimestamp: boolean;
   };
   selectedLetterSequence: string;
+  originalLetterSequence: string; // NEW: Store the user's original choice
   mostFrequentFilter: boolean;
   selectedWordListId: string;
   confirmNoLetter: boolean;

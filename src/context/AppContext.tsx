@@ -29,6 +29,7 @@ const initialState: AppState = {
       includeTimestamp: false
     },
     selectedLetterSequence: 'full-alphabet',
+    originalLetterSequence: 'full-alphabet', // NEW: Store the original choice
     mostFrequentFilter: true, // Default to ON
     selectedWordListId: 'en-uk', // Default to EN-UK
     confirmNoLetter: true, // NEW: Default to ON
@@ -93,13 +94,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newSequence = [...state.filterState.sequence, choice];
       const newLetterIndex = state.filterState.letterIndex + 1;
       
-      // Get the current letter sequence
+      // Get the current letter sequence - use original sequence for predefined letters
       const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      const originalSequence = getSequenceById(state.userPreferences.originalLetterSequence);
       let letterSequence = currentSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       
-      // If we're in dynamic mode after side confirmation, use empty sequence for Most Frequent
+      // If we're in dynamic mode after side confirmation, use original sequence for predefined letters
+      // and dynamic for letters beyond the original sequence
       if (state.filterState.isDynamicMode && state.filterState.confirmedSide) {
-        letterSequence = '';
+        const originalLetterSequence = originalSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        // Use original sequence for predefined letters, empty for dynamic letters
+        letterSequence = originalLetterSequence;
       }
       
       // Get current letter
@@ -261,11 +266,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     
     case 'RESET_FILTER':
-      const resetSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      // Always use the original letter sequence for reset
+      const resetSequence = getSequenceById(state.userPreferences.originalLetterSequence);
       const resetLetterSequence = resetSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const resetFilterResult = resetFilter(resetLetterSequence);
+      
+      // Also reset the selectedLetterSequence back to the original
       return {
         ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          selectedLetterSequence: state.userPreferences.originalLetterSequence
+        },
         filterState: {
           currentLetter: resetFilterResult.currentLetter,
           sequence: resetFilterResult.sequence,
@@ -297,11 +309,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const updateSequence = getSequenceById(action.payload);
       const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const updateFilterResult = resetFilter(updateLetterSequence);
+      
+      // Store the original sequence if this is the first time selecting it
+      // or if we're resetting to a new sequence (not from Most Frequent mode)
+      const shouldUpdateOriginal = state.userPreferences.originalLetterSequence === 'full-alphabet' || 
+        (state.userPreferences.selectedLetterSequence === 'most-frequent' && action.payload !== 'most-frequent');
+      
       return {
         ...state,
         userPreferences: {
           ...state.userPreferences,
-          selectedLetterSequence: action.payload
+          selectedLetterSequence: action.payload,
+          originalLetterSequence: shouldUpdateOriginal ? action.payload : state.userPreferences.originalLetterSequence
         },
         filterState: {
           currentLetter: updateFilterResult.currentLetter,
@@ -422,24 +441,23 @@ function appReducer(state: AppState, action: AppAction): AppState {
         });
       }
       
-      // Switch to Most Frequent mode by setting letterSequence to empty string
-      // This will make the system use dynamic sequence for all letters
-      const letterSequence = ''; // Empty string = Most Frequent mode
+      // Use the original letter sequence for predefined letters, but allow dynamic mode for beyond
+      const originalSequence = getSequenceById(state.userPreferences.originalLetterSequence);
+      const letterSequence = originalSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       
       // Get the next most frequent letter from the properly filtered word list
       const nextLetterInfo = getNextLetterWithDynamic(
         newDynamicSequence.length, // Use dynamic sequence length as index
-        letterSequence, // Empty string for Most Frequent mode
+        letterSequence, // Use original sequence for predefined letters
         wordsForAnalysis, // Use the filtered word list
         newUsedLetters,
         true // Always enable most frequent filter
       );
       
-      // Also update the user preferences to switch to Most Frequent sequence
-      // This ensures that subsequent MAKE_BINARY_CHOICE calls will use Most Frequent mode
+      // Keep the original sequence selected, don't switch to Most Frequent
       const updatedPreferences = {
-        ...state.userPreferences,
-        selectedLetterSequence: 'most-frequent' // Switch to Most Frequent sequence
+        ...state.userPreferences
+        // Keep selectedLetterSequence as the original sequence
       };
       
       const newFilterState = {
