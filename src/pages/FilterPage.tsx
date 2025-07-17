@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { exportWordList, generateFilename, sanitizeFilename } from '../utils/fileExport';
 import { getBackgroundColor, findSideOfferLetter } from '../utils/binaryFilter';
-// import { generateAiReading } from '../utils/aiService';
 import { BinaryChoice } from '../types';
 import { getSequenceById } from '../data/letterSequences';
 
@@ -328,27 +327,7 @@ const FilterPage: React.FC = () => {
     exportWordList(words, filename);
   };
 
-  // NEW: AI reading generation function - temporarily hidden
-  // const handleGenerateAiReading = async (profileAnswers: string[]) => {
-  //   if (profileAnswers.length === 0) return;
-  //   
-  //   setIsGeneratingReading(true);
-  //   setAiReading(''); // Clear previous reading
-  //   
-  //   try {
-  //     const response = await generateAiReading({
-  //       prompt: 'Generate a psychological reading based on the user\'s binary choice responses.',
-  //       profileAnswers: profileAnswers
-  //     });
-  //     
-  //     setAiReading(response.reading);
-  //   } catch (error) {
-  //     console.error('Error generating AI reading:', error);
-  //     setAiReading('Unable to generate reading at this time. Please try again later.');
-  //   } finally {
-  //     setIsGeneratingReading(false);
-  //   }
-  // };
+  // AI reading function temporarily removed since AI button is hidden
 
   const getLeftBackgroundColor = () => {
     if (!selectedWordList) return 'bg-black';
@@ -489,10 +468,10 @@ const FilterPage: React.FC = () => {
             ))}
           </div>
           
-          {/* AI Button for psychological profile - temporarily hidden */}
+          {/* AI Button temporarily hidden */}
           {/* {displayLeftWords.length > 0 && displayLeftWords.length <= 10 && displayLeftWords.every(word => word.includes(': ')) && (
             <button
-              onClick={() => handleGenerateAiReading(displayLeftWords)}
+              onClick={() => generateAiReading(displayLeftWords)}
               disabled={isGeneratingReading}
               className="absolute bottom-4 right-4 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
@@ -526,10 +505,10 @@ const FilterPage: React.FC = () => {
             ))}
           </div>
           
-          {/* AI Button for psychological profile - temporarily hidden */}
+          {/* AI Button temporarily hidden */}
           {/* {displayRightWords.length > 0 && displayRightWords.length <= 10 && displayRightWords.every(word => word.includes(': ')) && (
             <button
-              onClick={() => handleGenerateAiReading(displayRightWords)}
+              onClick={() => generateAiReading(displayRightWords)}
               disabled={isGeneratingReading}
               className="absolute bottom-4 right-4 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >

@@ -29,23 +29,8 @@ export const filterWords = (
   
   // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
   if (letterSequence === '') {
-    // CRITICAL FIX: For Most Frequent mode, the current letter should be the last letter in the sequence
-    // that the user is currently making a choice about
-    if (sequence.length > 0) {
-      // The current letter is the one corresponding to the current choice being made
-      currentLetter = dynamicSequence[sequence.length - 1] || '';
-    } else {
-      // No sequence yet, use the first letter
-      currentLetter = dynamicSequence[0] || '';
-    }
+    currentLetter = dynamicSequence[currentLetterIndex] || '';
     isComplete = currentLetterIndex >= dynamicSequence.length;
-    
-    console.log('Most Frequent mode - current letter determination:', {
-      sequenceLength: sequence.length,
-      dynamicSequence,
-      currentLetter,
-      currentLetterIndex
-    });
   } else if (currentLetterIndex < letterSequence.length) {
     // Still in predefined sequence
     currentLetter = letterSequence[currentLetterIndex] || '';
@@ -70,23 +55,6 @@ export const filterWords = (
     };
   }
 
-  // CRITICAL FIX: For Most Frequent mode, ensure we have a working dynamic sequence
-  // that includes the current letter if it's missing
-  let workingDynamicSequence = [...dynamicSequence];
-  if (letterSequence === '' && currentLetter && !workingDynamicSequence.includes(currentLetter)) {
-    // Add the current letter to the working sequence if it's missing
-    workingDynamicSequence.push(currentLetter);
-  }
-
-  console.log('Filtering with Most Frequent mode:', {
-    letterSequence,
-    dynamicSequence,
-    workingDynamicSequence,
-    currentLetter,
-    sequenceLength: sequence.length,
-    currentLetterIndex
-  });
-
   // If a side is confirmed, use simple YES/NO filtering
   if (confirmedSide && confirmedSideValue) {
     console.log('Using confirmed side filtering:', { confirmedSide, confirmedSideValue });
@@ -102,16 +70,16 @@ export const filterWords = (
       for (let i = 0; i < sequence.length; i++) {
         let letter: string;
         
-        // For "Most Frequent" sequence (empty letterSequence), use working dynamic sequence for all letters
+        // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
         if (letterSequence === '') {
-          letter = workingDynamicSequence[i] || '';
+          letter = dynamicSequence[i] || '';
         } else if (i < letterSequence.length) {
           // Predefined sequence letter
           letter = letterSequence[i];
         } else {
           // Dynamic sequence letter (after predefined sequence)
           const dynamicIndex = i - letterSequence.length;
-          letter = workingDynamicSequence[dynamicIndex] || '';
+          letter = dynamicSequence[dynamicIndex] || '';
         }
         
         const choice = sequence[i];
@@ -221,16 +189,16 @@ export const filterWords = (
     for (let i = 0; i < sequence.length; i++) {
       let letter: string;
       
-      // For "Most Frequent" sequence (empty letterSequence), use working dynamic sequence for all letters
+      // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
       if (letterSequence === '') {
-        letter = workingDynamicSequence[i] || '';
+        letter = dynamicSequence[i] || '';
       } else if (i < letterSequence.length) {
         // Predefined sequence letter
         letter = letterSequence[i];
       } else {
         // Dynamic sequence letter (after predefined sequence)
         const dynamicIndex = i - letterSequence.length;
-        letter = workingDynamicSequence[dynamicIndex] || '';
+        letter = dynamicSequence[dynamicIndex] || '';
       }
       
       const choice = sequence[i];

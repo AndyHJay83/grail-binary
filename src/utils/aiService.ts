@@ -10,9 +10,8 @@ export interface AiServiceConfig {
 
 // Default configuration
 export const defaultAiConfig: AiServiceConfig = {
-  provider: 'ollama', // Using Ollama with Mistral
-  baseUrl: 'http://192.168.1.111:11434',
-  model: 'mistral'
+  provider: 'mock', // Change to 'openai' when ready to use real AI
+  model: 'gpt-3.5-turbo'
 };
 
 export interface AiReadingRequest {
@@ -135,36 +134,15 @@ async function generateClaudeReading(request: AiReadingRequest, config: AiServic
 // Ollama local model integration
 async function generateOllamaReading(request: AiReadingRequest, config: AiServiceConfig): Promise<AiReadingResponse> {
   try {
-    // Create a specialized prompt for psychological readings
-    const psychologicalPrompt = `You are a wise and intuitive reader providing a personal psychological reading. 
-
-Based on these answers about yourself:
-${request.profileAnswers.join('\n')}
-
-Give me a brief, meaningful reading (2-3 sentences) that:
-- Speaks directly to "you" as the person receiving the reading
-- Weaves the specific answers into a larger personality narrative
-- Uses Barnum statements that feel personal and insightful
-- Creates a mini-tarot reading style that feels meaningful and accurate
-- Focuses on your approach to life, relationships, and personal growth
-- Maintains a warm, encouraging, and slightly mystical tone
-
-Make it punchy, personal, and meaningful - like a brief but powerful tarot reading.`;
-
     const response = await fetch(`${config.baseUrl || 'http://localhost:11434'}/api/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: config.model || 'mistral',
-        prompt: psychologicalPrompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 150
-        }
+        model: config.model || 'llama2',
+        prompt: request.prompt,
+        stream: false
       })
     });
 
@@ -174,7 +152,7 @@ Make it punchy, personal, and meaningful - like a brief but powerful tarot readi
 
     const data = await response.json();
     return {
-      reading: data.response.trim(),
+      reading: data.response,
       provider: 'ollama',
       model: config.model
     };
