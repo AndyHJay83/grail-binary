@@ -169,6 +169,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, newDynamicSequence, state.filterState.confirmedSide, state.filterState.confirmedSideValue)
         : resetFilter();
       
+      // DEBUG: Show word counts after binary choice
+      console.log('📊 AFTER BINARY CHOICE:', {
+        choice,
+        currentLetter,
+        nextLetter: nextLetterInfo.letter,
+        leftWordsCount: currentFilterResult.leftWords.length,
+        rightWordsCount: currentFilterResult.rightWords.length,
+        totalWordsRemaining: currentFilterResult.leftWords.length + currentFilterResult.rightWords.length,
+        leftWordsSample: currentFilterResult.leftWords.slice(0, 3),
+        rightWordsSample: currentFilterResult.rightWords.slice(0, 3)
+      });
+      
       return {
         ...state,
         filterState: {
