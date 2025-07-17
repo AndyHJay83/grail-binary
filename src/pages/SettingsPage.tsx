@@ -86,12 +86,12 @@ const SettingsPage: React.FC = () => {
               <label htmlFor="mostFrequentFilter" className="text-sm">
                 Most Frequent Filter
               </label>
-            </div>
-            
+        </div>
+
             <div className="text-sm text-gray-400">
               <p>When enabled, after exhausting the letter sequence, automatically select the most frequent unused letter from remaining words.</p>
-            </div>
-            
+        </div>
+
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
@@ -103,8 +103,8 @@ const SettingsPage: React.FC = () => {
               <label htmlFor="confirmNoLetter" className="text-sm">
                 Confirm NO Letter
               </label>
-            </div>
-            
+        </div>
+
             <div className="text-sm text-gray-400">
               <p>When enabled, offers a letter that doesn't appear in any remaining words. Long press (0.5s) on either side to confirm that side as NO.</p>
             </div>
@@ -131,38 +131,38 @@ const SettingsPage: React.FC = () => {
             
             <div className="text-sm text-gray-400">
               <p>Ask custom Yes/No questions before letter sequence to gather psychological insights.</p>
-            </div>
+          </div>
 
-            {/* Questions Management */}
-            {userPreferences.psychologicalProfiling.enabled && (
+          {/* Questions Management */}
+          {userPreferences.psychologicalProfiling.enabled && (
               <div className="space-y-4 mt-4">
                 <h3 className="text-lg font-bold">Custom Questions (1-5 enabled)</h3>
-                <div className="space-y-3">
-                  {userPreferences.psychologicalProfiling.questions.map((question) => (
+              <div className="space-y-3">
+                {userPreferences.psychologicalProfiling.questions.map((question) => (
                     <div key={question.id} className="flex items-center space-x-3 p-3 bg-dark-grey rounded">
-                      <input
-                        type="checkbox"
-                        checked={question.enabled}
-                        onChange={(e) => updatePsychologicalQuestion(question.id, { enabled: e.target.checked })}
+                    <input
+                      type="checkbox"
+                      checked={question.enabled}
+                      onChange={(e) => updatePsychologicalQuestion(question.id, { enabled: e.target.checked })}
                         className="w-4 h-4 text-success-green bg-black border-white rounded focus:ring-success-green"
-                      />
-                      <input
-                        type="text"
-                        value={question.text}
-                        onChange={(e) => updatePsychologicalQuestion(question.id, { text: e.target.value })}
+                    />
+                    <input
+                      type="text"
+                      value={question.text}
+                      onChange={(e) => updatePsychologicalQuestion(question.id, { text: e.target.value })}
                         className="flex-1 bg-black border-2 border-white rounded px-3 py-2 text-white focus:border-success-green outline-none text-sm"
-                        placeholder="Enter your question..."
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="text-sm text-gray-400">
-                  <p>• Questions will be asked before the letter sequence begins</p>
-                  <p>• User makes L/R choices for each enabled question</p>
-                  <p>• After long press confirmation, psychological profile will be revealed</p>
-                </div>
+                      placeholder="Enter your question..."
+                    />
+                  </div>
+                ))}
               </div>
-            )}
+                <div className="text-sm text-gray-400">
+                <p>• Questions will be asked before the letter sequence begins</p>
+                <p>• User makes L/R choices for each enabled question</p>
+                <p>• After long press confirmation, psychological profile will be revealed</p>
+              </div>
+            </div>
+          )}
           </div>
         </div>
 

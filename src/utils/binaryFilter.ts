@@ -204,8 +204,8 @@ export const filterWords = (
         letter = letterSequence[i];
       } else {
         // Dynamic sequence letter (after predefined sequence)
-        const dynamicIndex = i - letterSequence.length;
-        letter = dynamicSequence[dynamicIndex] || '';
+        // Use the full dynamic sequence, not just the remaining part
+        letter = dynamicSequence[i] || '';
       }
       
       const choice = sequence[i];
