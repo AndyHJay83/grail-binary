@@ -180,6 +180,13 @@ export const filterWords = (
   const leftWords: string[] = [];
   const rightWords: string[] = [];
 
+  console.log('=== FILTERING DEBUG ===');
+  console.log('Word list length:', wordList.length);
+  console.log('Sequence length:', sequence.length);
+  console.log('Letter sequence:', letterSequence);
+  console.log('Dynamic sequence:', dynamicSequence);
+  console.log('Current letter index:', currentLetterIndex);
+
   wordList.forEach(word => {
     const upperWord = word.toUpperCase();
     let matchesLeftPattern = true;
@@ -204,13 +211,27 @@ export const filterWords = (
       const choice = sequence[i];
       const hasLetter = upperWord.includes(letter);
 
+      console.log(`  Word "${word}": choice=${choice}, letter=${letter}, hasLetter=${hasLetter}`);
+
       // Left pattern: L choice means include letter, R choice means exclude letter
-      if (choice === 'L' && !hasLetter) matchesLeftPattern = false;
-      if (choice === 'R' && hasLetter) matchesLeftPattern = false;
+      if (choice === 'L' && !hasLetter) {
+        console.log(`    Rejecting from left: L=YES but word doesn't have ${letter}`);
+        matchesLeftPattern = false;
+      }
+      if (choice === 'R' && hasLetter) {
+        console.log(`    Rejecting from left: R=NO but word has ${letter}`);
+        matchesLeftPattern = false;
+      }
 
       // Right pattern: R choice means include letter, L choice means exclude letter  
-      if (choice === 'R' && !hasLetter) matchesRightPattern = false;
-      if (choice === 'L' && hasLetter) matchesRightPattern = false;
+      if (choice === 'R' && !hasLetter) {
+        console.log(`    Rejecting from right: R=YES but word doesn't have ${letter}`);
+        matchesRightPattern = false;
+      }
+      if (choice === 'L' && hasLetter) {
+        console.log(`    Rejecting from right: L=NO but word has ${letter}`);
+        matchesRightPattern = false;
+      }
     }
 
     // Add word to appropriate list(s)
