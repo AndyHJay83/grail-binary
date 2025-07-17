@@ -55,6 +55,14 @@ export const filterWords = (
     };
   }
 
+  // CRITICAL FIX: For Most Frequent mode, ensure we have a working dynamic sequence
+  // that includes the current letter if it's missing
+  let workingDynamicSequence = [...dynamicSequence];
+  if (letterSequence === '' && currentLetter && !workingDynamicSequence.includes(currentLetter)) {
+    // Add the current letter to the working sequence if it's missing
+    workingDynamicSequence.push(currentLetter);
+  }
+
   // If a side is confirmed, use simple YES/NO filtering
   if (confirmedSide && confirmedSideValue) {
     console.log('Using confirmed side filtering:', { confirmedSide, confirmedSideValue });
@@ -70,16 +78,16 @@ export const filterWords = (
       for (let i = 0; i < sequence.length; i++) {
         let letter: string;
         
-        // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
+        // For "Most Frequent" sequence (empty letterSequence), use working dynamic sequence for all letters
         if (letterSequence === '') {
-          letter = dynamicSequence[i] || '';
+          letter = workingDynamicSequence[i] || '';
         } else if (i < letterSequence.length) {
           // Predefined sequence letter
           letter = letterSequence[i];
         } else {
           // Dynamic sequence letter (after predefined sequence)
           const dynamicIndex = i - letterSequence.length;
-          letter = dynamicSequence[dynamicIndex] || '';
+          letter = workingDynamicSequence[dynamicIndex] || '';
         }
         
         const choice = sequence[i];
@@ -189,16 +197,16 @@ export const filterWords = (
     for (let i = 0; i < sequence.length; i++) {
       let letter: string;
       
-      // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
+      // For "Most Frequent" sequence (empty letterSequence), use working dynamic sequence for all letters
       if (letterSequence === '') {
-        letter = dynamicSequence[i] || '';
+        letter = workingDynamicSequence[i] || '';
       } else if (i < letterSequence.length) {
         // Predefined sequence letter
         letter = letterSequence[i];
       } else {
         // Dynamic sequence letter (after predefined sequence)
         const dynamicIndex = i - letterSequence.length;
-        letter = dynamicSequence[dynamicIndex] || '';
+        letter = workingDynamicSequence[dynamicIndex] || '';
       }
       
       const choice = sequence[i];
