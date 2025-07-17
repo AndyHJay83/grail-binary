@@ -19,8 +19,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/grail-binary/',
+        start_url: '/grail-binary/',
         icons: [
           {
             src: 'pwa-icon.svg',
@@ -32,7 +32,7 @@ export default defineConfig({
       }
     })
   ],
-  base: '/',
+  base: '/grail-binary/',
   server: {
     port: 3000,
     open: true
