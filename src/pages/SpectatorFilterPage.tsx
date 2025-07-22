@@ -23,13 +23,9 @@ const SpectatorFilterPage: React.FC = () => {
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
     if (selectedWordList && selectedWordList.words.length > 0) {
-      const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      
-      // Initialize with empty sequences to get the full word list split
-      const initialResult = filterWords(selectedWordList.words, [], 0, letterSequence, state.filterState.dynamicSequence);
-      
-      setSpectator1Words(initialResult.leftWords);
-      setSpectator2Words(initialResult.leftWords); // Both start with left words
+      // Start with the full word list like PERFORM does
+      setSpectator1Words([...selectedWordList.words]);
+      setSpectator2Words([...selectedWordList.words]);
       setSpectator1Sequence([]);
       setSpectator2Sequence([]);
       setSpectator1LetterIndex(0);
@@ -112,11 +108,9 @@ const SpectatorFilterPage: React.FC = () => {
 
   const handleReset = () => {
     if (selectedWordList) {
-      const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const initialResult = filterWords(selectedWordList.words, [], 0, letterSequence, state.filterState.dynamicSequence);
-      
-      setSpectator1Words(initialResult.leftWords);
-      setSpectator2Words(initialResult.leftWords);
+      // Reset to full word list like PERFORM does
+      setSpectator1Words([...selectedWordList.words]);
+      setSpectator2Words([...selectedWordList.words]);
       setSpectator1Sequence([]);
       setSpectator2Sequence([]);
       setSpectator1LetterIndex(0);
