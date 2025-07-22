@@ -188,7 +188,7 @@ const HomePage: React.FC = () => {
               handleWordListSelect(wordListCards[0].id);
             }
           }}
-          className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
+          className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
           aria-label="Start filtering (PERFORM_TEST)"
         >
           PERFORM_TEST
