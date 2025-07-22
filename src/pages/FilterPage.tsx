@@ -325,23 +325,8 @@ const FilterPage: React.FC = () => {
 
   // Show words based on confirmed side logic
   const getWordsToShow = () => {
-    // If a side has been confirmed AND there's no side offer letter (meaning it was a binary choice confirmation)
-    // then only show words from that side
-    if (filterState.confirmedSide && !filterState.sideOfferLetter) {
-      if (filterState.confirmedSide === 'L') {
-        return {
-          leftWords: filterState.leftWords,
-          rightWords: [] // Clear the opposite side
-        };
-      } else {
-        return {
-          leftWords: [], // Clear the opposite side
-          rightWords: filterState.rightWords
-        };
-      }
-    }
-    
-    // Otherwise show both interpretations (including when side offer letter was confirmed)
+    // Always show the current words from both sides
+    // The filtering logic in the reducer handles the actual word distribution
     return {
       leftWords: filterState.leftWords,
       rightWords: filterState.rightWords
