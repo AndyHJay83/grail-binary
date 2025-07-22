@@ -180,6 +180,21 @@ const HomePage: React.FC = () => {
         ))}
       </div>
 
+      {/* PERFORM_TEST button at the bottom of the page */}
+      <div className="flex justify-center mt-10">
+        <button
+          onClick={() => {
+            if (wordListCards.length > 0) {
+              handleWordListSelect(wordListCards[0].id);
+            }
+          }}
+          className="btn-primary w-1/2"
+          aria-label="Start filtering (PERFORM_TEST)"
+        >
+          PERFORM_TEST
+        </button>
+      </div>
+
 
     </div>
   );
