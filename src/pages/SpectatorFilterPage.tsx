@@ -16,8 +16,9 @@ const SpectatorFilterPage: React.FC = () => {
   const [spectator1Sequence, setSpectator1Sequence] = useState<BinaryChoice[]>([]);
   const [spectator2Sequence, setSpectator2Sequence] = useState<BinaryChoice[]>([]);
 
-  // Letter tracking state
-  const [currentLetterIndex, setCurrentLetterIndex] = useState<number>(0);
+  // Letter tracking state - track independently for each spectator
+  const [spectator1LetterIndex, setSpectator1LetterIndex] = useState<number>(0);
+  const [spectator2LetterIndex, setSpectator2LetterIndex] = useState<number>(0);
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
@@ -31,7 +32,8 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator2Words(initialResult.leftWords); // Both start with left words
       setSpectator1Sequence([]);
       setSpectator2Sequence([]);
-      setCurrentLetterIndex(0);
+      setSpectator1LetterIndex(0);
+      setSpectator2LetterIndex(0);
     }
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
@@ -40,21 +42,27 @@ const SpectatorFilterPage: React.FC = () => {
     
     // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence
     if (letterSequence === '') {
-      return state.filterState.dynamicSequence[currentLetterIndex] || '';
-    } else if (currentLetterIndex < letterSequence.length) {
-      // Still in predefined sequence
-      return letterSequence[currentLetterIndex] || '';
+      return state.filterState.dynamicSequence[Math.max(spectator1LetterIndex, spectator2LetterIndex)] || '';
     } else {
-      // In dynamic mode (after predefined sequence)
-      const dynamicIndex = currentLetterIndex - letterSequence.length;
-      return state.filterState.dynamicSequence[dynamicIndex] || '';
+      const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
+      if (currentIndex < letterSequence.length) {
+        // Still in predefined sequence
+        return letterSequence[currentIndex] || '';
+      } else {
+        // In dynamic mode (after predefined sequence)
+        const dynamicIndex = currentIndex - letterSequence.length;
+        return state.filterState.dynamicSequence[dynamicIndex] || '';
+      }
     }
   };
 
-  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], choice: BinaryChoice): string[] => {
+  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number, choice: BinaryChoice): string[] => {
     const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const newSequence = [...sequence, choice];
-    const result = filterWords(words, newSequence, newSequence.length - 1, letterSequence, state.filterState.dynamicSequence);
+    const newLetterIndex = letterIndex + 1;
+    
+    // Use the same logic as PERFORM
+    const result = filterWords(words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence);
     return choice === 'L' ? result.leftWords : result.rightWords;
   };
 
@@ -85,16 +93,17 @@ const SpectatorFilterPage: React.FC = () => {
 
     // Update spectator 1
     const newSpectator1Sequence = [...spectator1Sequence, spectator1Choice];
+    const newSpectator1LetterIndex = spectator1LetterIndex + 1;
     setSpectator1Sequence(newSpectator1Sequence);
-    setSpectator1Words(prev => filterSpectatorWords(prev, newSpectator1Sequence, spectator1Choice));
+    setSpectator1LetterIndex(newSpectator1LetterIndex);
+    setSpectator1Words(prev => filterSpectatorWords(prev, newSpectator1Sequence, spectator1LetterIndex, spectator1Choice));
 
     // Update spectator 2
     const newSpectator2Sequence = [...spectator2Sequence, spectator2Choice];
+    const newSpectator2LetterIndex = spectator2LetterIndex + 1;
     setSpectator2Sequence(newSpectator2Sequence);
-    setSpectator2Words(prev => filterSpectatorWords(prev, newSpectator2Sequence, spectator2Choice));
-
-    // Advance letter index (same logic as PERFORM)
-    setCurrentLetterIndex(prev => prev + 1);
+    setSpectator2LetterIndex(newSpectator2LetterIndex);
+    setSpectator2Words(prev => filterSpectatorWords(prev, newSpectator2Sequence, spectator2LetterIndex, spectator2Choice));
   };
 
   const handleHomeClick = () => {
@@ -110,7 +119,8 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator2Words(initialResult.leftWords);
       setSpectator1Sequence([]);
       setSpectator2Sequence([]);
-      setCurrentLetterIndex(0);
+      setSpectator1LetterIndex(0);
+      setSpectator2LetterIndex(0);
     }
   };
 
