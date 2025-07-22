@@ -563,25 +563,31 @@ function appReducer(state: AppState, action: AppAction): AppState {
         const decodedProfile: string[] = [];
         
         questions.forEach(question => {
-          const choice = answers[question.id];
-          if (choice) {
+          const answer = answers[question.id];
+          if (answer) {
             // Decode the answer based on confirmed side
-            let answer: boolean;
+            let person1Answer: boolean;
+            let person2Answer: boolean;
+            
             if (side === 'R' && value === 'NO') {
               // R=NO, L=YES
-              answer = choice === 'L';
+              person1Answer = answer.person1 === 'L';
+              person2Answer = answer.person2 === 'L';
             } else if (side === 'L' && value === 'NO') {
               // L=NO, R=YES
-              answer = choice === 'R';
+              person1Answer = answer.person1 === 'R';
+              person2Answer = answer.person2 === 'R';
             } else if (side === 'R' && value === 'YES') {
               // R=YES, L=NO
-              answer = choice === 'R';
+              person1Answer = answer.person1 === 'R';
+              person2Answer = answer.person2 === 'R';
             } else {
               // L=YES, R=NO
-              answer = choice === 'L';
+              person1Answer = answer.person1 === 'L';
+              person2Answer = answer.person2 === 'L';
             }
             
-            decodedProfile.push(`${question.text}: ${answer ? 'YES' : 'NO'}`);
+            decodedProfile.push(`${question.text}: Person 1: ${person1Answer ? 'YES' : 'NO'}, Person 2: ${person2Answer ? 'YES' : 'NO'}`);
           }
         });
         
@@ -652,25 +658,31 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const decodedProfile: string[] = [];
       
       questions.forEach(question => {
-        const choice = answers[question.id];
-        if (choice) {
+        const answer = answers[question.id];
+        if (answer) {
           // Decode the answer based on confirmed side
-          let answer: boolean;
+          let person1Answer: boolean;
+          let person2Answer: boolean;
+          
           if (confirmedSide === 'R' && confirmedSideValue === 'NO') {
             // R=NO, L=YES
-            answer = choice === 'L';
+            person1Answer = answer.person1 === 'L';
+            person2Answer = answer.person2 === 'L';
           } else if (confirmedSide === 'L' && confirmedSideValue === 'NO') {
             // L=NO, R=YES
-            answer = choice === 'R';
+            person1Answer = answer.person1 === 'R';
+            person2Answer = answer.person2 === 'R';
           } else if (confirmedSide === 'R' && confirmedSideValue === 'YES') {
             // R=YES, L=NO
-            answer = choice === 'R';
+            person1Answer = answer.person1 === 'R';
+            person2Answer = answer.person2 === 'R';
           } else {
             // L=YES, R=NO
-            answer = choice === 'L';
+            person1Answer = answer.person1 === 'L';
+            person2Answer = answer.person2 === 'L';
           }
           
-          decodedProfile.push(`${question.text}: ${answer ? 'YES' : 'NO'}`);
+          decodedProfile.push(`${question.text}: Person 1: ${person1Answer ? 'YES' : 'NO'}, Person 2: ${person2Answer ? 'YES' : 'NO'}`);
         }
       });
       
@@ -709,7 +721,7 @@ interface AppContextType {
   // NEW: Psychological profiling functions
   togglePsychologicalProfiling: (enabled: boolean) => void;
   updatePsychologicalQuestion: (questionId: string, updates: Partial<PresetQuestion>) => void;
-  setPsychologicalAnswers: (answers: { [questionId: string]: BinaryChoice }) => void;
+  setPsychologicalAnswers: (answers: { [questionId: string]: { person1: BinaryChoice; person2: BinaryChoice } }) => void;
   decodePsychologicalProfile: (confirmedSide: 'L' | 'R', confirmedSideValue: 'YES' | 'NO') => void;
 }
 
@@ -817,7 +829,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'UPDATE_PSYCHOLOGICAL_QUESTION', payload: { questionId, updates } });
   };
 
-  const setPsychologicalAnswers = (answers: { [questionId: string]: BinaryChoice }) => {
+  const setPsychologicalAnswers = (answers: { [questionId: string]: { person1: BinaryChoice; person2: BinaryChoice } }) => {
     dispatch({ type: 'SET_PSYCHOLOGICAL_ANSWERS', payload: answers });
   };
 

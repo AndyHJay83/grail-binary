@@ -13,7 +13,7 @@ const FilterPage: React.FC = () => {
   
   // NEW: Psychological profiling state
   const [currentPsychologicalQuestionIndex, setCurrentPsychologicalQuestionIndex] = React.useState<number>(-1);
-  const [psychologicalAnswers, setPsychologicalAnswersLocal] = React.useState<{ [questionId: string]: BinaryChoice }>({});
+  const [psychologicalAnswers, setPsychologicalAnswersLocal] = React.useState<{ [questionId: string]: { person1: BinaryChoice; person2: BinaryChoice } }>({});
   const [psychologicalQuestionsCompleted, setPsychologicalQuestionsCompleted] = React.useState<boolean>(false);
   
   // NEW: AI reading state
@@ -260,8 +260,30 @@ const FilterPage: React.FC = () => {
     if (shouldShowPsychologicalQuestions) {
       const currentQuestion = enabledPsychologicalQuestions[currentPsychologicalQuestionIndex];
       
-      // Store the answer
-      const newAnswers = { ...psychologicalAnswers, [currentQuestion.id]: choice };
+      // Map the 4-button D-Pad to both people's answers
+      let person1Answer: BinaryChoice;
+      let person2Answer: BinaryChoice;
+      
+      if (choice === 'L') {
+        // Left button: Both pick L
+        person1Answer = 'L';
+        person2Answer = 'L';
+      } else if (choice === 'R') {
+        // Right button: Both pick R
+        person1Answer = 'R';
+        person2Answer = 'R';
+      } else {
+        // This shouldn't happen with current 2-button system
+        // But we'll handle it gracefully
+        person1Answer = choice;
+        person2Answer = choice;
+      }
+      
+      // Store the answer for both people
+      const newAnswers = { 
+        ...psychologicalAnswers, 
+        [currentQuestion.id]: { person1: person1Answer, person2: person2Answer }
+      };
       setPsychologicalAnswersLocal(newAnswers);
       
       // Move to next question or start letter sequence

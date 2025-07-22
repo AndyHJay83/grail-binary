@@ -43,7 +43,7 @@ export interface PresetQuestion {
 
 export interface PsychologicalProfile {
   questions: PresetQuestion[];
-  answers: { [questionId: string]: BinaryChoice };
+  answers: { [questionId: string]: { person1: BinaryChoice; person2: BinaryChoice } };
   decodedProfile: string[];
 }
 
@@ -61,7 +61,7 @@ export interface FilterState {
   confirmedSideValue?: 'YES' | 'NO';
   // NEW: Psychological profiling state
   psychologicalQuestions?: PresetQuestion[];
-  psychologicalAnswers?: { [questionId: string]: BinaryChoice };
+  psychologicalAnswers?: { [questionId: string]: { person1: BinaryChoice; person2: BinaryChoice } };
   psychologicalProfile?: PsychologicalProfile;
 }
 
