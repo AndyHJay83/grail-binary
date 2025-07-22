@@ -32,21 +32,6 @@ const SpectatorFilterPage: React.FC = () => {
   const [usedLetters, setUsedLetters] = useState<Set<string>>(new Set());
   const [dynamicSequence, setDynamicSequence] = useState<string[]>([]);
 
-  // Handle "Most Frequent" sequence initialization (like PERFORM)
-  React.useEffect(() => {
-    if (selectedWordList && selectedWordList.words.length > 0) {
-      const sequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-      if (sequence?.sequence === '') {
-        // Most Frequent sequence selected - initialize the first letter
-        const { selectNextDynamicLetter } = require('../utils/binaryFilter');
-        const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set());
-        if (firstLetter) {
-          setDynamicSequence([firstLetter]);
-        }
-      }
-    }
-  }, [selectedWordList, state.userPreferences.selectedLetterSequence]);
-
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
     if (selectedWordList && selectedWordList.words.length > 0) {
@@ -68,9 +53,25 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator2TopIsDynamic(false);
       setSpectator2BottomIsDynamic(false);
       
-      // Reset local state for used letters and dynamic sequence
+      // Reset local state for used letters
       setUsedLetters(new Set());
-      setDynamicSequence([]);
+      
+      // Handle Most Frequent sequence initialization
+      const sequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      if (sequence?.sequence === '') {
+        // Most Frequent sequence selected - initialize the first letter
+        const { selectNextDynamicLetter } = require('../utils/binaryFilter');
+        const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set());
+        if (firstLetter) {
+          setDynamicSequence([firstLetter]);
+        } else {
+          // No letters available - set empty sequence to show completion
+          setDynamicSequence([]);
+        }
+      } else {
+        // Reset dynamic sequence for non-Most Frequent sequences
+        setDynamicSequence([]);
+      }
     }
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
@@ -86,14 +87,27 @@ const SpectatorFilterPage: React.FC = () => {
       ...spectator2BottomWords
     ];
     
+    // Debug logging
+    console.log('getCurrentLetter debug:', {
+      letterSequence,
+      currentIndex,
+      allRemainingWordsLength: allRemainingWords.length,
+      usedLetters: Array.from(usedLetters),
+      dynamicSequence,
+      mostFrequentFilter: state.userPreferences.mostFrequentFilter
+    });
+    
     // Use the same logic as PERFORM with local used letters
-    return getNextLetterWithDynamic(
+    const result = getNextLetterWithDynamic(
       currentIndex,
       letterSequence,
       allRemainingWords,
       usedLetters,
       state.userPreferences.mostFrequentFilter
     );
+    
+    console.log('getCurrentLetter result:', result);
+    return result;
   };
 
   const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number): { leftWords: string[]; isDynamic: boolean } => {
