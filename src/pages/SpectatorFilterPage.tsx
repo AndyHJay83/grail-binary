@@ -244,8 +244,12 @@ const SpectatorFilterPage: React.FC = () => {
       {/* Spectator Lists */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {/* Spectator 1 */}
-        <div className="bg-black border-2 border-white rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4 text-center">Spectator 1</h2>
+        <div className="bg-black border-2 border-white rounded-lg p-6 relative">
+          {/* Spectator 1 Number Circle */}
+          <div className="absolute top-2 left-2 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold z-10">
+            1
+          </div>
+          
           <div className="space-y-4">
             {/* Top Half */}
             <div>
@@ -285,8 +289,12 @@ const SpectatorFilterPage: React.FC = () => {
         </div>
 
         {/* Spectator 2 */}
-        <div className="bg-black border-2 border-white rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4 text-center">Spectator 2</h2>
+        <div className="bg-black border-2 border-white rounded-lg p-6 relative">
+          {/* Spectator 2 Number Circle */}
+          <div className="absolute top-2 left-2 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold z-10">
+            2
+          </div>
+          
           <div className="space-y-4">
             {/* Top Half */}
             <div>
