@@ -216,7 +216,7 @@ const SpectatorFilterPage: React.FC = () => {
     <div className="min-h-screen bg-black text-white p-4">
       {/* Letter Display Bubble - Fixed Center Overlay */}
       {currentLetter && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+        <div className="fixed top-3/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
           <div className="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold">
             {currentLetter}
           </div>
@@ -246,7 +246,7 @@ const SpectatorFilterPage: React.FC = () => {
         {/* Spectator 1 */}
         <div className="bg-black border-2 border-white rounded-lg p-6 relative">
           {/* Spectator 1 Number Circle */}
-          <div className="absolute top-2 left-2 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold z-10">
+          <div className="absolute top-2 left-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">
             1
           </div>
           
@@ -291,7 +291,7 @@ const SpectatorFilterPage: React.FC = () => {
         {/* Spectator 2 */}
         <div className="bg-black border-2 border-white rounded-lg p-6 relative">
           {/* Spectator 2 Number Circle */}
-          <div className="absolute top-2 left-2 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold z-10">
+          <div className="absolute top-2 left-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">
             2
           </div>
           
