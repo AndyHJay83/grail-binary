@@ -96,7 +96,7 @@ const SpectatorFilterPage: React.FC = () => {
     }
 
     const selectedSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-    const letterSequence = selectedSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const letterSequence = selectedSequence?.sequence !== undefined ? selectedSequence.sequence : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
     
     // Get all remaining words from all sections for frequency analysis
