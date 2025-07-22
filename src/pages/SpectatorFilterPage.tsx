@@ -69,33 +69,43 @@ const SpectatorFilterPage: React.FC = () => {
   };
 
   const handleButtonPress = (button: 'left' | 'right' | 'up' | 'down') => {
-    let spectator1Choice: BinaryChoice;
-    let spectator2Choice: BinaryChoice;
+    let spectator1TopChoice: BinaryChoice;
+    let spectator1BottomChoice: BinaryChoice;
+    let spectator2TopChoice: BinaryChoice;
+    let spectator2BottomChoice: BinaryChoice;
 
     switch (button) {
       case 'left':
-        spectator1Choice = 'L';
-        spectator2Choice = 'L';
+        spectator1TopChoice = 'L';
+        spectator1BottomChoice = 'R';
+        spectator2TopChoice = 'L';
+        spectator2BottomChoice = 'R';
         break;
       case 'right':
-        spectator1Choice = 'R';
-        spectator2Choice = 'R';
+        spectator1TopChoice = 'R';
+        spectator1BottomChoice = 'L';
+        spectator2TopChoice = 'R';
+        spectator2BottomChoice = 'L';
         break;
       case 'up':
-        spectator1Choice = 'L';
-        spectator2Choice = 'R';
+        spectator1TopChoice = 'L';
+        spectator1BottomChoice = 'R';
+        spectator2TopChoice = 'R';
+        spectator2BottomChoice = 'L';
         break;
       case 'down':
-        spectator1Choice = 'R';
-        spectator2Choice = 'L';
+        spectator1TopChoice = 'R';
+        spectator1BottomChoice = 'L';
+        spectator2TopChoice = 'L';
+        spectator2BottomChoice = 'R';
         break;
       default:
         return;
     }
 
-    // Update spectator 1 - each section filters independently
-    const newSpectator1TopSequence = [...spectator1TopSequence, spectator1Choice];
-    const newSpectator1BottomSequence = [...spectator1BottomSequence, spectator1Choice];
+    // Update spectator 1 - each section filters independently with opposite choices
+    const newSpectator1TopSequence = [...spectator1TopSequence, spectator1TopChoice];
+    const newSpectator1BottomSequence = [...spectator1BottomSequence, spectator1BottomChoice];
     const newSpectator1LetterIndex = spectator1LetterIndex + 1;
     
     setSpectator1TopSequence(newSpectator1TopSequence);
@@ -109,9 +119,9 @@ const SpectatorFilterPage: React.FC = () => {
     setSpectator1TopWords(spectator1TopResult);
     setSpectator1BottomWords(spectator1BottomResult);
 
-    // Update spectator 2 - each section filters independently
-    const newSpectator2TopSequence = [...spectator2TopSequence, spectator2Choice];
-    const newSpectator2BottomSequence = [...spectator2BottomSequence, spectator2Choice];
+    // Update spectator 2 - each section filters independently with opposite choices
+    const newSpectator2TopSequence = [...spectator2TopSequence, spectator2TopChoice];
+    const newSpectator2BottomSequence = [...spectator2BottomSequence, spectator2BottomChoice];
     const newSpectator2LetterIndex = spectator2LetterIndex + 1;
     
     setSpectator2TopSequence(newSpectator2TopSequence);
