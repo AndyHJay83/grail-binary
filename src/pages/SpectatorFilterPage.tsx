@@ -204,47 +204,87 @@ const SpectatorFilterPage: React.FC = () => {
         </div>
       </div>
 
-      {/* D-pad Button Layout */}
-      <div className="flex justify-center">
-        <div className="grid grid-cols-3 gap-4">
-          {/* Top row */}
-          <div></div>
+      {/* Diagonal D-pad Button Layout */}
+      <div className="w-full" style={{ height: '35vh' }}>
+        <div className="relative w-full h-full">
+          {/* Diagonal lines creating X pattern */}
+          <div className="absolute inset-0">
+            {/* Diagonal line from top-left to bottom-right */}
+            <div className="absolute top-0 left-0 w-full h-full">
+              <div 
+                className="absolute top-0 left-0 w-full h-full"
+                style={{
+                  background: 'linear-gradient(45deg, transparent calc(50% - 1px), white calc(50% - 1px), white calc(50% + 1px), transparent calc(50% + 1px))'
+                }}
+              ></div>
+            </div>
+            {/* Diagonal line from top-right to bottom-left */}
+            <div className="absolute top-0 left-0 w-full h-full">
+              <div 
+                className="absolute top-0 left-0 w-full h-full"
+                style={{
+                  background: 'linear-gradient(-45deg, transparent calc(50% - 1px), white calc(50% - 1px), white calc(50% + 1px), transparent calc(50% + 1px))'
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Clickable triangular regions */}
+          {/* Top region (Up button) */}
           <button
             onClick={() => handleButtonPress('up')}
-            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200"
+            className="absolute top-0 left-0 w-full h-1/2 bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              transform: 'scale(0.7)',
+              transformOrigin: 'center'
+            }}
             aria-label="Up"
           >
-            ↑
+            <div className="flex items-center justify-center h-full text-white font-bold text-2xl">↑</div>
           </button>
-          <div></div>
 
-          {/* Middle row */}
-          <button
-            onClick={() => handleButtonPress('left')}
-            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200"
-            aria-label="Left"
-          >
-            ←
-          </button>
-          <div className="w-16 h-16"></div>
+          {/* Right region (Right button) */}
           <button
             onClick={() => handleButtonPress('right')}
-            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200"
+            className="absolute top-0 right-0 w-1/2 h-full bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              transform: 'scale(0.7)',
+              transformOrigin: 'center'
+            }}
             aria-label="Right"
           >
-            →
+            <div className="flex items-center justify-center h-full text-white font-bold text-2xl">→</div>
           </button>
 
-          {/* Bottom row */}
-          <div></div>
+          {/* Bottom region (Down button) */}
           <button
             onClick={() => handleButtonPress('down')}
-            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-200"
+            className="absolute bottom-0 left-0 w-full h-1/2 bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              transform: 'scale(0.7)',
+              transformOrigin: 'center'
+            }}
             aria-label="Down"
           >
-            ↓
+            <div className="flex items-center justify-center h-full text-white font-bold text-2xl">↓</div>
           </button>
-          <div></div>
+
+          {/* Left region (Left button) */}
+          <button
+            onClick={() => handleButtonPress('left')}
+            className="absolute top-0 left-0 w-1/2 h-full bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{
+              clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+              transform: 'scale(0.7)',
+              transformOrigin: 'center'
+            }}
+            aria-label="Left"
+          >
+            <div className="flex items-center justify-center h-full text-white font-bold text-2xl">←</div>
+          </button>
         </div>
       </div>
     </div>
