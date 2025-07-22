@@ -273,6 +273,7 @@ const FilterPage: React.FC = () => {
   };
 
   const handleHomeClick = () => {
+    resetFilter(); // Restore user's default sequence
     navigate('/');
   };
 
