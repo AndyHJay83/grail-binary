@@ -34,19 +34,7 @@ const SpectatorFilterPage: React.FC = () => {
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
-    console.log('SpectatorFilterPage useEffect debug:', {
-      selectedWordList: selectedWordList ? {
-        id: selectedWordList.id,
-        name: selectedWordList.name,
-        wordCount: selectedWordList.words.length
-      } : null,
-      selectedWordListId: state.userPreferences.selectedWordListId,
-      selectedLetterSequence: state.userPreferences.selectedLetterSequence
-    });
-
     if (selectedWordList && selectedWordList.words.length > 0) {
-      console.log('Initializing spectator word lists with', selectedWordList.words.length, 'words');
-      
       // Start with the full word list like PERFORM does
       setSpectator1TopWords([...selectedWordList.words]);
       setSpectator1BottomWords([...selectedWordList.words]);
@@ -73,7 +61,6 @@ const SpectatorFilterPage: React.FC = () => {
       if (sequence?.sequence === '') {
         // Most Frequent sequence selected - initialize the first letter
         const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set());
-        console.log('Most Frequent initialization - firstLetter:', firstLetter);
         if (firstLetter) {
           setDynamicSequence([firstLetter]);
         } else {
@@ -84,8 +71,6 @@ const SpectatorFilterPage: React.FC = () => {
         // Reset dynamic sequence for non-Most Frequent sequences
         setDynamicSequence([]);
       }
-    } else {
-      console.log('No selectedWordList or empty word list');
     }
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
@@ -107,19 +92,6 @@ const SpectatorFilterPage: React.FC = () => {
       ...spectator2BottomWords
     ];
     
-    // Debug logging
-    console.log('getCurrentLetter debug:', {
-      selectedLetterSequenceId: state.userPreferences.selectedLetterSequence,
-      selectedSequence: selectedSequence,
-      selectedSequenceSequence: selectedSequence?.sequence,
-      letterSequence,
-      currentIndex,
-      allRemainingWordsLength: allRemainingWords.length,
-      usedLetters: Array.from(usedLetters),
-      dynamicSequence,
-      mostFrequentFilter: state.userPreferences.mostFrequentFilter
-    });
-    
     // Use the same logic as PERFORM with local used letters
     const result = getNextLetterWithDynamic(
       currentIndex,
@@ -129,7 +101,6 @@ const SpectatorFilterPage: React.FC = () => {
       state.userPreferences.mostFrequentFilter
     );
     
-    console.log('getCurrentLetter result:', result);
     return result;
   };
 
