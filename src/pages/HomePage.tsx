@@ -109,7 +109,7 @@ const HomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center select-none">
         <div className="text-center">
           <div className="text-2xl mb-4">Loading word list...</div>
           <div className="text-gray-400">Please wait</div>
@@ -120,7 +120,7 @@ const HomePage: React.FC = () => {
 
   if (wordListCards.length === 0) {
     return (
-      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center select-none">
         <div className="text-center">
           <div className="text-2xl mb-4">No Word List Selected</div>
           <div className="text-gray-400 mb-4">Please select a word list in Settings</div>
@@ -133,7 +133,7 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4 select-none">
       {/* Header */}
       <div className="flex justify-end items-center mb-8">
         <button
