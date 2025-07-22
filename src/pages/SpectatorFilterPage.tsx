@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { BinaryChoice } from '../types';
-import { filterWords, getBackgroundColor } from '../utils/binaryFilter';
+import { filterWords, getBackgroundColor, getNextLetterWithDynamic } from '../utils/binaryFilter';
 import { getSequenceById } from '../data/letterSequences';
 
 const SpectatorFilterPage: React.FC = () => {
@@ -28,6 +28,10 @@ const SpectatorFilterPage: React.FC = () => {
   const [_spectator1BottomIsDynamic, setSpectator1BottomIsDynamic] = useState<boolean>(false);
   const [_spectator2TopIsDynamic, setSpectator2TopIsDynamic] = useState<boolean>(false);
   const [_spectator2BottomIsDynamic, setSpectator2BottomIsDynamic] = useState<boolean>(false);
+  
+  // Local state for tracking used letters (like PERFORM)
+  const [usedLetters, setUsedLetters] = useState<Set<string>>(new Set());
+  const [dynamicSequence, setDynamicSequence] = useState<string[]>([]);
 
   // Handle "Most Frequent" sequence initialization (like PERFORM)
   React.useEffect(() => {
@@ -63,42 +67,42 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator1BottomIsDynamic(false);
       setSpectator2TopIsDynamic(false);
       setSpectator2BottomIsDynamic(false);
+      
+      // Reset local state for used letters and dynamic sequence
+      setUsedLetters(new Set());
+      setDynamicSequence([]);
     }
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
   const getCurrentLetter = (): { letter: string; isDynamic: boolean } => {
     const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
     
-    // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence
-    if (letterSequence === '') {
-      const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
-      return {
-        letter: state.filterState.dynamicSequence[currentIndex] || '',
-        isDynamic: true
-      };
-    } else {
-      const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
-      if (currentIndex < letterSequence.length) {
-        // Still in predefined sequence
-        return {
-          letter: letterSequence[currentIndex] || '',
-          isDynamic: false
-        };
-      } else {
-        // In dynamic mode (after predefined sequence)
-        const dynamicIndex = currentIndex - letterSequence.length;
-        return {
-          letter: state.filterState.dynamicSequence[dynamicIndex] || '',
-          isDynamic: true
-        };
-      }
-    }
+    // Get all remaining words from all sections for frequency analysis
+    const allRemainingWords = [
+      ...spectator1TopWords,
+      ...spectator1BottomWords,
+      ...spectator2TopWords,
+      ...spectator2BottomWords
+    ];
+    
+    // Use the same logic as PERFORM with local used letters
+    return getNextLetterWithDynamic(
+      currentIndex,
+      letterSequence,
+      allRemainingWords,
+      usedLetters,
+      state.userPreferences.mostFrequentFilter
+    );
   };
 
   const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number): { leftWords: string[]; isDynamic: boolean } => {
     const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     
-    // Determine if we're in dynamic mode
+    // Use the same logic as PERFORM - apply the sequence to filter words
+    const result = filterWords(words, sequence, letterIndex, letterSequence, dynamicSequence);
+    
+    // Determine if we're in dynamic mode (same logic as PERFORM)
     let isDynamic = false;
     if (letterSequence === '') {
       // Most Frequent sequence - always dynamic
@@ -107,9 +111,6 @@ const SpectatorFilterPage: React.FC = () => {
       // Predefined sequence exhausted - now in dynamic mode
       isDynamic = true;
     }
-    
-    // Use the same logic as PERFORM - apply the sequence to filter words
-    const result = filterWords(words, sequence, letterIndex, letterSequence, state.filterState.dynamicSequence);
     
     // Return the left words (like PERFORM's left interpretation) and dynamic mode
     return {
@@ -153,6 +154,10 @@ const SpectatorFilterPage: React.FC = () => {
         return;
     }
 
+    // Get current letter before updating (like PERFORM does)
+    const currentLetterInfo = getCurrentLetter();
+    const currentLetter = currentLetterInfo.letter;
+
     // Update spectator 1 - each section filters independently with opposite choices
     const newSpectator1TopSequence = [...spectator1TopSequence, spectator1TopChoice];
     const newSpectator1BottomSequence = [...spectator1BottomSequence, spectator1BottomChoice];
@@ -188,6 +193,21 @@ const SpectatorFilterPage: React.FC = () => {
     setSpectator2BottomWords(spectator2BottomResult.leftWords);
     setSpectator2TopIsDynamic(spectator2TopResult.isDynamic);
     setSpectator2BottomIsDynamic(spectator2BottomResult.isDynamic);
+
+    // Update used letters and dynamic sequence like PERFORM does
+    if (currentLetter) {
+      // Add current letter to used letters
+      const newUsedLetters = new Set(usedLetters);
+      newUsedLetters.add(currentLetter);
+      setUsedLetters(newUsedLetters);
+      
+      // Update dynamic sequence if the current letter is not already in it
+      const newDynamicSequence = [...dynamicSequence];
+      if (!newDynamicSequence.includes(currentLetter)) {
+        newDynamicSequence.push(currentLetter);
+      }
+      setDynamicSequence(newDynamicSequence);
+    }
   };
 
   const handleHomeClick = () => {
@@ -213,6 +233,10 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator1BottomIsDynamic(false);
       setSpectator2TopIsDynamic(false);
       setSpectator2BottomIsDynamic(false);
+      
+      // Reset local state for used letters and dynamic sequence
+      setUsedLetters(new Set());
+      setDynamicSequence([]);
     }
   };
 
