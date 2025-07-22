@@ -9,6 +9,7 @@ const SpectatorFilterPage: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useAppContext();
   const { selectedWordList } = state;
+  const { initializeMostFrequent } = useAppContext();
 
   // State for two independent spectators
   const [spectator1TopWords, setSpectator1TopWords] = useState<string[]>([]);
@@ -27,6 +28,20 @@ const SpectatorFilterPage: React.FC = () => {
   const [_spectator1BottomIsDynamic, setSpectator1BottomIsDynamic] = useState<boolean>(false);
   const [_spectator2TopIsDynamic, setSpectator2TopIsDynamic] = useState<boolean>(false);
   const [_spectator2BottomIsDynamic, setSpectator2BottomIsDynamic] = useState<boolean>(false);
+
+  // Handle "Most Frequent" sequence initialization (like PERFORM)
+  React.useEffect(() => {
+    if (selectedWordList && state.filterState.isDynamicMode && state.filterState.currentLetter === 'A') {
+      // This is likely the "Most Frequent" sequence that needs initialization
+      const sequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      if (sequence?.sequence === '') {
+        // Only initialize if we don't already have a dynamic sequence
+        if (state.filterState.dynamicSequence.length === 0) {
+          initializeMostFrequent();
+        }
+      }
+    }
+  }, [selectedWordList, state.filterState.isDynamicMode, state.filterState.currentLetter, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence.length, initializeMostFrequent]);
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
