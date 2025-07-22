@@ -39,31 +39,31 @@ const initialState: AppState = {
       questions: [
         {
           id: 'q1',
-          text: 'Do you like sports?',
+          text: 'Are you Person 1?',
           enabled: false,
           order: 1
         },
         {
           id: 'q2',
-          text: 'Are you an introvert?',
+          text: 'Are you Person 2?',
           enabled: false,
           order: 2
         },
         {
           id: 'q3',
-          text: 'Do you prefer coffee over tea?',
+          text: 'Do you prefer Left choices?',
           enabled: false,
           order: 3
         },
         {
           id: 'q4',
-          text: 'Are you a morning person?',
+          text: 'Do you prefer Right choices?',
           enabled: false,
           order: 4
         },
         {
           id: 'q5',
-          text: 'Do you enjoy traveling?',
+          text: 'Are you the active performer?',
           enabled: false,
           order: 5
         }

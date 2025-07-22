@@ -355,9 +355,9 @@ const FilterPage: React.FC = () => {
         </div>
       </div>
 
-      {/* NEW: Psychological Question Display */}
+      {/* NEW: Psychological Question Display - Full width thin box */}
       {shouldShowPsychologicalQuestions && (
-        <div className="bg-dark-grey p-6 rounded-lg mb-4 no-highlight">
+        <div className="w-full bg-dark-grey p-4 rounded-lg mb-4 no-highlight">
           <div className="text-center">
             <div className="text-lg font-medium no-highlight">
                 {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
