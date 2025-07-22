@@ -111,6 +111,7 @@ const SpectatorFilterPage: React.FC = () => {
     console.log('getCurrentLetter debug:', {
       selectedLetterSequenceId: state.userPreferences.selectedLetterSequence,
       selectedSequence: selectedSequence,
+      selectedSequenceSequence: selectedSequence?.sequence,
       letterSequence,
       currentIndex,
       allRemainingWordsLength: allRemainingWords.length,
