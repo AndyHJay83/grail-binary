@@ -215,7 +215,7 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
-      {/* Hidden Spectator Filter button - only shown after long press */}
+      {/* Hidden 2 PERSON PERFORM button - only shown after long press */}
       {showSpectatorButton && (
         <div className="flex justify-center mt-4">
           <button
@@ -227,9 +227,9 @@ const HomePage: React.FC = () => {
               }
             }}
             className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
-            aria-label="Start spectator filtering"
+            aria-label="Start 2 person perform filtering"
           >
-            Spectator Filter
+            2 PERSON PERFORM
           </button>
         </div>
       )}
