@@ -11,12 +11,14 @@ const SpectatorFilterPage: React.FC = () => {
   const { selectedWordList } = state;
 
   // State for two independent spectators
-  const [spectator1Words, setSpectator1Words] = useState<string[]>([]);
-  const [spectator2Words, setSpectator2Words] = useState<string[]>([]);
-  const [spectator1Sequence, setSpectator1Sequence] = useState<BinaryChoice[]>([]);
-  const [spectator2Sequence, setSpectator2Sequence] = useState<BinaryChoice[]>([]);
-
-  // Letter tracking state - track independently for each spectator
+  const [spectator1TopWords, setSpectator1TopWords] = useState<string[]>([]);
+  const [spectator1BottomWords, setSpectator1BottomWords] = useState<string[]>([]);
+  const [spectator2TopWords, setSpectator2TopWords] = useState<string[]>([]);
+  const [spectator2BottomWords, setSpectator2BottomWords] = useState<string[]>([]);
+  const [spectator1TopSequence, setSpectator1TopSequence] = useState<BinaryChoice[]>([]);
+  const [spectator1BottomSequence, setSpectator1BottomSequence] = useState<BinaryChoice[]>([]);
+  const [spectator2TopSequence, setSpectator2TopSequence] = useState<BinaryChoice[]>([]);
+  const [spectator2BottomSequence, setSpectator2BottomSequence] = useState<BinaryChoice[]>([]);
   const [spectator1LetterIndex, setSpectator1LetterIndex] = useState<number>(0);
   const [spectator2LetterIndex, setSpectator2LetterIndex] = useState<number>(0);
 
@@ -24,10 +26,14 @@ const SpectatorFilterPage: React.FC = () => {
   useEffect(() => {
     if (selectedWordList && selectedWordList.words.length > 0) {
       // Start with the full word list like PERFORM does
-      setSpectator1Words([...selectedWordList.words]);
-      setSpectator2Words([...selectedWordList.words]);
-      setSpectator1Sequence([]);
-      setSpectator2Sequence([]);
+      setSpectator1TopWords([...selectedWordList.words]);
+      setSpectator1BottomWords([...selectedWordList.words]);
+      setSpectator2TopWords([...selectedWordList.words]);
+      setSpectator2BottomWords([...selectedWordList.words]);
+      setSpectator1TopSequence([]);
+      setSpectator1BottomSequence([]);
+      setSpectator2TopSequence([]);
+      setSpectator2BottomSequence([]);
       setSpectator1LetterIndex(0);
       setSpectator2LetterIndex(0);
     }
@@ -52,14 +58,14 @@ const SpectatorFilterPage: React.FC = () => {
     }
   };
 
-  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number, choice: BinaryChoice): string[] => {
+  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number): string[] => {
     const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const newSequence = [...sequence, choice];
-    const newLetterIndex = letterIndex + 1;
     
-    // Use the same logic as PERFORM
-    const result = filterWords(words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence);
-    return choice === 'L' ? result.leftWords : result.rightWords;
+    // Use the same logic as PERFORM - apply the sequence to filter words
+    const result = filterWords(words, sequence, letterIndex, letterSequence, state.filterState.dynamicSequence);
+    
+    // Return the left words (like PERFORM's left interpretation)
+    return result.leftWords;
   };
 
   const handleButtonPress = (button: 'left' | 'right' | 'up' | 'down') => {
@@ -87,19 +93,37 @@ const SpectatorFilterPage: React.FC = () => {
         return;
     }
 
-    // Update spectator 1
-    const newSpectator1Sequence = [...spectator1Sequence, spectator1Choice];
+    // Update spectator 1 - each section filters independently
+    const newSpectator1TopSequence = [...spectator1TopSequence, spectator1Choice];
+    const newSpectator1BottomSequence = [...spectator1BottomSequence, spectator1Choice];
     const newSpectator1LetterIndex = spectator1LetterIndex + 1;
-    setSpectator1Sequence(newSpectator1Sequence);
+    
+    setSpectator1TopSequence(newSpectator1TopSequence);
+    setSpectator1BottomSequence(newSpectator1BottomSequence);
     setSpectator1LetterIndex(newSpectator1LetterIndex);
-    setSpectator1Words(prev => filterSpectatorWords(prev, newSpectator1Sequence, spectator1LetterIndex, spectator1Choice));
+    
+    // Filter each section independently like PERFORM
+    const spectator1TopResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator1TopSequence, newSpectator1LetterIndex);
+    const spectator1BottomResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator1BottomSequence, newSpectator1LetterIndex);
+    
+    setSpectator1TopWords(spectator1TopResult);
+    setSpectator1BottomWords(spectator1BottomResult);
 
-    // Update spectator 2
-    const newSpectator2Sequence = [...spectator2Sequence, spectator2Choice];
+    // Update spectator 2 - each section filters independently
+    const newSpectator2TopSequence = [...spectator2TopSequence, spectator2Choice];
+    const newSpectator2BottomSequence = [...spectator2BottomSequence, spectator2Choice];
     const newSpectator2LetterIndex = spectator2LetterIndex + 1;
-    setSpectator2Sequence(newSpectator2Sequence);
+    
+    setSpectator2TopSequence(newSpectator2TopSequence);
+    setSpectator2BottomSequence(newSpectator2BottomSequence);
     setSpectator2LetterIndex(newSpectator2LetterIndex);
-    setSpectator2Words(prev => filterSpectatorWords(prev, newSpectator2Sequence, spectator2LetterIndex, spectator2Choice));
+    
+    // Filter each section independently like PERFORM
+    const spectator2TopResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator2TopSequence, newSpectator2LetterIndex);
+    const spectator2BottomResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator2BottomSequence, newSpectator2LetterIndex);
+    
+    setSpectator2TopWords(spectator2TopResult);
+    setSpectator2BottomWords(spectator2BottomResult);
   };
 
   const handleHomeClick = () => {
@@ -109,10 +133,14 @@ const SpectatorFilterPage: React.FC = () => {
   const handleReset = () => {
     if (selectedWordList) {
       // Reset to full word list like PERFORM does
-      setSpectator1Words([...selectedWordList.words]);
-      setSpectator2Words([...selectedWordList.words]);
-      setSpectator1Sequence([]);
-      setSpectator2Sequence([]);
+      setSpectator1TopWords([...selectedWordList.words]);
+      setSpectator1BottomWords([...selectedWordList.words]);
+      setSpectator2TopWords([...selectedWordList.words]);
+      setSpectator2BottomWords([...selectedWordList.words]);
+      setSpectator1TopSequence([]);
+      setSpectator1BottomSequence([]);
+      setSpectator2TopSequence([]);
+      setSpectator2BottomSequence([]);
       setSpectator1LetterIndex(0);
       setSpectator2LetterIndex(0);
     }
@@ -184,14 +212,14 @@ const SpectatorFilterPage: React.FC = () => {
             {/* Top Half */}
             <div>
               <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
-                {getWordsToShow(getTopHalf(spectator1Words)).map((word, index) => (
+                {getWordsToShow(getTopHalf(spectator1TopWords)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
                   </div>
                 ))}
-                {getTopHalf(spectator1Words).length > 10 && (
+                {getTopHalf(spectator1TopWords).length > 10 && (
                   <div className="text-gray-400 text-xs">
-                    +{getTopHalf(spectator1Words).length - 10} more
+                    +{getTopHalf(spectator1TopWords).length - 10} more
                   </div>
                 )}
               </div>
@@ -203,14 +231,14 @@ const SpectatorFilterPage: React.FC = () => {
             {/* Bottom Half */}
             <div>
               <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
-                {getWordsToShow(getBottomHalf(spectator1Words)).map((word, index) => (
+                {getWordsToShow(getBottomHalf(spectator1BottomWords)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
                   </div>
                 ))}
-                {getBottomHalf(spectator1Words).length > 10 && (
+                {getBottomHalf(spectator1BottomWords).length > 10 && (
                   <div className="text-gray-400 text-xs">
-                    +{getBottomHalf(spectator1Words).length - 10} more
+                    +{getBottomHalf(spectator1BottomWords).length - 10} more
                   </div>
                 )}
               </div>
@@ -225,14 +253,14 @@ const SpectatorFilterPage: React.FC = () => {
             {/* Top Half */}
             <div>
               <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
-                {getWordsToShow(getTopHalf(spectator2Words)).map((word, index) => (
+                {getWordsToShow(getTopHalf(spectator2TopWords)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
                   </div>
                 ))}
-                {getTopHalf(spectator2Words).length > 10 && (
+                {getTopHalf(spectator2TopWords).length > 10 && (
                   <div className="text-gray-400 text-xs">
-                    +{getTopHalf(spectator2Words).length - 10} more
+                    +{getTopHalf(spectator2TopWords).length - 10} more
                   </div>
                 )}
               </div>
@@ -244,14 +272,14 @@ const SpectatorFilterPage: React.FC = () => {
             {/* Bottom Half */}
             <div>
               <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
-                {getWordsToShow(getBottomHalf(spectator2Words)).map((word, index) => (
+                {getWordsToShow(getBottomHalf(spectator2BottomWords)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
                   </div>
                 ))}
-                {getBottomHalf(spectator2Words).length > 10 && (
+                {getBottomHalf(spectator2BottomWords).length > 10 && (
                   <div className="text-gray-400 text-xs">
-                    +{getBottomHalf(spectator2Words).length - 10} more
+                    +{getBottomHalf(spectator2BottomWords).length - 10} more
                   </div>
                 )}
               </div>
