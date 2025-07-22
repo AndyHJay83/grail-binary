@@ -90,6 +90,11 @@ const SpectatorFilterPage: React.FC = () => {
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
   const getCurrentLetter = (): { letter: string; isDynamic: boolean } => {
+    // Don't try to get current letter if we don't have a word list yet
+    if (!selectedWordList || selectedWordList.words.length === 0) {
+      return { letter: '', isDynamic: false };
+    }
+
     const selectedSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
     const letterSequence = selectedSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
