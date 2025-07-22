@@ -93,7 +93,7 @@ const AddSequenceModal: React.FC<AddSequenceModalProps> = ({ isOpen, onClose, on
 };
 
 const LetterSequenceManager: React.FC = () => {
-  const { state, updateLetterSequence, updatePreferences } = useAppContext();
+  const { state, setDefaultLetterSequence } = useAppContext();
   const [showAddModal, setShowAddModal] = useState(false);
   const [sequences, setSequences] = useState<LetterSequence[]>(getAllSequences());
 
@@ -108,17 +108,13 @@ const LetterSequenceManager: React.FC = () => {
     
     // If we deleted the currently selected sequence, switch to full alphabet
     if (state.userPreferences.selectedLetterSequence === id) {
-      updateLetterSequence('full-alphabet');
+      setDefaultLetterSequence('full-alphabet');
     }
   };
 
-  // Update both selectedLetterSequence and originalLetterSequence when changed from settings
+  // Only update default when user changes in Settings
   const handleSequenceChange = (sequenceId: string) => {
-    updatePreferences({
-      selectedLetterSequence: sequenceId,
-      originalLetterSequence: sequenceId
-    });
-    updateLetterSequence(sequenceId);
+    setDefaultLetterSequence(sequenceId);
   };
 
   // Use originalLetterSequence for the dropdown value

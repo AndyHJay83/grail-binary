@@ -300,27 +300,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
         }
       };
     
-    case 'UPDATE_LETTER_SEQUENCE':
+    case 'UPDATE_LETTER_SEQUENCE': {
       const updateSequence = getSequenceById(action.payload);
       const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const updateFilterResult = resetFilter(updateLetterSequence);
-      
-      // When going Home and selecting the original sequence, restore it
-      // Otherwise, store the original sequence if this is the first time selecting it
-      // or if we're resetting to a new sequence (not from Most Frequent mode)
-      const shouldUpdateOriginal = action.payload === state.userPreferences.originalLetterSequence ||
-        state.userPreferences.originalLetterSequence === 'full-alphabet' || 
-        (state.userPreferences.selectedLetterSequence === 'most-frequent' && action.payload !== 'most-frequent');
-      
-      // When going Home, always restore the original sequence
-      const shouldRestoreOriginal = action.payload === state.userPreferences.originalLetterSequence;
-      
       return {
         ...state,
         userPreferences: {
           ...state.userPreferences,
-          selectedLetterSequence: shouldRestoreOriginal ? state.userPreferences.originalLetterSequence : action.payload,
-          originalLetterSequence: shouldUpdateOriginal ? action.payload : state.userPreferences.originalLetterSequence
+          selectedLetterSequence: action.payload
         },
         filterState: {
           currentLetter: updateFilterResult.currentLetter,
@@ -339,6 +327,36 @@ function appReducer(state: AppState, action: AppAction): AppState {
           psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
+    }
+    case 'SET_DEFAULT_LETTER_SEQUENCE': {
+      const updateSequence = getSequenceById(action.payload);
+      const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const updateFilterResult = resetFilter(updateLetterSequence);
+      return {
+        ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          selectedLetterSequence: action.payload,
+          originalLetterSequence: action.payload
+        },
+        filterState: {
+          currentLetter: updateFilterResult.currentLetter,
+          sequence: updateFilterResult.sequence,
+          leftWords: updateFilterResult.leftWords,
+          rightWords: updateFilterResult.rightWords,
+          letterIndex: updateFilterResult.letterIndex,
+          usedLetters: updateFilterResult.usedLetters,
+          dynamicSequence: updateFilterResult.dynamicSequence,
+          isDynamicMode: updateFilterResult.isDynamicMode,
+          sideOfferLetter: updateFilterResult.sideOfferLetter,
+          confirmedSide: updateFilterResult.confirmedSide, // RESTORED: Needed for long press functionality
+          confirmedSideValue: updateFilterResult.confirmedSideValue, // RESTORED: Needed for long press functionality
+          // Preserve psychological profiling data
+          psychologicalAnswers: state.filterState.psychologicalAnswers,
+          psychologicalProfile: state.filterState.psychologicalProfile
+        }
+      };
+    }
     
     case 'INITIALIZE_MOST_FREQUENT':
       // REMOVE all logic from here, handled in provider
@@ -662,6 +680,7 @@ interface AppContextType {
   resetFilter: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   updateLetterSequence: (sequenceId: string) => void;
+  setDefaultLetterSequence: (sequenceId: string) => void;
   updateMostFrequentFilter: (enabled: boolean) => void;
   initializeMostFrequent: () => void;
   getAllWordLists: () => WordList[];
@@ -741,6 +760,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'UPDATE_LETTER_SEQUENCE', payload: sequenceId });
   };
 
+  // Add this function for Settings
+  const setDefaultLetterSequence = (sequenceId: string) => {
+    dispatch({ type: 'SET_DEFAULT_LETTER_SEQUENCE', payload: sequenceId });
+  };
+
   const updateMostFrequentFilter = (enabled: boolean) => {
     updatePreferences({ mostFrequentFilter: enabled });
   };
@@ -789,6 +813,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     resetFilter,
     updatePreferences,
     updateLetterSequence,
+    setDefaultLetterSequence, // Add to context
     updateMostFrequentFilter,
     initializeMostFrequent,
     getAllWordLists,
