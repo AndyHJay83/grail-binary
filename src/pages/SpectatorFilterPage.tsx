@@ -300,8 +300,8 @@ const SpectatorFilterPage: React.FC = () => {
     <div className="min-h-screen bg-black text-white p-4">
       {/* Letter Display Bubble - Centered in D-Pad X */}
       {currentLetterInfo.letter && (
-        <div className="absolute top-4/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50" style={{ marginTop: '400px' }}>
-          <div className={`bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${currentLetterInfo.isDynamic ? 'text-red-500' : 'text-white'}`}>
+        <div className="absolute top-4/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50" style={{ marginTop: '385px' }}>
+          <div className={`bg-blue-600 w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold ${currentLetterInfo.isDynamic ? 'text-red-500' : 'text-white'}`}>
             {currentLetterInfo.letter}
           </div>
         </div>
