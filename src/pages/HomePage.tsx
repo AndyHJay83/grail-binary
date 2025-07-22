@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { WordListCard } from '../types';
@@ -10,7 +10,11 @@ const HomePage: React.FC = () => {
   const { getAllWordLists, selectWordList, state } = useAppContext();
   const [wordLists, setWordLists] = React.useState<WordListCard[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [showSpectatorButton, setShowSpectatorButton] = React.useState(false);
 
+  // Long press detection refs
+  const longPressAreaRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
 
   React.useEffect(() => {
@@ -76,6 +80,19 @@ const HomePage: React.FC = () => {
 
   const handleSettingsClick = () => {
     navigate('/settings');
+  };
+
+  const handleLongPressStart = () => {
+    longPressTimerRef.current = setTimeout(() => {
+      setShowSpectatorButton(true);
+    }, 2000); // 2 second long press
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
   };
 
   const getWordListCards = (): WordListCard[] => {
@@ -196,23 +213,36 @@ const HomePage: React.FC = () => {
         </button>
       </div>
 
-      {/* Spectator Filter button */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={() => {
-            const selectedId = state.userPreferences.selectedWordListId;
-            if (selectedId) {
-              selectWordList(selectedId);
-              navigate('/spectator-filter');
-            }
-          }}
-          className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
-          aria-label="Start spectator filtering"
-        >
-          Spectator Filter
-        </button>
-      </div>
+      {/* Hidden Spectator Filter button - only shown after long press */}
+      {showSpectatorButton && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={() => {
+              const selectedId = state.userPreferences.selectedWordListId;
+              if (selectedId) {
+                selectWordList(selectedId);
+                navigate('/spectator-filter');
+              }
+            }}
+            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
+            aria-label="Start spectator filtering"
+          >
+            Spectator Filter
+          </button>
+        </div>
+      )}
 
+      {/* Long press detection area at the bottom */}
+      <div
+        ref={longPressAreaRef}
+        className="fixed bottom-0 left-0 right-0 h-20 bg-transparent"
+        onMouseDown={handleLongPressStart}
+        onMouseUp={handleLongPressEnd}
+        onMouseLeave={handleLongPressEnd}
+        onTouchStart={handleLongPressStart}
+        onTouchEnd={handleLongPressEnd}
+        style={{ touchAction: 'none' }}
+      />
 
     </div>
   );
