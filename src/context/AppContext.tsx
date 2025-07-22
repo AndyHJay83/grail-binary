@@ -74,10 +74,10 @@ const initialState: AppState = {
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'SELECT_WORD_LIST':
-      // This will be handled asynchronously in the component
+    case 'SELECT_WORD_LIST': {
       const selectSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       const selectLetterSequence = selectSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      console.log('[DEBUG] SELECT_WORD_LIST: selectedLetterSequence:', state.userPreferences.selectedLetterSequence, '->', selectSequence);
       const selectFilterResult = resetFilter(selectLetterSequence);
       return {
         ...state,
@@ -88,6 +88,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           psychologicalProfile: state.filterState.psychologicalProfile
         }
       };
+    }
     
     case 'MAKE_BINARY_CHOICE':
       const { choice } = action.payload;
@@ -303,6 +304,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_LETTER_SEQUENCE': {
       const updateSequence = getSequenceById(action.payload);
       const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      console.log('[DEBUG] UPDATE_LETTER_SEQUENCE: action.payload:', action.payload, '->', updateSequence);
       const updateFilterResult = resetFilter(updateLetterSequence);
       return {
         ...state,
@@ -331,6 +333,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_DEFAULT_LETTER_SEQUENCE': {
       const updateSequence = getSequenceById(action.payload);
       const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      console.log('[DEBUG] SET_DEFAULT_LETTER_SEQUENCE: action.payload:', action.payload, '->', updateSequence);
       const updateFilterResult = resetFilter(updateLetterSequence);
       return {
         ...state,
