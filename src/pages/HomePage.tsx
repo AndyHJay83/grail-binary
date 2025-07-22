@@ -198,20 +198,22 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* PERFORM_TEST button at the bottom of the page */}
-      <div className="flex justify-center mt-30">
-        <button
-          onClick={() => {
-            const selectedId = state.userPreferences.selectedWordListId;
-            if (selectedId) {
-              handleWordListSelect(selectedId);
-            }
-          }}
-          className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
-          aria-label="Start filtering (PERFORM_TEST)"
-        >
-          PERFORM_TEST
-        </button>
-      </div>
+      {showSpectatorButton && (
+        <div className="flex justify-center mt-30">
+          <button
+            onClick={() => {
+              const selectedId = state.userPreferences.selectedWordListId;
+              if (selectedId) {
+                handleWordListSelect(selectedId);
+              }
+            }}
+            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
+            aria-label="Start filtering (PERFORM_TEST)"
+          >
+            PERFORM_TEST
+          </button>
+        </div>
+      )}
 
       {/* Hidden Spectator Filter button - only shown after long press */}
       {showSpectatorButton && (
