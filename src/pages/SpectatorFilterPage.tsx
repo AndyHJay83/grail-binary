@@ -123,8 +123,7 @@ const SpectatorFilterPage: React.FC = () => {
           <div className="space-y-4">
             {/* Top Half */}
             <div>
-              <h3 className="text-sm text-gray-400 mb-2">Top 50%</h3>
-              <div className="bg-dark-grey p-3 rounded min-h-[200px] max-h-[200px] overflow-y-auto">
+              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
                 {getWordsToShow(getTopHalf(spectator1Words)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
@@ -143,8 +142,7 @@ const SpectatorFilterPage: React.FC = () => {
 
             {/* Bottom Half */}
             <div>
-              <h3 className="text-sm text-gray-400 mb-2">Bottom 50%</h3>
-              <div className="bg-dark-grey p-3 rounded min-h-[200px] max-h-[200px] overflow-y-auto">
+              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
                 {getWordsToShow(getBottomHalf(spectator1Words)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
@@ -166,8 +164,7 @@ const SpectatorFilterPage: React.FC = () => {
           <div className="space-y-4">
             {/* Top Half */}
             <div>
-              <h3 className="text-sm text-gray-400 mb-2">Top 50%</h3>
-              <div className="bg-dark-grey p-3 rounded min-h-[200px] max-h-[200px] overflow-y-auto">
+              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
                 {getWordsToShow(getTopHalf(spectator2Words)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
@@ -186,8 +183,7 @@ const SpectatorFilterPage: React.FC = () => {
 
             {/* Bottom Half */}
             <div>
-              <h3 className="text-sm text-gray-400 mb-2">Bottom 50%</h3>
-              <div className="bg-dark-grey p-3 rounded min-h-[200px] max-h-[200px] overflow-y-auto">
+              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
                 {getWordsToShow(getBottomHalf(spectator2Words)).map((word, index) => (
                   <div key={index} className="text-white text-sm mb-1">
                     {word}
