@@ -53,12 +53,22 @@ const FilterPage: React.FC = () => {
 
   // Handle "Most Frequent" sequence initialization
   React.useEffect(() => {
+    console.log('FilterPage Most Frequent debug:', {
+      selectedWordList: selectedWordList ? { id: selectedWordList.id, wordCount: selectedWordList.words.length } : null,
+      isDynamicMode: filterState.isDynamicMode,
+      currentLetter: filterState.currentLetter,
+      selectedLetterSequence: userPreferences.selectedLetterSequence,
+      dynamicSequenceLength: filterState.dynamicSequence.length,
+      sequence: getSequenceById(userPreferences.selectedLetterSequence)
+    });
+
     if (selectedWordList && filterState.isDynamicMode && filterState.currentLetter === 'A') {
       // This is likely the "Most Frequent" sequence that needs initialization
       const sequence = getSequenceById(userPreferences.selectedLetterSequence);
       if (sequence?.sequence === '') {
         // Only initialize if we don't already have a dynamic sequence
         if (filterState.dynamicSequence.length === 0) {
+          console.log('FilterPage: Initializing Most Frequent');
           initializeMostFrequent();
         }
       }
