@@ -7,7 +7,7 @@ import { getSequenceById } from '../data/letterSequences';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { getAllWordLists, selectWordList, state, updateLetterSequence } = useAppContext();
+  const { getAllWordLists, selectWordList, state } = useAppContext();
   const [wordLists, setWordLists] = React.useState<WordListCard[]>([]);
   const [loading, setLoading] = React.useState(true);
 
