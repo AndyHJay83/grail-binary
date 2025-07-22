@@ -493,62 +493,19 @@ function appReducer(state: AppState, action: AppAction): AppState {
       let newRightWords: string[] = [];
       
       if (sideOfferLetter) {
-        // Re-apply the binary choice filtering to the confirmed words
-        // to maintain the left/right distribution
-        const currentSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
-        const currentLetterSequence = currentSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        
-        // Apply the current sequence filtering to the confirmed words
-        confirmedWords.forEach(word => {
-          const upperWord = word.toUpperCase();
-          let matchesLeftPattern = true;
-          let matchesRightPattern = true;
-
-          // Check each letter in the sequence
-          for (let i = 0; i < state.filterState.sequence.length; i++) {
-            let letter: string;
-            
-            // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence for all letters
-            if (currentLetterSequence === '') {
-              letter = state.filterState.dynamicSequence[i] || '';
-            } else if (i < currentLetterSequence.length) {
-              // Predefined sequence letter
-              letter = currentLetterSequence[i];
-            } else {
-              // Dynamic sequence letter (after predefined sequence)
-              letter = state.filterState.dynamicSequence[i] || '';
-            }
-            
-            const choice = state.filterState.sequence[i];
-            
-            // Skip empty letters - they shouldn't be processed
-            if (!letter || letter === '') {
-              continue;
-            }
-            
-            const hasLetter = upperWord.includes(letter);
-
-            // Left pattern: L choice means include letter, R choice means exclude letter
-            if (choice === 'L' && !hasLetter) {
-              matchesLeftPattern = false;
-            }
-            if (choice === 'R' && hasLetter) {
-              matchesLeftPattern = false;
-            }
-
-            // Right pattern: R choice means include letter, L choice means exclude letter  
-            if (choice === 'R' && !hasLetter) {
-              matchesRightPattern = false;
-            }
-            if (choice === 'L' && hasLetter) {
-              matchesRightPattern = false;
-            }
-          }
-
-          // Add word to appropriate list(s)
-          if (matchesLeftPattern) newLeftWords.push(word);
-          if (matchesRightPattern) newRightWords.push(word);
-        });
+        // When side offer letter is confirmed, we know the binary interpretation
+        // The confirmed side is NO, the opposite side is YES
+        if (side === 'L') {
+          // Left side confirmed as NO, so right side is YES
+          // Keep only words that match the right pattern (YES pattern)
+          newLeftWords = [];
+          newRightWords = confirmedWords;
+        } else {
+          // Right side confirmed as NO, so left side is YES
+          // Keep only words that match the left pattern (YES pattern)
+          newLeftWords = confirmedWords;
+          newRightWords = [];
+        }
       } else {
         // This shouldn't happen with side offer letters, but fallback
         newLeftWords = state.filterState.leftWords;
