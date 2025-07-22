@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { BinaryChoice } from '../types';
-import { filterWords, getBackgroundColor, getNextLetterWithDynamic } from '../utils/binaryFilter';
+import { filterWords, getBackgroundColor, getNextLetterWithDynamic, selectNextDynamicLetter } from '../utils/binaryFilter';
 import { getSequenceById } from '../data/letterSequences';
 
 const SpectatorFilterPage: React.FC = () => {
@@ -72,7 +72,6 @@ const SpectatorFilterPage: React.FC = () => {
       const sequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       if (sequence?.sequence === '') {
         // Most Frequent sequence selected - initialize the first letter
-        const { selectNextDynamicLetter } = require('../utils/binaryFilter');
         const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set());
         console.log('Most Frequent initialization - firstLetter:', firstLetter);
         if (firstLetter) {
