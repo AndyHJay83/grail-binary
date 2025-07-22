@@ -86,26 +86,14 @@ const SpectatorFilterPage: React.FC = () => {
       ...spectator2BottomWords
     ];
     
-    // Debug logging
-    console.log('getCurrentLetter debug:', {
-      letterSequence,
-      currentIndex,
-      allRemainingWordsLength: allRemainingWords.length,
-      usedLetters: Array.from(usedLetters),
-      mostFrequentFilter: state.userPreferences.mostFrequentFilter
-    });
-    
     // Use the same logic as PERFORM with local used letters
-    const result = getNextLetterWithDynamic(
+    return getNextLetterWithDynamic(
       currentIndex,
       letterSequence,
       allRemainingWords,
       usedLetters,
       state.userPreferences.mostFrequentFilter
     );
-    
-    console.log('getCurrentLetter result:', result);
-    return result;
   };
 
   const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number): { leftWords: string[]; isDynamic: boolean } => {
@@ -313,7 +301,7 @@ const SpectatorFilterPage: React.FC = () => {
       {/* Letter Display Bubble - Centered in D-Pad X */}
       {currentLetterInfo.letter && (
         <div className="absolute top-4/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50" style={{ marginTop: '425px' }}>
-          <div className={`bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${currentLetterInfo.isDynamic ? 'text-red-500' : ''}`}>
+          <div className={`bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${currentLetterInfo.isDynamic ? 'text-red-500' : 'text-white'}`}>
             {currentLetterInfo.letter}
           </div>
         </div>
