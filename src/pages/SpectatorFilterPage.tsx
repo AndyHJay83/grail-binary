@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { BinaryChoice } from '../types';
+import { filterWords } from '../utils/binaryFilter';
+import { getSequenceById } from '../data/letterSequences';
 
 const SpectatorFilterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,20 +13,29 @@ const SpectatorFilterPage: React.FC = () => {
   // State for two independent spectators
   const [spectator1Words, setSpectator1Words] = useState<string[]>([]);
   const [spectator2Words, setSpectator2Words] = useState<string[]>([]);
+  const [spectator1Sequence, setSpectator1Sequence] = useState<BinaryChoice[]>([]);
+  const [spectator2Sequence, setSpectator2Sequence] = useState<BinaryChoice[]>([]);
 
-  // Initialize both spectators with the same word list
+  // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
     if (selectedWordList && selectedWordList.words.length > 0) {
-      setSpectator1Words([...selectedWordList.words]);
-      setSpectator2Words([...selectedWordList.words]);
+      const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      
+      // Initialize with empty sequences to get the full word list split
+      const initialResult = filterWords(selectedWordList.words, [], 0, letterSequence, state.filterState.dynamicSequence);
+      
+      setSpectator1Words(initialResult.leftWords);
+      setSpectator2Words(initialResult.leftWords); // Both start with left words
+      setSpectator1Sequence([]);
+      setSpectator2Sequence([]);
     }
-  }, [selectedWordList]);
+  }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
-  const filterWords = (words: string[], choice: BinaryChoice): string[] => {
-    if (words.length <= 1) return words;
-    
-    const midPoint = Math.ceil(words.length / 2);
-    return choice === 'L' ? words.slice(0, midPoint) : words.slice(midPoint);
+  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], choice: BinaryChoice): string[] => {
+    const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const newSequence = [...sequence, choice];
+    const result = filterWords(words, newSequence, newSequence.length - 1, letterSequence, state.filterState.dynamicSequence);
+    return choice === 'L' ? result.leftWords : result.rightWords;
   };
 
   const handleButtonPress = (button: 'left' | 'right' | 'up' | 'down') => {
@@ -52,8 +63,15 @@ const SpectatorFilterPage: React.FC = () => {
         return;
     }
 
-    setSpectator1Words(prev => filterWords(prev, spectator1Choice));
-    setSpectator2Words(prev => filterWords(prev, spectator2Choice));
+    // Update spectator 1
+    const newSpectator1Sequence = [...spectator1Sequence, spectator1Choice];
+    setSpectator1Sequence(newSpectator1Sequence);
+    setSpectator1Words(prev => filterSpectatorWords(prev, newSpectator1Sequence, spectator1Choice));
+
+    // Update spectator 2
+    const newSpectator2Sequence = [...spectator2Sequence, spectator2Choice];
+    setSpectator2Sequence(newSpectator2Sequence);
+    setSpectator2Words(prev => filterSpectatorWords(prev, newSpectator2Sequence, spectator2Choice));
   };
 
   const handleHomeClick = () => {
@@ -62,8 +80,13 @@ const SpectatorFilterPage: React.FC = () => {
 
   const handleReset = () => {
     if (selectedWordList) {
-      setSpectator1Words([...selectedWordList.words]);
-      setSpectator2Words([...selectedWordList.words]);
+      const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const initialResult = filterWords(selectedWordList.words, [], 0, letterSequence, state.filterState.dynamicSequence);
+      
+      setSpectator1Words(initialResult.leftWords);
+      setSpectator2Words(initialResult.leftWords);
+      setSpectator1Sequence([]);
+      setSpectator2Sequence([]);
     }
   };
 
