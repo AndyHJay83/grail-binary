@@ -216,7 +216,7 @@ const SpectatorFilterPage: React.FC = () => {
     <div className="min-h-screen bg-black text-white p-4">
       {/* Letter Display Bubble - Centered in D-Pad X */}
       {currentLetter && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
           <div className="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold">
             {currentLetter}
           </div>
