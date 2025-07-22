@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { BinaryChoice } from '../types';
-import { filterWords } from '../utils/binaryFilter';
+import { filterWords, getBackgroundColor } from '../utils/binaryFilter';
 import { getSequenceById } from '../data/letterSequences';
 
 const SpectatorFilterPage: React.FC = () => {
@@ -169,6 +169,34 @@ const SpectatorFilterPage: React.FC = () => {
     return words; // Full word list in bottom section
   };
 
+  const getTextColor = (backgroundColor: string): string => {
+    if (backgroundColor.includes('success-green') || backgroundColor.includes('orange-400') || backgroundColor.includes('red-400')) {
+      return 'text-black';
+    }
+    return 'text-white';
+  };
+
+  // Background color functions for each section
+  const getSpectator1TopBackgroundColor = () => {
+    if (!selectedWordList) return 'bg-black';
+    return getBackgroundColor(spectator1TopWords.length);
+  };
+
+  const getSpectator1BottomBackgroundColor = () => {
+    if (!selectedWordList) return 'bg-black';
+    return getBackgroundColor(spectator1BottomWords.length);
+  };
+
+  const getSpectator2TopBackgroundColor = () => {
+    if (!selectedWordList) return 'bg-black';
+    return getBackgroundColor(spectator2TopWords.length);
+  };
+
+  const getSpectator2BottomBackgroundColor = () => {
+    if (!selectedWordList) return 'bg-black';
+    return getBackgroundColor(spectator2BottomWords.length);
+  };
+
   if (!selectedWordList) {
     return (
       <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
@@ -221,9 +249,9 @@ const SpectatorFilterPage: React.FC = () => {
           <div className="space-y-4">
             {/* Top Half */}
             <div>
-              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
+              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator1TopBackgroundColor()}`}>
                 {getWordsToShow(getTopHalf(spectator1TopWords)).map((word, index) => (
-                  <div key={index} className="text-white text-sm mb-1">
+                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator1TopBackgroundColor())}`}>
                     {word}
                   </div>
                 ))}
@@ -240,9 +268,9 @@ const SpectatorFilterPage: React.FC = () => {
 
             {/* Bottom Half */}
             <div>
-              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
+              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator1BottomBackgroundColor()}`}>
                 {getWordsToShow(getBottomHalf(spectator1BottomWords)).map((word, index) => (
-                  <div key={index} className="text-white text-sm mb-1">
+                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator1BottomBackgroundColor())}`}>
                     {word}
                   </div>
                 ))}
@@ -262,9 +290,9 @@ const SpectatorFilterPage: React.FC = () => {
           <div className="space-y-4">
             {/* Top Half */}
             <div>
-              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
+              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator2TopBackgroundColor()}`}>
                 {getWordsToShow(getTopHalf(spectator2TopWords)).map((word, index) => (
-                  <div key={index} className="text-white text-sm mb-1">
+                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator2TopBackgroundColor())}`}>
                     {word}
                   </div>
                 ))}
@@ -281,9 +309,9 @@ const SpectatorFilterPage: React.FC = () => {
 
             {/* Bottom Half */}
             <div>
-              <div className="bg-dark-grey p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto">
+              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator2BottomBackgroundColor()}`}>
                 {getWordsToShow(getBottomHalf(spectator2BottomWords)).map((word, index) => (
-                  <div key={index} className="text-white text-sm mb-1">
+                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator2BottomBackgroundColor())}`}>
                     {word}
                   </div>
                 ))}
