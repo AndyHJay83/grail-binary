@@ -181,14 +181,14 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* PERFORM_TEST button at the bottom of the page */}
-      <div className="flex justify-center mt-10">
+      <div className="flex justify-center mt-30">
         <button
           onClick={() => {
             if (wordListCards.length > 0) {
               handleWordListSelect(wordListCards[0].id);
             }
           }}
-          className="btn-primary w-1/2"
+          className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
           aria-label="Start filtering (PERFORM_TEST)"
         >
           PERFORM_TEST
