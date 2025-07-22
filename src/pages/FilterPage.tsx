@@ -120,13 +120,14 @@ const FilterPage: React.FC = () => {
 
   // Long press handlers
   const startLongPress = (side: 'L' | 'R', timerRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
-    if (!filterState.sideOfferLetter) {
-      return;
-    }
-    
     timerRef.current = setTimeout(() => {
-      // Confirm the pressed side as NO
-      confirmSide(side, 'NO');
+      if (filterState.sideOfferLetter) {
+        // Confirm the pressed side as NO for side offer letter
+        confirmSide(side, 'NO');
+      } else {
+        // Confirm the pressed side as NO for binary choice
+        confirmSide(side, 'NO');
+      }
       
       // Set a delay to prevent accidental clicks
       longPressCompletedRef.current = true;
@@ -324,8 +325,9 @@ const FilterPage: React.FC = () => {
 
   // Show words based on confirmed side logic
   const getWordsToShow = () => {
-    // If a side has been confirmed, only show words from that side
-    if (filterState.confirmedSide) {
+    // If a side has been confirmed AND there's no side offer letter (meaning it was a binary choice confirmation)
+    // then only show words from that side
+    if (filterState.confirmedSide && !filterState.sideOfferLetter) {
       if (filterState.confirmedSide === 'L') {
         return {
           leftWords: filterState.leftWords,
@@ -339,7 +341,7 @@ const FilterPage: React.FC = () => {
       }
     }
     
-    // Otherwise show both interpretations
+    // Otherwise show both interpretations (including when side offer letter was confirmed)
     return {
       leftWords: filterState.leftWords,
       rightWords: filterState.rightWords

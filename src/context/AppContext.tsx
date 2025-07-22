@@ -213,8 +213,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
           dynamicSequence: newDynamicSequence,
           isDynamicMode: nextLetterInfo.isDynamic,
           sideOfferLetter: state.filterState.sideOfferLetter,
-          confirmedSide: state.filterState.confirmedSide, // RESTORED: Needed for long press functionality
-          confirmedSideValue: state.filterState.confirmedSideValue, // RESTORED: Needed for long press functionality
+          confirmedSide: undefined, // Clear confirmed side when making a new binary choice
+          confirmedSideValue: undefined, // Clear confirmed side value when making a new binary choice
           // Preserve psychological profiling data
           psychologicalAnswers: state.filterState.psychologicalAnswers,
           psychologicalProfile: state.filterState.psychologicalProfile
@@ -488,37 +488,52 @@ function appReducer(state: AppState, action: AppAction): AppState {
         confirmedWords = wordsForAnalysis;
       }
       
-      // LONG PRESS CONFIRMATION: Only work with side offer letter, don't change normal letter selection
-      // Keep the current letter and sequence unchanged for long press confirmation
-      const currentLetter = state.filterState.currentLetter;
-      const updatedPreferences = state.userPreferences;
-      
-      // Update the word lists based on the confirmed side
+      // Side offer letter confirmation - this confirms the side as NO for both the side offer letter AND binary choices
       let newLeftWords: string[] = [];
       let newRightWords: string[] = [];
       
-      if (side === 'L') {
-        // Left side confirmed - put confirmed words in leftWords, clear rightWords
-        newLeftWords = confirmedWords;
-        newRightWords = [];
+      if (sideOfferLetter) {
+        // When side offer letter is confirmed, we know the binary interpretation
+        // The confirmed side is NO, the opposite side is YES
+        if (side === 'L') {
+          // Left side confirmed as NO, so right side is YES
+          // Keep only words that match the right pattern (YES pattern)
+          newLeftWords = [];
+          newRightWords = confirmedWords;
+        } else {
+          // Right side confirmed as NO, so left side is YES
+          // Keep only words that match the left pattern (YES pattern)
+          newLeftWords = confirmedWords;
+          newRightWords = [];
+        }
       } else {
-        // Right side confirmed - put confirmed words in rightWords, clear leftWords
-        newLeftWords = [];
-        newRightWords = confirmedWords;
+        // This shouldn't happen with side offer letters, but fallback
+        newLeftWords = state.filterState.leftWords;
+        newRightWords = state.filterState.rightWords;
+      }
+      
+      // Switch to Most Frequent mode after side confirmation
+      let updatedPreferences = state.userPreferences;
+      if (sideOfferLetter) {
+        // Switch to Most Frequent mode while preserving original choice
+        updatedPreferences = {
+          ...state.userPreferences,
+          selectedLetterSequence: 'most-frequent'
+        };
       }
       
       const newFilterState = {
         ...state.filterState,
-        confirmedSide: side, // RESTORED: Needed for long press functionality
-        confirmedSideValue: value, // RESTORED: Needed for long press functionality
+        confirmedSide: side, // Keep confirmed side for visual feedback
+        confirmedSideValue: value, // Keep confirmed side value for visual feedback
         sideOfferLetter: undefined, // Clear the side offer letter
         dynamicSequence: newDynamicSequence,
         usedLetters: newUsedLetters,
-        currentLetter: currentLetter,
-        isDynamicMode: state.filterState.isDynamicMode, // Keep current mode unchanged
+        currentLetter: '', // Clear current letter to trigger Most Frequent initialization
+        isDynamicMode: true, // Switch to dynamic mode
         letterIndex: state.filterState.letterIndex, // Keep current index unchanged
-        leftWords: newLeftWords, // Update with confirmed words
-        rightWords: newRightWords, // Update with confirmed words
+        leftWords: newLeftWords, // Update with filtered words
+        rightWords: newRightWords, // Update with filtered words
         leftCount: newLeftWords.length,
         rightCount: newRightWords.length
       };
@@ -527,6 +542,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
       console.log('[DEBUG] CONFIRM_SIDE:', {
         sideOfferLetter,
         sideChosen: side,
+        valueChosen: value,
+        confirmedWordsCount: confirmedWords.length,
         leftWordsCount: newLeftWords.length,
         rightWordsCount: newRightWords.length
       });
