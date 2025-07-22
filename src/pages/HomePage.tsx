@@ -196,6 +196,23 @@ const HomePage: React.FC = () => {
         </button>
       </div>
 
+      {/* Spectator Filter button */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => {
+            const selectedId = state.userPreferences.selectedWordListId;
+            if (selectedId) {
+              selectWordList(selectedId);
+              navigate('/spectator-filter');
+            }
+          }}
+          className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
+          aria-label="Start spectator filtering"
+        >
+          Spectator Filter
+        </button>
+      </div>
+
 
     </div>
   );

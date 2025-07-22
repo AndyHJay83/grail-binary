@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import FilterPage from './pages/FilterPage';
 import SettingsPage from './pages/SettingsPage';
+import SpectatorFilterPage from './pages/SpectatorFilterPage';
 import { AppProvider } from './context/AppContext';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/filter" element={<FilterPage />} />
+            <Route path="/spectator-filter" element={<SpectatorFilterPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>
