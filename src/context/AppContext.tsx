@@ -523,12 +523,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         rightCount: newRightWords.length
       };
 
-      console.log('CONFIRM_SIDE: Final state update:', {
-        confirmedSide: newFilterState.confirmedSide,
-        confirmedSideValue: newFilterState.confirmedSideValue,
-        sideOfferLetter: newFilterState.sideOfferLetter,
-        isDynamicMode: newFilterState.isDynamicMode,
-        currentLetter: newFilterState.currentLetter
+      // Add debug log for every CONFIRM_SIDE
+      console.log('[DEBUG] CONFIRM_SIDE:', {
+        sideOfferLetter,
+        sideChosen: side,
+        leftWordsCount: newLeftWords.length,
+        rightWordsCount: newRightWords.length
       });
 
       // NEW: Decode psychological profile after side confirmation
