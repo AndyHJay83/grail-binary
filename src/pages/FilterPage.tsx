@@ -62,7 +62,7 @@ const FilterPage: React.FC = () => {
       sequence: getSequenceById(userPreferences.selectedLetterSequence)
     });
 
-    if (selectedWordList && filterState.isDynamicMode && filterState.currentLetter === 'A') {
+    if (selectedWordList && filterState.isDynamicMode && filterState.currentLetter === '') {
       // This is likely the "Most Frequent" sequence that needs initialization
       const sequence = getSequenceById(userPreferences.selectedLetterSequence);
       if (sequence?.sequence === '') {
