@@ -168,20 +168,13 @@ export const selectNextDynamicLetter = (
   words: string[], 
   usedLetters: Set<string>
 ): string | null => {
-  console.log('selectNextDynamicLetter called with:', {
-    words,
-    usedLetters: Array.from(usedLetters),
-    wordCount: words.length
-  });
   
   if (words.length === 0) {
-    console.log('selectNextDynamicLetter: No words provided, returning null');
     return null;
   }
   
   // If we have very few words left (5 or fewer), try to find a differentiating letter
   if (words.length <= 5) {
-    console.log('selectNextDynamicLetter: 5 or fewer words detected, using smart selection');
     // Get all unique letters from the remaining words
     const lettersInWords = new Set<string>();
     for (const word of words) {
@@ -209,7 +202,6 @@ export const selectNextDynamicLetter = (
       
       // If the letter appears in exactly one word, it's perfect for differentiation
       if (wordsWithLetter === 1) {
-        console.log(`Smart selection: Found perfect differentiating letter '${letter}' for ${words.length} words`);
         return letter;
       }
     }
@@ -217,7 +209,6 @@ export const selectNextDynamicLetter = (
     // If no perfect differentiating letter found, look for any unused letter that appears in the words
     for (const letter of lettersInWords) {
       if (!usedLetters.has(letter)) {
-        console.log(`Smart selection: Found unused letter '${letter}' from words for ${words.length} words`);
         return letter;
       }
     }
@@ -239,13 +230,11 @@ export const selectNextDynamicLetter = (
       
       // If the letter appears in some but not all words, it can help differentiate
       if (wordsWithLetter > 0 && wordsWithLetter < words.length) {
-        console.log(`Smart selection: Found differentiating letter '${letter}' (${wordsWithLetter}/${words.length} words) for ${words.length} words`);
         return letter;
       }
     }
     
     // If we still can't find a useful letter, return null to indicate completion
-    console.log(`Smart selection: No useful letter found for ${words.length} words. All letters used or no differentiation possible.`);
     return null;
   }
   
