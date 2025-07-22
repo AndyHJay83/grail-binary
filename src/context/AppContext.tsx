@@ -101,22 +101,26 @@ function appReducer(state: AppState, action: AppAction): AppState {
       // Check if we're still within the current sequence bounds
       const hasMoreCurrentLetters = newLetterIndex < currentLetterSequence.length;
       
-      console.log('MAKE_BINARY_CHOICE: Current Sequence Check:', {
-        newLetterIndex,
-        currentSequenceLength: currentLetterSequence.length,
-        hasMoreCurrentLetters,
-        currentSequence: currentLetterSequence
-      });
-      
       let letterSequence: string;
       
-      if (hasMoreCurrentLetters) {
+      // Apply the current choice to get the remaining words first
+      const tempFilterResult = state.selectedWordList 
+        ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, currentLetterSequence, state.filterState.dynamicSequence)
+        : resetFilter();
+      const wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
+      
+      // NEW: Check if we have 5 or fewer words and should switch to smart mode
+      const hasFewWords = wordsForAnalysis.length <= 5;
+      
+      if (hasFewWords) {
+        // Switch to smart mode when we have 5 or fewer words
+        console.log('MAKE_BINARY_CHOICE: 5 or fewer words detected, switching to smart mode');
+        letterSequence = ''; // Empty sequence for smart mode
+      } else if (hasMoreCurrentLetters) {
         // Continue with current sequence
-        console.log('MAKE_BINARY_CHOICE: Using current sequence');
         letterSequence = currentLetterSequence;
       } else {
         // Current sequence exhausted - use Most Frequent mode
-        console.log('MAKE_BINARY_CHOICE: Current sequence exhausted, using Most Frequent');
         letterSequence = ''; // Empty sequence for Most Frequent mode
       }
       
@@ -125,22 +129,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // FIX: For Most Frequent mode, we need to handle the transition differently
       // The issue is that we're trying to determine the next letter before properly applying the current choice
-      let wordsForAnalysis: string[] = [];
       let nextLetterInfo: { letter: string; isDynamic: boolean };
       
-      // Apply the current choice to get the remaining words
-      const tempFilterResult = state.selectedWordList 
+      // Re-apply the current choice with the correct letter sequence
+      const finalTempFilterResult = state.selectedWordList 
         ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, state.filterState.dynamicSequence)
         : resetFilter();
-      wordsForAnalysis = [...tempFilterResult.leftWords, ...tempFilterResult.rightWords];
+      const finalWordsForAnalysis = [...finalTempFilterResult.leftWords, ...finalTempFilterResult.rightWords];
       
-      console.log('MAKE_BINARY_CHOICE: Words after current choice:', {
-        leftWordsCount: tempFilterResult.leftWords.length,
-        rightWordsCount: tempFilterResult.rightWords.length,
-        totalWordsForAnalysis: wordsForAnalysis.length,
-        confirmedSide: state.filterState.confirmedSide,
-        confirmedSideValue: state.filterState.confirmedSideValue
-      });
+
       
       // Create a temporary used letters set that includes the current letter for frequency analysis
       const tempUsedLetters = new Set(state.filterState.usedLetters);
@@ -148,28 +145,24 @@ function appReducer(state: AppState, action: AppAction): AppState {
       
       // Get next letter based on Smart Hybrid logic
       if (letterSequence === '') {
-        // Most Frequent mode
-        console.log('MAKE_BINARY_CHOICE: Most Frequent mode - getting next dynamic letter');
+        // Smart mode or Most Frequent mode
         nextLetterInfo = getNextLetterWithDynamic(
           newSequence.length, // Use sequence length as index for Most Frequent
           '', // Empty sequence for Most Frequent
-          wordsForAnalysis,
+          finalWordsForAnalysis,
           tempUsedLetters,
           state.userPreferences.mostFrequentFilter
         );
       } else {
         // Original sequence mode
-        console.log('MAKE_BINARY_CHOICE: Original sequence mode - getting next predefined letter');
         nextLetterInfo = getNextLetterWithDynamic(
           newLetterIndex,
           letterSequence,
-          wordsForAnalysis,
+          finalWordsForAnalysis,
           tempUsedLetters,
           state.userPreferences.mostFrequentFilter
         );
       }
-      
-      console.log('MAKE_BINARY_CHOICE: Next letter info:', nextLetterInfo);
       
       // Add current letter to used letters AFTER getting the next letter
       const newUsedLetters = new Set(state.filterState.usedLetters);
@@ -196,8 +189,19 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ? filterWords(state.selectedWordList.words, newSequence, newLetterIndex, letterSequence, newDynamicSequence)
         : resetFilter();
       
+      // Check if we need to switch to Most Frequent mode and update preferences accordingly
+      let updatedPreferences = state.userPreferences;
+      if (letterSequence === '' && state.userPreferences.selectedLetterSequence !== 'most-frequent') {
+        // Sequence exhausted - switch to Most Frequent mode while preserving original choice
+        updatedPreferences = {
+          ...state.userPreferences,
+          selectedLetterSequence: 'most-frequent'
+        };
+      }
+      
       return {
         ...state,
+        userPreferences: updatedPreferences,
         filterState: {
           currentLetter: nextLetterInfo.letter || '', // Allow empty letters when no more letters to offer
           sequence: newSequence,
@@ -254,13 +258,21 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     
     case 'RESET_FILTER':
-      // Use the current selected letter sequence for reset (not the original)
-      const resetSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+      // Always use the original letter sequence for reset to restore user's choice
+      // If we're currently on Most Frequent, restore the original sequence
+      const sequenceToUse = state.userPreferences.selectedLetterSequence === 'most-frequent' 
+        ? state.userPreferences.originalLetterSequence 
+        : state.userPreferences.selectedLetterSequence;
+      const resetSequence = getSequenceById(sequenceToUse);
       const resetLetterSequence = resetSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const resetFilterResult = resetFilter(resetLetterSequence);
       
       return {
         ...state,
+        userPreferences: {
+          ...state.userPreferences,
+          selectedLetterSequence: sequenceToUse
+        },
         filterState: {
           currentLetter: resetFilterResult.currentLetter,
           sequence: resetFilterResult.sequence,
@@ -293,16 +305,21 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const updateLetterSequence = updateSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const updateFilterResult = resetFilter(updateLetterSequence);
       
-      // Store the original sequence if this is the first time selecting it
+      // When going Home and selecting the original sequence, restore it
+      // Otherwise, store the original sequence if this is the first time selecting it
       // or if we're resetting to a new sequence (not from Most Frequent mode)
-      const shouldUpdateOriginal = state.userPreferences.originalLetterSequence === 'full-alphabet' || 
+      const shouldUpdateOriginal = action.payload === state.userPreferences.originalLetterSequence ||
+        state.userPreferences.originalLetterSequence === 'full-alphabet' || 
         (state.userPreferences.selectedLetterSequence === 'most-frequent' && action.payload !== 'most-frequent');
+      
+      // When going Home, always restore the original sequence
+      const shouldRestoreOriginal = action.payload === state.userPreferences.originalLetterSequence;
       
       return {
         ...state,
         userPreferences: {
           ...state.userPreferences,
-          selectedLetterSequence: action.payload,
+          selectedLetterSequence: shouldRestoreOriginal ? state.userPreferences.originalLetterSequence : action.payload,
           originalLetterSequence: shouldUpdateOriginal ? action.payload : state.userPreferences.originalLetterSequence
         },
         filterState: {
@@ -388,18 +405,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         // If confirmed as NO, don't add it to the sequence at all
       }
       
-      // CRITICAL FIX: First, apply the current sequence filtering to get the properly filtered word list
-      // This ensures we carry forward the filtering from the previous sequence
+      // NEW: Eliminate words from the opposite side when a side is confirmed
+      // This makes the filtering much more efficient by removing words we know won't be the target
       let wordsForAnalysis = state.selectedWordList?.words || [];
       
       // Apply the current sequence filtering to preserve the previous choices
       if (state.filterState.sequence.length > 0) {
-        console.log('CONFIRM_SIDE: Applying sequence filtering:', {
-          sequence: state.filterState.sequence,
-          originalSequence: getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence,
-          wordCount: wordsForAnalysis.length
-        });
-        
         wordsForAnalysis = wordsForAnalysis.filter(word => {
           const upperWord = word.toUpperCase();
           for (let i = 0; i < state.filterState.sequence.length; i++) {
@@ -410,70 +421,70 @@ function appReducer(state: AppState, action: AppAction): AppState {
             const choice = state.filterState.sequence[i];
             const hasLetter = upperWord.includes(letter);
             
-            console.log(`Checking word "${word}": letter="${letter}", choice="${choice}", hasLetter=${hasLetter}`);
-            
             if (choice === 'L' && !hasLetter) return false;
             if (choice === 'R' && hasLetter) return false;
           }
           return true;
         });
-        
-        console.log('CONFIRM_SIDE: After filtering:', {
-          filteredWordCount: wordsForAnalysis.length,
-          filteredWords: wordsForAnalysis.slice(0, 10) // Show first 10 for debugging
+      }
+      
+      // Now eliminate words from the opposite side based on the side confirmation
+      let confirmedWords: string[] = [];
+      let eliminatedWords: string[] = [];
+      
+      if (sideOfferLetter) {
+        // Split words into confirmed and eliminated based on side confirmation
+        wordsForAnalysis.forEach(word => {
+          const upperWord = word.toUpperCase();
+          const hasSideOfferLetter = upperWord.includes(sideOfferLetter);
+          
+          let shouldKeep = false;
+          if (side === 'L' && value === 'YES') {
+            // Left side confirmed as YES - keep words WITHOUT the side offer letter (current words)
+            shouldKeep = !hasSideOfferLetter;
+          } else if (side === 'L' && value === 'NO') {
+            // Left side confirmed as NO - keep words WITHOUT the side offer letter (current words)
+            shouldKeep = !hasSideOfferLetter;
+          } else if (side === 'R' && value === 'YES') {
+            // Right side confirmed as YES - keep words WITHOUT the side offer letter (current words)
+            shouldKeep = !hasSideOfferLetter;
+          } else if (side === 'R' && value === 'NO') {
+            // Right side confirmed as NO - keep words WITHOUT the side offer letter (current words)
+            shouldKeep = !hasSideOfferLetter;
+          }
+          
+          if (shouldKeep) {
+            confirmedWords.push(word);
+          } else {
+            eliminatedWords.push(word);
+          }
         });
-      }
-      
-      // OPTION 4: Smart Hybrid - Check if original sequence has more letters available
-      const originalSequence = getSequenceById(state.userPreferences.originalLetterSequence);
-      const letterSequence = originalSequence?.sequence ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      
-      // Check if we're still within the original sequence bounds
-      const currentIndex = newDynamicSequence.length;
-      const hasMoreOriginalLetters = currentIndex < letterSequence.length;
-      
-      console.log('CONFIRM_SIDE: Smart Hybrid Decision:', {
-        currentIndex,
-        originalSequenceLength: letterSequence.length,
-        hasMoreOriginalLetters,
-        originalSequence: letterSequence
-      });
-      
-      let nextLetterInfo: { letter: string; isDynamic: boolean };
-      let updatedPreferences: UserPreferences;
-      
-      if (hasMoreOriginalLetters) {
-        // Continue with original sequence - get next predefined letter
-        console.log('CONFIRM_SIDE: Continuing with original sequence');
-        nextLetterInfo = {
-          letter: letterSequence[currentIndex],
-          isDynamic: false
-        };
         
-        // Keep the original sequence selected
-        updatedPreferences = {
-          ...state.userPreferences
-        };
+        // Update wordsForAnalysis to only include confirmed words
+        wordsForAnalysis = confirmedWords;
       } else {
-        // Original sequence exhausted - switch to Most Frequent mode
-        console.log('CONFIRM_SIDE: Original sequence exhausted, switching to Most Frequent');
-        nextLetterInfo = getNextLetterWithDynamic(
-          currentIndex, // Use current index
-          '', // Empty sequence for Most Frequent mode
-          wordsForAnalysis, // Use the filtered word list
-          newUsedLetters,
-          true // Always enable most frequent filter
-        );
-        
-        // Switch to Most Frequent sequence
-        updatedPreferences = {
-          ...state.userPreferences,
-          selectedLetterSequence: 'most-frequent'
-        };
+        // If no side offer letter, all words are confirmed
+        confirmedWords = wordsForAnalysis;
       }
       
-      // Prevent empty letters from being set as current letter
-      const currentLetter = nextLetterInfo.letter || 'A'; // Fallback to 'A' if empty
+      // LONG PRESS CONFIRMATION: Only work with side offer letter, don't change normal letter selection
+      // Keep the current letter and sequence unchanged for long press confirmation
+      const currentLetter = state.filterState.currentLetter;
+      const updatedPreferences = state.userPreferences;
+      
+      // Update the word lists based on the confirmed side
+      let newLeftWords: string[] = [];
+      let newRightWords: string[] = [];
+      
+      if (side === 'L') {
+        // Left side confirmed - put confirmed words in leftWords, clear rightWords
+        newLeftWords = confirmedWords;
+        newRightWords = [];
+      } else {
+        // Right side confirmed - put confirmed words in rightWords, clear leftWords
+        newLeftWords = [];
+        newRightWords = confirmedWords;
+      }
       
       const newFilterState = {
         ...state.filterState,
@@ -483,8 +494,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         dynamicSequence: newDynamicSequence,
         usedLetters: newUsedLetters,
         currentLetter: currentLetter,
-        isDynamicMode: nextLetterInfo.isDynamic, // Use the decision from nextLetterInfo
-        letterIndex: currentIndex // Update letter index
+        isDynamicMode: state.filterState.isDynamicMode, // Keep current mode unchanged
+        letterIndex: state.filterState.letterIndex, // Keep current index unchanged
+        leftWords: newLeftWords, // Update with confirmed words
+        rightWords: newRightWords, // Update with confirmed words
+        leftCount: newLeftWords.length,
+        rightCount: newRightWords.length
       };
 
       console.log('CONFIRM_SIDE: Final state update:', {

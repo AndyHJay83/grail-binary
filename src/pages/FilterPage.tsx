@@ -34,7 +34,7 @@ const FilterPage: React.FC = () => {
   // Initialize psychological questions when component mounts
   React.useEffect(() => {
     if (enabledPsychologicalQuestions.length > 0 && currentPsychologicalQuestionIndex === -1 && !psychologicalQuestionsCompleted) {
-      console.log('Starting psychological profiling with', enabledPsychologicalQuestions.length, 'questions');
+    
       setCurrentPsychologicalQuestionIndex(0);
     }
   }, [enabledPsychologicalQuestions.length, psychologicalQuestionsCompleted]);
@@ -59,7 +59,7 @@ const FilterPage: React.FC = () => {
       if (sequence?.sequence === '') {
         // Only initialize if we don't already have a dynamic sequence
         if (filterState.dynamicSequence.length === 0) {
-          console.log('Initializing Most Frequent sequence');
+      
           initializeMostFrequent();
         }
       }
@@ -77,19 +77,7 @@ const FilterPage: React.FC = () => {
 
   // Check for side offer letter when filtered words change
   React.useEffect(() => {
-    console.log('=== SIDE OFFER LETTER EFFECT TRIGGERED ===');
-    console.log('Side offer letter effect:', {
-      confirmNoLetter: userPreferences.confirmNoLetter,
-      confirmedSide: filterState.confirmedSide,
-      leftWordsCount: filterState.leftWords.length,
-      rightWordsCount: filterState.rightWords.length,
-      currentSideOfferLetter: filterState.sideOfferLetter,
-      sampleLeftWords: filterState.leftWords.slice(0, 3),
-      sampleRightWords: filterState.rightWords.slice(0, 3)
-    });
-
     if (!userPreferences.confirmNoLetter || filterState.confirmedSide) {
-      console.log('Side offer letter disabled or side already confirmed');
       // Clear side offer letter if it exists
       if (filterState.sideOfferLetter) {
         setSideOfferLetter('');
@@ -98,10 +86,8 @@ const FilterPage: React.FC = () => {
     }
 
     const allWords = [...filterState.leftWords, ...filterState.rightWords];
-    console.log('All words for side offer analysis:', allWords);
     
     if (allWords.length === 0) {
-      console.log('No words to check for side offer letter');
       // Clear side offer letter if it exists
       if (filterState.sideOfferLetter) {
         setSideOfferLetter('');
@@ -109,39 +95,27 @@ const FilterPage: React.FC = () => {
       return;
     }
 
-    console.log('Looking for side offer letter in', allWords.length, 'words');
-    console.log('Sample words:', allWords.slice(0, 5));
-    console.log('Used letters for side offer check:', Array.from(filterState.usedLetters));
     const sideOfferLetter = findSideOfferLetter(allWords, filterState.usedLetters);
-    console.log('Side offer letter found:', sideOfferLetter);
     
     // FIX: Prevent infinite loop by only updating if there's an actual change
     // and not clearing if we already have no side offer letter
     if (sideOfferLetter !== filterState.sideOfferLetter) {
       if (sideOfferLetter) {
-        console.log('Setting side offer letter:', sideOfferLetter);
         setSideOfferLetter(sideOfferLetter);
       } else if (filterState.sideOfferLetter) {
         // Only clear if we currently have a side offer letter
-        console.log('Clearing side offer letter');
         setSideOfferLetter('');
       }
-    } else {
-      console.log('Side offer letter unchanged:', sideOfferLetter);
     }
   }, [filterState.leftWords, filterState.rightWords, userPreferences.confirmNoLetter, filterState.confirmedSide]);
 
   // Long press handlers
   const startLongPress = (side: 'L' | 'R', timerRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
-    console.log('startLongPress called:', { side, sideOfferLetter: filterState.sideOfferLetter });
     if (!filterState.sideOfferLetter) {
-      console.log('No side offer letter - returning');
       return;
     }
     
-    console.log('Starting long press timer for side:', side);
     timerRef.current = setTimeout(() => {
-      console.log('Long press completed for side:', side, 'confirming as NO');
       // Confirm the pressed side as NO
       confirmSide(side, 'NO');
       
@@ -163,16 +137,13 @@ const FilterPage: React.FC = () => {
 
   // Touch/click handlers for left button
   const handleLeftMouseDown = () => {
-    console.log('handleLeftMouseDown called');
     // Ignore mouse events if a touch occurred recently
     if (touchOccurredRef.current) {
-      console.log('Touch occurred recently - ignoring mouse event');
       touchOccurredRef.current = false;
       return;
     }
     
     if (filterState.sideOfferLetter) {
-      console.log('Starting long press for left button');
       startLongPress('L', leftPressTimerRef);
     }
   };
@@ -221,16 +192,13 @@ const FilterPage: React.FC = () => {
 
   // Touch/click handlers for right button
   const handleRightMouseDown = () => {
-    console.log('handleRightMouseDown called');
     // Ignore mouse events if a touch occurred recently
     if (touchOccurredRef.current) {
-      console.log('Touch occurred recently - ignoring mouse event');
       touchOccurredRef.current = false;
       return;
     }
     
     if (filterState.sideOfferLetter) {
-      console.log('Starting long press for right button');
       startLongPress('R', rightPressTimerRef);
     }
   };
@@ -278,12 +246,9 @@ const FilterPage: React.FC = () => {
   };
 
   const handleBinaryChoice = (choice: BinaryChoice) => {
-    console.log('Binary choice made:', choice);
-    
     // NEW: Handle psychological questions first
     if (shouldShowPsychologicalQuestions) {
       const currentQuestion = enabledPsychologicalQuestions[currentPsychologicalQuestionIndex];
-      console.log('Answering psychological question:', currentQuestion.text, 'with choice:', choice);
       
       // Store the answer
       const newAnswers = { ...psychologicalAnswers, [currentQuestion.id]: choice };
@@ -292,10 +257,8 @@ const FilterPage: React.FC = () => {
       // Move to next question or start letter sequence
       const nextIndex = currentPsychologicalQuestionIndex + 1;
       if (nextIndex < enabledPsychologicalQuestions.length) {
-        console.log('Moving to next psychological question:', nextIndex);
         setCurrentPsychologicalQuestionIndex(nextIndex);
       } else {
-        console.log('All psychological questions answered, starting letter sequence');
         setCurrentPsychologicalQuestionIndex(-1); // Hide questions
         setPsychologicalAnswers(newAnswers); // Save to context
         setPsychologicalQuestionsCompleted(true); // Mark questions as completed
@@ -349,16 +312,24 @@ const FilterPage: React.FC = () => {
     return 'text-white';
   };
 
-  // Always show both interpretations - no more confirmed side logic
+  // Show words based on confirmed side logic
   const getWordsToShow = () => {
-    console.log('getWordsToShow called:', {
-      leftWordsCount: filterState.leftWords.length,
-      rightWordsCount: filterState.rightWords.length,
-      psychologicalAnswers: filterState.psychologicalAnswers,
-      psychologicalProfile: filterState.psychologicalProfile
-    });
-
-    console.log('Showing both interpretations');
+    // If a side has been confirmed, only show words from that side
+    if (filterState.confirmedSide) {
+      if (filterState.confirmedSide === 'L') {
+        return {
+          leftWords: filterState.leftWords,
+          rightWords: [] // Clear the opposite side
+        };
+      } else {
+        return {
+          leftWords: [], // Clear the opposite side
+          rightWords: filterState.rightWords
+        };
+      }
+    }
+    
+    // Otherwise show both interpretations
     return {
       leftWords: filterState.leftWords,
       rightWords: filterState.rightWords
@@ -505,7 +476,7 @@ const FilterPage: React.FC = () => {
               onTouchEnd={handleLeftTouchEnd}
 
               className="binary-button w-full h-full flex items-center justify-center"
-              disabled={filterState.letterIndex >= 26}
+              disabled={filterState.letterIndex >= 26 || !filterState.currentLetter}
               aria-label="Choose left option"
             >
               {filterState.confirmedSide && (
@@ -526,7 +497,7 @@ const FilterPage: React.FC = () => {
               onTouchEnd={handleRightTouchEnd}
 
               className="binary-button w-full h-full flex items-center justify-center"
-              disabled={filterState.letterIndex >= 26}
+              disabled={filterState.letterIndex >= 26 || !filterState.currentLetter}
               aria-label="Choose right option"
             >
               {filterState.confirmedSide && (

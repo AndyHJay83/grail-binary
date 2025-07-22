@@ -64,12 +64,7 @@ export const filterWords = (
   const leftWords: string[] = [];
   const rightWords: string[] = [];
 
-  console.log('=== FILTERING DEBUG ===');
-  console.log('Word list length:', wordList.length);
-  console.log('Sequence length:', sequence.length);
-  console.log('Letter sequence:', letterSequence);
-  console.log('Dynamic sequence:', dynamicSequence);
-  console.log('Current letter index:', currentLetterIndex);
+
 
   wordList.forEach(word => {
     const upperWord = word.toUpperCase();
@@ -96,31 +91,24 @@ export const filterWords = (
       
       // Skip empty letters - they shouldn't be processed
       if (!letter || letter === '') {
-        console.log(`  Word "${word}": skipping empty letter at position ${i}`);
         continue;
       }
       
       const hasLetter = upperWord.includes(letter);
 
-      console.log(`  Word "${word}": choice=${choice}, letter=${letter}, hasLetter=${hasLetter}`);
-
       // Left pattern: L choice means include letter, R choice means exclude letter
       if (choice === 'L' && !hasLetter) {
-        console.log(`    Rejecting from left: L=YES but word doesn't have ${letter}`);
         matchesLeftPattern = false;
       }
       if (choice === 'R' && hasLetter) {
-        console.log(`    Rejecting from left: R=NO but word has ${letter}`);
         matchesLeftPattern = false;
       }
 
       // Right pattern: R choice means include letter, L choice means exclude letter  
       if (choice === 'R' && !hasLetter) {
-        console.log(`    Rejecting from right: R=YES but word doesn't have ${letter}`);
         matchesRightPattern = false;
       }
       if (choice === 'L' && hasLetter) {
-        console.log(`    Rejecting from right: L=NO but word has ${letter}`);
         matchesRightPattern = false;
       }
     }
@@ -181,20 +169,19 @@ export const selectNextDynamicLetter = (
   usedLetters: Set<string>
 ): string | null => {
   console.log('selectNextDynamicLetter called with:', {
-    wordsCount: words.length,
+    words,
     usedLetters: Array.from(usedLetters),
-    sampleWords: words.slice(0, 5)
+    wordCount: words.length
   });
   
   if (words.length === 0) {
-    console.log('No words to analyze - returning null');
+    console.log('selectNextDynamicLetter: No words provided, returning null');
     return null;
   }
   
   // If we have very few words left (5 or fewer), try to find a differentiating letter
   if (words.length <= 5) {
-    console.log('Very few words left (5 or fewer) - looking for differentiating letter');
-    
+    console.log('selectNextDynamicLetter: 5 or fewer words detected, using smart selection');
     // Get all unique letters from the remaining words
     const lettersInWords = new Set<string>();
     for (const word of words) {
@@ -205,9 +192,7 @@ export const selectNextDynamicLetter = (
       }
     }
     
-    console.log('Letters in remaining words:', Array.from(lettersInWords).sort());
-    
-    // Check each letter in the alphabet to see if it can differentiate the words
+    // First, try to find a letter that appears in exactly one word (perfect differentiation)
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     for (const letter of alphabet) {
       if (usedLetters.has(letter)) {
@@ -224,7 +209,7 @@ export const selectNextDynamicLetter = (
       
       // If the letter appears in exactly one word, it's perfect for differentiation
       if (wordsWithLetter === 1) {
-        console.log('Found perfect differentiating letter:', letter);
+        console.log(`Smart selection: Found perfect differentiating letter '${letter}' for ${words.length} words`);
         return letter;
       }
     }
@@ -232,27 +217,39 @@ export const selectNextDynamicLetter = (
     // If no perfect differentiating letter found, look for any unused letter that appears in the words
     for (const letter of lettersInWords) {
       if (!usedLetters.has(letter)) {
-        console.log('Found unused letter in words:', letter);
+        console.log(`Smart selection: Found unused letter '${letter}' from words for ${words.length} words`);
         return letter;
       }
     }
     
-    // If no unused letters found in the words, offer any unused letter from the alphabet
-    const fullAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    for (const letter of fullAlphabet) {
-      if (!usedLetters.has(letter)) {
-        console.log('Found unused letter from alphabet:', letter);
+    // If all letters in the words have been used, try to find a letter that can help differentiate
+    // by checking which letters appear in different combinations
+    for (const letter of alphabet) {
+      if (usedLetters.has(letter)) {
+        continue;
+      }
+      
+      // Check if this letter would help differentiate the words
+      let wordsWithLetter = 0;
+      for (const word of words) {
+        if (word.toUpperCase().includes(letter)) {
+          wordsWithLetter++;
+        }
+      }
+      
+      // If the letter appears in some but not all words, it can help differentiate
+      if (wordsWithLetter > 0 && wordsWithLetter < words.length) {
+        console.log(`Smart selection: Found differentiating letter '${letter}' (${wordsWithLetter}/${words.length} words) for ${words.length} words`);
         return letter;
       }
     }
     
-    console.log('No suitable differentiating letter found');
+    // If we still can't find a useful letter, return null to indicate completion
+    console.log(`Smart selection: No useful letter found for ${words.length} words. All letters used or no differentiation possible.`);
     return null;
   }
   
   const frequency = analyzeLetterFrequency(words);
-  
-  console.log('Letter frequency:', Object.fromEntries(frequency));
   
   // Find most frequent unused letter (each letter can only be used once)
   let maxFreq = 0;
@@ -261,7 +258,6 @@ export const selectNextDynamicLetter = (
   for (const [letter, freq] of frequency) {
     // Skip letters we've already used
     if (usedLetters.has(letter)) {
-      console.log('Skipping used letter:', letter);
       continue;
     }
     
@@ -271,8 +267,6 @@ export const selectNextDynamicLetter = (
     }
   }
   
-  console.log('Selected letter:', selectedLetter, 'with frequency:', maxFreq);
-  console.log('Used letters after selection:', Array.from(usedLetters));
   return selectedLetter;
 };
 
@@ -284,21 +278,9 @@ export const getNextLetterWithDynamic = (
   usedLetters: Set<string>,
   mostFrequentFilter: boolean
 ): { letter: string; isDynamic: boolean } => {
-  console.log('getNextLetterWithDynamic:', {
-    currentIndex,
-    letterSequence,
-    letterSequenceLength: letterSequence.length,
-    remainingWordsCount: remainingWords.length,
-    usedLetters: Array.from(usedLetters),
-    mostFrequentFilter
-  });
-  
   // Special handling for "Most Frequent" sequence (empty sequence)
   if (letterSequence === '') {
-    console.log('Detected empty sequence - using Most Frequent mode');
-    console.log('Current index:', currentIndex, 'Used letters:', Array.from(usedLetters));
     const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
-    console.log('Selected dynamic letter:', dynamicLetter);
     return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
   }
   
@@ -308,36 +290,29 @@ export const getNextLetterWithDynamic = (
     
     // Check if this letter is already used
     if (usedLetters.has(letter)) {
-      console.log('Predefined letter already used:', letter, '- skipping to next unused letter');
-      
       // Skip to next unused letter in sequence
       for (let i = currentIndex + 1; i < letterSequence.length; i++) {
         const nextLetter = letterSequence[i];
         if (!usedLetters.has(nextLetter)) {
-          console.log('Using next unused predefined letter:', nextLetter);
           return { letter: nextLetter, isDynamic: false };
         }
       }
       
       // If all predefined letters are used, switch to dynamic
-      console.log('All predefined letters used, switching to dynamic');
       const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
       return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
     }
     
-    console.log('Using predefined letter:', letter);
     return { letter, isDynamic: false };
   }
   
   // If most frequent filter is OFF, stop
   if (!mostFrequentFilter) {
-    console.log('Most frequent filter OFF - stopping');
     return { letter: '', isDynamic: false };
   }
   
   // If most frequent filter is ON, find next dynamic letter
   const dynamicLetter = selectNextDynamicLetter(remainingWords, usedLetters);
-  console.log('Using dynamic letter (after predefined):', dynamicLetter);
   return { letter: dynamicLetter || '', isDynamic: !!dynamicLetter };
 };
 
@@ -372,12 +347,7 @@ export const resetFilter = (letterSequence: string = DEFAULT_ALPHABET) => {
 
 // Find a letter that doesn't appear in any of the remaining words (for side offer)
 export const findSideOfferLetter = (words: string[], usedLetters: Set<string> = new Set()): string | null => {
-  console.log('=== findSideOfferLetter called ===');
-  console.log('Words to analyze:', words);
-  console.log('Used letters:', Array.from(usedLetters));
-  
   if (words.length === 0) {
-    console.log('No words provided - returning null');
     return null;
   }
   
@@ -391,19 +361,14 @@ export const findSideOfferLetter = (words: string[], usedLetters: Set<string> = 
     }
   }
   
-  console.log('Letters found in words:', Array.from(lettersInWords).sort());
-  
   // Find first alphabetical letter that's not in any words AND not already used (excluding X and Z)
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWY'; // Excluding X and Z
-  console.log('Checking alphabet:', alphabet);
   
   for (const letter of alphabet) {
     if (!lettersInWords.has(letter) && !usedLetters.has(letter)) {
-      console.log('Found unused letter:', letter);
       return letter;
     }
   }
   
-  console.log('No suitable letter found - all letters A-W, Y are present or already used');
   return null; // No suitable letter found
 }; 

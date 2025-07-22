@@ -93,7 +93,7 @@ const AddSequenceModal: React.FC<AddSequenceModalProps> = ({ isOpen, onClose, on
 };
 
 const LetterSequenceManager: React.FC = () => {
-  const { state, updateLetterSequence } = useAppContext();
+  const { state, updateLetterSequence, updatePreferences } = useAppContext();
   const [showAddModal, setShowAddModal] = useState(false);
   const [sequences, setSequences] = useState<LetterSequence[]>(getAllSequences());
 
@@ -112,11 +112,17 @@ const LetterSequenceManager: React.FC = () => {
     }
   };
 
+  // Update both selectedLetterSequence and originalLetterSequence when changed from settings
   const handleSequenceChange = (sequenceId: string) => {
+    updatePreferences({
+      selectedLetterSequence: sequenceId,
+      originalLetterSequence: sequenceId
+    });
     updateLetterSequence(sequenceId);
   };
 
-  const currentSequence = sequences.find(seq => seq.id === state.userPreferences.selectedLetterSequence);
+  // Use originalLetterSequence for the dropdown value
+  const currentSequence = sequences.find(seq => seq.id === state.userPreferences.originalLetterSequence);
 
   return (
     <div className="bg-black border-2 border-white rounded-lg p-6">
@@ -127,7 +133,7 @@ const LetterSequenceManager: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-2">Current Sequence</label>
           <select
-            value={state.userPreferences.selectedLetterSequence}
+            value={state.userPreferences.originalLetterSequence}
             onChange={(e) => handleSequenceChange(e.target.value)}
             className="w-full bg-black border-2 border-white rounded-lg px-4 py-2 text-white focus:border-success-green outline-none"
           >
