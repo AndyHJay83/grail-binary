@@ -96,13 +96,11 @@ const SpectatorFilterPage: React.FC = () => {
   };
 
   const getTopHalf = (words: string[]) => {
-    const midPoint = Math.ceil(words.length / 2);
-    return words.slice(0, midPoint);
+    return words; // Full word list in top section
   };
 
   const getBottomHalf = (words: string[]) => {
-    const midPoint = Math.ceil(words.length / 2);
-    return words.slice(midPoint);
+    return words; // Full word list in bottom section
   };
 
   if (!selectedWordList) {
