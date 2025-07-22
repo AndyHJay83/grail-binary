@@ -34,7 +34,19 @@ const SpectatorFilterPage: React.FC = () => {
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
+    console.log('SpectatorFilterPage useEffect debug:', {
+      selectedWordList: selectedWordList ? {
+        id: selectedWordList.id,
+        name: selectedWordList.name,
+        wordCount: selectedWordList.words.length
+      } : null,
+      selectedWordListId: state.userPreferences.selectedWordListId,
+      selectedLetterSequence: state.userPreferences.selectedLetterSequence
+    });
+
     if (selectedWordList && selectedWordList.words.length > 0) {
+      console.log('Initializing spectator word lists with', selectedWordList.words.length, 'words');
+      
       // Start with the full word list like PERFORM does
       setSpectator1TopWords([...selectedWordList.words]);
       setSpectator1BottomWords([...selectedWordList.words]);
@@ -62,6 +74,7 @@ const SpectatorFilterPage: React.FC = () => {
         // Most Frequent sequence selected - initialize the first letter
         const { selectNextDynamicLetter } = require('../utils/binaryFilter');
         const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set());
+        console.log('Most Frequent initialization - firstLetter:', firstLetter);
         if (firstLetter) {
           setDynamicSequence([firstLetter]);
         } else {
@@ -72,6 +85,8 @@ const SpectatorFilterPage: React.FC = () => {
         // Reset dynamic sequence for non-Most Frequent sequences
         setDynamicSequence([]);
       }
+    } else {
+      console.log('No selectedWordList or empty word list');
     }
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 

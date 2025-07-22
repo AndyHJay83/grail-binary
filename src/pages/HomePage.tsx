@@ -219,10 +219,10 @@ const HomePage: React.FC = () => {
       {showSpectatorButton && (
         <div className="flex justify-center mt-4">
           <button
-            onClick={() => {
+            onClick={async () => {
               const selectedId = state.userPreferences.selectedWordListId;
               if (selectedId) {
-                selectWordList(selectedId);
+                await selectWordList(selectedId);
                 navigate('/spectator-filter');
               }
             }}
