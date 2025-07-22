@@ -9,7 +9,6 @@ const SpectatorFilterPage: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useAppContext();
   const { selectedWordList } = state;
-  const { initializeMostFrequent } = useAppContext();
 
   // State for two independent spectators
   const [spectator1TopWords, setSpectator1TopWords] = useState<string[]>([]);
@@ -35,17 +34,18 @@ const SpectatorFilterPage: React.FC = () => {
 
   // Handle "Most Frequent" sequence initialization (like PERFORM)
   React.useEffect(() => {
-    if (selectedWordList && state.filterState.isDynamicMode && state.filterState.currentLetter === 'A') {
-      // This is likely the "Most Frequent" sequence that needs initialization
+    if (selectedWordList && selectedWordList.words.length > 0) {
       const sequence = getSequenceById(state.userPreferences.selectedLetterSequence);
       if (sequence?.sequence === '') {
-        // Only initialize if we don't already have a dynamic sequence
-        if (state.filterState.dynamicSequence.length === 0) {
-          initializeMostFrequent();
+        // Most Frequent sequence selected - initialize the first letter
+        const { selectNextDynamicLetter } = require('../utils/binaryFilter');
+        const firstLetter = selectNextDynamicLetter(selectedWordList.words, new Set());
+        if (firstLetter) {
+          setDynamicSequence([firstLetter]);
         }
       }
     }
-  }, [selectedWordList, state.filterState.isDynamicMode, state.filterState.currentLetter, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence.length, initializeMostFrequent]);
+  }, [selectedWordList, state.userPreferences.selectedLetterSequence]);
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
