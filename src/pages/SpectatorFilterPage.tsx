@@ -21,6 +21,12 @@ const SpectatorFilterPage: React.FC = () => {
   const [spectator2BottomSequence, setSpectator2BottomSequence] = useState<BinaryChoice[]>([]);
   const [spectator1LetterIndex, setSpectator1LetterIndex] = useState<number>(0);
   const [spectator2LetterIndex, setSpectator2LetterIndex] = useState<number>(0);
+  
+  // Dynamic mode state for each section
+  const [_spectator1TopIsDynamic, setSpectator1TopIsDynamic] = useState<boolean>(false);
+  const [_spectator1BottomIsDynamic, setSpectator1BottomIsDynamic] = useState<boolean>(false);
+  const [_spectator2TopIsDynamic, setSpectator2TopIsDynamic] = useState<boolean>(false);
+  const [_spectator2BottomIsDynamic, setSpectator2BottomIsDynamic] = useState<boolean>(false);
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
@@ -36,36 +42,65 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator2BottomSequence([]);
       setSpectator1LetterIndex(0);
       setSpectator2LetterIndex(0);
+      
+      // Reset dynamic mode state
+      setSpectator1TopIsDynamic(false);
+      setSpectator1BottomIsDynamic(false);
+      setSpectator2TopIsDynamic(false);
+      setSpectator2BottomIsDynamic(false);
     }
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
-  const getCurrentLetter = (): string => {
+  const getCurrentLetter = (): { letter: string; isDynamic: boolean } => {
     const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     
     // For "Most Frequent" sequence (empty letterSequence), use dynamic sequence
     if (letterSequence === '') {
-      return state.filterState.dynamicSequence[Math.max(spectator1LetterIndex, spectator2LetterIndex)] || '';
+      const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
+      return {
+        letter: state.filterState.dynamicSequence[currentIndex] || '',
+        isDynamic: true
+      };
     } else {
       const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
       if (currentIndex < letterSequence.length) {
         // Still in predefined sequence
-        return letterSequence[currentIndex] || '';
+        return {
+          letter: letterSequence[currentIndex] || '',
+          isDynamic: false
+        };
       } else {
         // In dynamic mode (after predefined sequence)
         const dynamicIndex = currentIndex - letterSequence.length;
-        return state.filterState.dynamicSequence[dynamicIndex] || '';
+        return {
+          letter: state.filterState.dynamicSequence[dynamicIndex] || '',
+          isDynamic: true
+        };
       }
     }
   };
 
-  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number): string[] => {
+  const filterSpectatorWords = (words: string[], sequence: BinaryChoice[], letterIndex: number): { leftWords: string[]; isDynamic: boolean } => {
     const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    
+    // Determine if we're in dynamic mode
+    let isDynamic = false;
+    if (letterSequence === '') {
+      // Most Frequent sequence - always dynamic
+      isDynamic = true;
+    } else if (letterIndex >= letterSequence.length) {
+      // Predefined sequence exhausted - now in dynamic mode
+      isDynamic = true;
+    }
     
     // Use the same logic as PERFORM - apply the sequence to filter words
     const result = filterWords(words, sequence, letterIndex, letterSequence, state.filterState.dynamicSequence);
     
-    // Return the left words (like PERFORM's left interpretation)
-    return result.leftWords;
+    // Return the left words (like PERFORM's left interpretation) and dynamic mode
+    return {
+      leftWords: result.leftWords,
+      isDynamic: isDynamic
+    };
   };
 
   const handleButtonPress = (button: 'left' | 'right' | 'up' | 'down') => {
@@ -116,8 +151,10 @@ const SpectatorFilterPage: React.FC = () => {
     const spectator1TopResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator1TopSequence, newSpectator1LetterIndex);
     const spectator1BottomResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator1BottomSequence, newSpectator1LetterIndex);
     
-    setSpectator1TopWords(spectator1TopResult);
-    setSpectator1BottomWords(spectator1BottomResult);
+    setSpectator1TopWords(spectator1TopResult.leftWords);
+    setSpectator1BottomWords(spectator1BottomResult.leftWords);
+    setSpectator1TopIsDynamic(spectator1TopResult.isDynamic);
+    setSpectator1BottomIsDynamic(spectator1BottomResult.isDynamic);
 
     // Update spectator 2 - each section filters independently with opposite choices
     const newSpectator2TopSequence = [...spectator2TopSequence, spectator2TopChoice];
@@ -132,8 +169,10 @@ const SpectatorFilterPage: React.FC = () => {
     const spectator2TopResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator2TopSequence, newSpectator2LetterIndex);
     const spectator2BottomResult = filterSpectatorWords(selectedWordList?.words || [], newSpectator2BottomSequence, newSpectator2LetterIndex);
     
-    setSpectator2TopWords(spectator2TopResult);
-    setSpectator2BottomWords(spectator2BottomResult);
+    setSpectator2TopWords(spectator2TopResult.leftWords);
+    setSpectator2BottomWords(spectator2BottomResult.leftWords);
+    setSpectator2TopIsDynamic(spectator2TopResult.isDynamic);
+    setSpectator2BottomIsDynamic(spectator2BottomResult.isDynamic);
   };
 
   const handleHomeClick = () => {
@@ -153,6 +192,12 @@ const SpectatorFilterPage: React.FC = () => {
       setSpectator2BottomSequence([]);
       setSpectator1LetterIndex(0);
       setSpectator2LetterIndex(0);
+      
+      // Reset dynamic mode state
+      setSpectator1TopIsDynamic(false);
+      setSpectator1BottomIsDynamic(false);
+      setSpectator2TopIsDynamic(false);
+      setSpectator2BottomIsDynamic(false);
     }
   };
 
@@ -217,8 +262,8 @@ const SpectatorFilterPage: React.FC = () => {
       {/* Letter Display Bubble - Centered in D-Pad X */}
       {currentLetter && (
         <div className="absolute top-4/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50" style={{ marginTop: '425px' }}>
-          <div className="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold">
-            {currentLetter}
+          <div className={`bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${currentLetter.isDynamic ? 'text-red-500' : ''}`}>
+            {currentLetter.letter}
           </div>
         </div>
       )}
