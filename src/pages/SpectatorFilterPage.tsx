@@ -90,7 +90,8 @@ const SpectatorFilterPage: React.FC = () => {
   }, [selectedWordList, state.userPreferences.selectedLetterSequence, state.filterState.dynamicSequence]);
 
   const getCurrentLetter = (): { letter: string; isDynamic: boolean } => {
-    const letterSequence = getSequenceById(state.userPreferences.selectedLetterSequence)?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const selectedSequence = getSequenceById(state.userPreferences.selectedLetterSequence);
+    const letterSequence = selectedSequence?.sequence || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const currentIndex = Math.max(spectator1LetterIndex, spectator2LetterIndex);
     
     // Get all remaining words from all sections for frequency analysis
@@ -103,6 +104,8 @@ const SpectatorFilterPage: React.FC = () => {
     
     // Debug logging
     console.log('getCurrentLetter debug:', {
+      selectedLetterSequenceId: state.userPreferences.selectedLetterSequence,
+      selectedSequence: selectedSequence,
       letterSequence,
       currentIndex,
       allRemainingWordsLength: allRemainingWords.length,
