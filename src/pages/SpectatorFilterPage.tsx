@@ -7,8 +7,15 @@ import { getSequenceById } from '../data/letterSequences';
 
 const SpectatorFilterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useAppContext();
+  const { state, setPsychologicalAnswers } = useAppContext();
   const { selectedWordList } = state;
+  const { userPreferences } = state;
+  const enabledPsychologicalQuestions = userPreferences.psychologicalProfiling.enabled
+    ? userPreferences.psychologicalProfiling.questions.filter(q => q.enabled)
+    : [];
+  const [currentPsychologicalQuestionIndex, setCurrentPsychologicalQuestionIndex] = useState<number>(-1);
+  const [psychologicalAnswers, setPsychologicalAnswersLocal] = useState<{ [questionId: string]: { person1: BinaryChoice; person2: BinaryChoice } }>({});
+  const [psychologicalQuestionsCompleted, setPsychologicalQuestionsCompleted] = useState<boolean>(false);
 
   // State for two independent spectators
   const [spectator1TopWords, setSpectator1TopWords] = useState<string[]>([]);
@@ -31,6 +38,17 @@ const SpectatorFilterPage: React.FC = () => {
   // Local state for tracking used letters (like PERFORM)
   const [usedLetters, setUsedLetters] = useState<Set<string>>(new Set());
   const [dynamicSequence, setDynamicSequence] = useState<string[]>([]);
+
+  // Auto-start question phase on mount if profiling enabled and questions ticked
+  useEffect(() => {
+    if (
+      enabledPsychologicalQuestions.length > 0 &&
+      currentPsychologicalQuestionIndex === -1 &&
+      !psychologicalQuestionsCompleted
+    ) {
+      setCurrentPsychologicalQuestionIndex(0);
+    }
+  }, [enabledPsychologicalQuestions.length, currentPsychologicalQuestionIndex, psychologicalQuestionsCompleted]);
 
   // Initialize both spectators with the same word list using PERFORM logic
   useEffect(() => {
@@ -127,7 +145,46 @@ const SpectatorFilterPage: React.FC = () => {
     };
   };
 
+  // Modified handleButtonPress to support profiling phase
   const handleButtonPress = (button: 'left' | 'right' | 'up' | 'down') => {
+    // If in profiling phase, log answer and progress
+    if (
+      enabledPsychologicalQuestions.length > 0 &&
+      currentPsychologicalQuestionIndex >= 0 &&
+      currentPsychologicalQuestionIndex < enabledPsychologicalQuestions.length &&
+      !psychologicalQuestionsCompleted
+    ) {
+      const currentQuestion = enabledPsychologicalQuestions[currentPsychologicalQuestionIndex];
+      let answer: { person1: BinaryChoice; person2: BinaryChoice };
+      switch (button) {
+        case 'left':
+          answer = { person1: 'L', person2: 'L' };
+          break;
+        case 'right':
+          answer = { person1: 'R', person2: 'R' };
+          break;
+        case 'up':
+          answer = { person1: 'L', person2: 'R' };
+          break;
+        case 'down':
+          answer = { person1: 'R', person2: 'L' };
+          break;
+        default:
+          return;
+      }
+      const newAnswers = { ...psychologicalAnswers, [currentQuestion.id]: answer };
+      setPsychologicalAnswersLocal(newAnswers);
+      const nextIndex = currentPsychologicalQuestionIndex + 1;
+      if (nextIndex < enabledPsychologicalQuestions.length) {
+        setCurrentPsychologicalQuestionIndex(nextIndex);
+      } else {
+        setCurrentPsychologicalQuestionIndex(-1);
+        setPsychologicalAnswers(newAnswers);
+        setPsychologicalQuestionsCompleted(true);
+      }
+      return;
+    }
+
     let spectator1TopChoice: BinaryChoice;
     let spectator1BottomChoice: BinaryChoice;
     let spectator2TopChoice: BinaryChoice;
@@ -332,6 +389,19 @@ const SpectatorFilterPage: React.FC = () => {
           🔄 Reset
         </button>
       </div>
+      {/* Profiling Question Box */}
+      {enabledPsychologicalQuestions.length > 0 &&
+        currentPsychologicalQuestionIndex >= 0 &&
+        currentPsychologicalQuestionIndex < enabledPsychologicalQuestions.length &&
+        !psychologicalQuestionsCompleted && (
+          <div className="w-full bg-dark-grey p-4 rounded-lg mb-4 no-highlight">
+            <div className="text-center">
+              <div className="text-lg font-medium no-highlight">
+                {enabledPsychologicalQuestions[currentPsychologicalQuestionIndex].text}
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Spectator Lists */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
