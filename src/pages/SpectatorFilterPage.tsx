@@ -41,6 +41,8 @@ const SpectatorFilterPage: React.FC = () => {
 
   // Add state for long press
   const [longPressYesSide, setLongPressYesSide] = useState<[BinaryChoice, BinaryChoice] | null>(null);
+  // Add state for asymmetric long press
+  const [longPressNoHalf, setLongPressNoHalf] = useState<{ spectator1: 'top' | 'bottom' | null, spectator2: 'top' | 'bottom' | null }>({ spectator1: null, spectator2: null });
 
   // Helper to decode answers
   const decodeProfilingAnswers = (yesSide: [BinaryChoice, BinaryChoice]) => {
@@ -374,23 +376,28 @@ const SpectatorFilterPage: React.FC = () => {
     return getBackgroundColor(spectator2BottomWords.length);
   };
 
-  // Modify D-Pad buttons to support long press
-  const longPressTimeout = useRef<NodeJS.Timeout | null>(null);
-  const handleDPadPress = (button: 'left' | 'right' | 'up' | 'down') => {
-    // Normal press: answer profiling or letter sequence
-    handleButtonPress(button);
+  // Helper to get halves
+  const splitHalf = (arr: string[]) => {
+    const mid = Math.ceil(arr.length / 2);
+    return { top: arr.slice(0, mid), bottom: arr.slice(mid) };
   };
+
+  // Update long press logic
   const handleDPadLongPress = (button: 'left' | 'right' | 'up' | 'down') => {
-    // Set YES side based on button
-    let yesSide: [BinaryChoice, BinaryChoice];
+    let noHalf: { spectator1: 'top' | 'bottom', spectator2: 'top' | 'bottom' };
     switch (button) {
-      case 'left': yesSide = ['L', 'L']; break;
-      case 'right': yesSide = ['R', 'R']; break;
-      case 'up': yesSide = ['L', 'R']; break;
-      case 'down': yesSide = ['R', 'L']; break;
+      case 'left': noHalf = { spectator1: 'top', spectator2: 'top' }; break;
+      case 'right': noHalf = { spectator1: 'bottom', spectator2: 'bottom' }; break;
+      case 'up': noHalf = { spectator1: 'top', spectator2: 'bottom' }; break;
+      case 'down': noHalf = { spectator1: 'bottom', spectator2: 'top' }; break;
       default: return;
     }
-    setLongPressYesSide(yesSide);
+    setLongPressNoHalf(noHalf);
+  };
+
+  const longPressTimeout = useRef<NodeJS.Timeout | null>(null);
+  const handleDPadPress = (button: 'left' | 'right' | 'up' | 'down') => {
+    handleButtonPress(button);
   };
 
   if (!selectedWordList) {
@@ -450,25 +457,79 @@ const SpectatorFilterPage: React.FC = () => {
             </div>
           </div>
         )}
-      {/* Results after long press */}
-      {longPressYesSide && (
-        <div className="w-full bg-dark-grey p-4 rounded-lg mb-4 no-highlight flex flex-col justify-between" style={{ minHeight: '200px', height: '300px' }}>
-          {/* Top 50%: Person 1 */}
-          <div className="flex-1 flex flex-col justify-end items-center border-b border-gray-600 pb-2">
-            {decodeProfilingAnswers(longPressYesSide).person1Results.map((line, idx) => (
-              <div key={idx} className="text-base py-1">{line}</div>
-            ))}
+      {/* Asymmetric Results after long press */}
+      {longPressNoHalf.spectator1 && longPressNoHalf.spectator2 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* Spectator 1 */}
+          <div className="bg-black border-2 border-white rounded-lg p-6 relative">
+            <div className="absolute top-2 left-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">1</div>
+            <div className="space-y-4">
+              {(() => {
+                const halves = splitHalf(spectator1TopWords.concat(spectator1BottomWords));
+                return (
+                  <>
+                    {/* Top Half */}
+                    <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
+                      {longPressNoHalf.spectator1 === 'top'
+                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person1Results.map((line, idx) => (
+                            <div key={idx} className="text-base py-1">{line}</div>
+                          ))
+                        : halves.top.map((word, idx) => (
+                            <div key={idx} className="text-sm mb-1">{word}</div>
+                          ))}
+                    </div>
+                    {/* Bottom Half */}
+                    <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
+                      {longPressNoHalf.spectator1 === 'bottom'
+                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person1Results.map((line, idx) => (
+                            <div key={idx} className="text-base py-1">{line}</div>
+                          ))
+                        : halves.bottom.map((word, idx) => (
+                            <div key={idx} className="text-sm mb-1">{word}</div>
+                          ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </div>
-          {/* Bottom 50%: Person 2 */}
-          <div className="flex-1 flex flex-col justify-start items-center pt-2">
-            {decodeProfilingAnswers(longPressYesSide).person2Results.map((line, idx) => (
-              <div key={idx} className="text-base py-1">{line}</div>
-            ))}
+          {/* Spectator 2 */}
+          <div className="bg-black border-2 border-white rounded-lg p-6 relative">
+            <div className="absolute top-2 left-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">2</div>
+            <div className="space-y-4">
+              {(() => {
+                const halves = splitHalf(spectator2TopWords.concat(spectator2BottomWords));
+                return (
+                  <>
+                    {/* Top Half */}
+                    <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
+                      {longPressNoHalf.spectator2 === 'top'
+                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person2Results.map((line, idx) => (
+                            <div key={idx} className="text-base py-1">{line}</div>
+                          ))
+                        : halves.top.map((word, idx) => (
+                            <div key={idx} className="text-sm mb-1">{word}</div>
+                          ))}
+                    </div>
+                    {/* Bottom Half */}
+                    <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
+                      {longPressNoHalf.spectator2 === 'bottom'
+                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person2Results.map((line, idx) => (
+                            <div key={idx} className="text-base py-1">{line}</div>
+                          ))
+                        : halves.bottom.map((word, idx) => (
+                            <div key={idx} className="text-sm mb-1">{word}</div>
+                          ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}
       {/* Spectator Lists (hide NO side if long press) */}
-      {!longPressYesSide && (
+      {!(longPressNoHalf.spectator1 && longPressNoHalf.spectator2) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Spectator 1 */}
           <div className="bg-black border-2 border-white rounded-lg p-6 relative">
