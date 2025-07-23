@@ -173,6 +173,8 @@ const SpectatorFilterPage: React.FC = () => {
           return;
       }
       const newAnswers = { ...psychologicalAnswers, [currentQuestion.id]: answer };
+      // LOGGING: Show question, answer, and all answers so far
+      console.log('[PROFILING] Q:', currentQuestion.text, '| Chosen:', answer, '| All:', newAnswers);
       setPsychologicalAnswersLocal(newAnswers);
       const nextIndex = currentPsychologicalQuestionIndex + 1;
       if (nextIndex < enabledPsychologicalQuestions.length) {
