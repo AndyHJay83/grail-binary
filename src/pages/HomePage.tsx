@@ -215,24 +215,22 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
-      {/* Hidden 2 PERSON PERFORM button - only shown after long press */}
-      {showSpectatorButton && (
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={async () => {
-              const selectedId = state.userPreferences.selectedWordListId;
-              if (selectedId) {
-                await selectWordList(selectedId);
-                navigate('/spectator-filter');
-              }
-            }}
-            className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
-            aria-label="Start 2 person perform filtering"
-          >
-            2 PERSON PERFORM
-          </button>
-        </div>
-      )}
+      {/* 2 PERSON PERFORM button - always visible */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={async () => {
+            const selectedId = state.userPreferences.selectedWordListId;
+            if (selectedId) {
+              await selectWordList(selectedId);
+              navigate('/spectator-filter');
+            }
+          }}
+          className="bg-black border-2 border-gray-600 hover:border-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-1/2"
+          aria-label="Start 2 person perform filtering"
+        >
+          2 PERSON PERFORM
+        </button>
+      </div>
 
       {/* Long press detection area at the bottom */}
       <div
