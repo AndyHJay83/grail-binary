@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { BinaryChoice } from '../types';
@@ -38,6 +38,27 @@ const SpectatorFilterPage: React.FC = () => {
   // Local state for tracking used letters (like PERFORM)
   const [usedLetters, setUsedLetters] = useState<Set<string>>(new Set());
   const [dynamicSequence, setDynamicSequence] = useState<string[]>([]);
+
+  // Add state for long press
+  const [longPressYesSide, setLongPressYesSide] = useState<[BinaryChoice, BinaryChoice] | null>(null);
+
+  // Helper to decode answers
+  const decodeProfilingAnswers = (yesSide: [BinaryChoice, BinaryChoice]) => {
+    const person1Results: string[] = [];
+    const person2Results: string[] = [];
+    enabledPsychologicalQuestions.forEach(q => {
+      const ans = psychologicalAnswers[q.id];
+      // If unanswered, leave blank
+      if (!ans) {
+        person1Results.push(`${q.text} : `);
+        person2Results.push(`${q.text} : `);
+        return;
+      }
+      person1Results.push(`${q.text} : ${ans.person1 === yesSide[0] ? 'YES' : 'NO'}`);
+      person2Results.push(`${q.text} : ${ans.person2 === yesSide[1] ? 'YES' : 'NO'}`);
+    });
+    return { person1Results, person2Results };
+  };
 
   // Auto-start question phase on mount if profiling enabled and questions ticked
   useEffect(() => {
@@ -348,6 +369,25 @@ const SpectatorFilterPage: React.FC = () => {
     return getBackgroundColor(spectator2BottomWords.length);
   };
 
+  // Modify D-Pad buttons to support long press
+  const longPressTimeout = useRef<NodeJS.Timeout | null>(null);
+  const handleDPadPress = (button: 'left' | 'right' | 'up' | 'down') => {
+    // Normal press: answer profiling or letter sequence
+    handleButtonPress(button);
+  };
+  const handleDPadLongPress = (button: 'left' | 'right' | 'up' | 'down') => {
+    // Set YES side based on button
+    let yesSide: [BinaryChoice, BinaryChoice];
+    switch (button) {
+      case 'left': yesSide = ['L', 'L']; break;
+      case 'right': yesSide = ['R', 'R']; break;
+      case 'up': yesSide = ['L', 'R']; break;
+      case 'down': yesSide = ['R', 'L']; break;
+      default: return;
+    }
+    setLongPressYesSide(yesSide);
+  };
+
   if (!selectedWordList) {
     return (
       <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
@@ -404,101 +444,118 @@ const SpectatorFilterPage: React.FC = () => {
             </div>
           </div>
         )}
-
-      {/* Spectator Lists */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {/* Spectator 1 */}
-        <div className="bg-black border-2 border-white rounded-lg p-6 relative">
-          {/* Spectator 1 Number Circle */}
-          <div className="absolute top-2 left-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">
-            1
+      {/* Results after long press */}
+      {longPressYesSide && (
+        <div className="w-full bg-dark-grey p-4 rounded-lg mb-4 no-highlight flex flex-col justify-between" style={{ minHeight: '200px', height: '300px' }}>
+          {/* Top 50%: Person 1 */}
+          <div className="flex-1 flex flex-col justify-end items-center border-b border-gray-600 pb-2">
+            {decodeProfilingAnswers(longPressYesSide).person1Results.map((line, idx) => (
+              <div key={idx} className="text-base py-1">{line}</div>
+            ))}
           </div>
-          
-          <div className="space-y-4">
-            {/* Top Half */}
-            <div>
-              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator1TopBackgroundColor()}`}>
-                {getWordsToShow(getTopHalf(spectator1TopWords)).map((word, index) => (
-                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator1TopBackgroundColor())}`}>
-                    {word}
-                  </div>
-                ))}
-                {getTopHalf(spectator1TopWords).length > 10 && (
-                  <div className="text-gray-400 text-xs">
-                    +{getTopHalf(spectator1TopWords).length - 10} more
-                  </div>
-                )}
+          {/* Bottom 50%: Person 2 */}
+          <div className="flex-1 flex flex-col justify-start items-center pt-2">
+            {decodeProfilingAnswers(longPressYesSide).person2Results.map((line, idx) => (
+              <div key={idx} className="text-base py-1">{line}</div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Spectator Lists (hide NO side if long press) */}
+      {!longPressYesSide && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* Spectator 1 */}
+          <div className="bg-black border-2 border-white rounded-lg p-6 relative">
+            {/* Spectator 1 Number Circle */}
+            <div className="absolute top-2 left-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">
+              1
+            </div>
+            
+            <div className="space-y-4">
+              {/* Top Half */}
+              <div>
+                <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator1TopBackgroundColor()}`}>
+                  {getWordsToShow(getTopHalf(spectator1TopWords)).map((word, index) => (
+                    <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator1TopBackgroundColor())}`}>
+                      {word}
+                    </div>
+                  ))}
+                  {getTopHalf(spectator1TopWords).length > 10 && (
+                    <div className="text-gray-400 text-xs">
+                      +{getTopHalf(spectator1TopWords).length - 10} more
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Separator */}
+              <div className="border-t-2 border-gray-600 my-4"></div>
+
+              {/* Bottom Half */}
+              <div>
+                <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator1BottomBackgroundColor()}`}>
+                  {getWordsToShow(getBottomHalf(spectator1BottomWords)).map((word, index) => (
+                    <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator1BottomBackgroundColor())}`}>
+                      {word}
+                    </div>
+                  ))}
+                  {getBottomHalf(spectator1BottomWords).length > 10 && (
+                    <div className="text-gray-400 text-xs">
+                      +{getBottomHalf(spectator1BottomWords).length - 10} more
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Separator */}
-            <div className="border-t-2 border-gray-600 my-4"></div>
+          {/* Spectator 2 */}
+          <div className="bg-black border-2 border-white rounded-lg p-6 relative">
+            {/* Spectator 2 Number Circle */}
+            <div className="absolute top-2 left-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">
+              2
+            </div>
+            
+            <div className="space-y-4">
+              {/* Top Half */}
+              <div>
+                <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator2TopBackgroundColor()}`}>
+                  {getWordsToShow(getTopHalf(spectator2TopWords)).map((word, index) => (
+                    <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator2TopBackgroundColor())}`}>
+                      {word}
+                    </div>
+                  ))}
+                  {getTopHalf(spectator2TopWords).length > 10 && (
+                    <div className="text-gray-400 text-xs">
+                      +{getTopHalf(spectator2TopWords).length - 10} more
+                    </div>
+                  )}
+                </div>
+              </div>
 
-            {/* Bottom Half */}
-            <div>
-              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator1BottomBackgroundColor()}`}>
-                {getWordsToShow(getBottomHalf(spectator1BottomWords)).map((word, index) => (
-                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator1BottomBackgroundColor())}`}>
-                    {word}
-                  </div>
-                ))}
-                {getBottomHalf(spectator1BottomWords).length > 10 && (
-                  <div className="text-gray-400 text-xs">
-                    +{getBottomHalf(spectator1BottomWords).length - 10} more
-                  </div>
-                )}
+              {/* Separator */}
+              <div className="border-t-2 border-gray-600 my-4"></div>
+
+              {/* Bottom Half */}
+              <div>
+                <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator2BottomBackgroundColor()}`}>
+                  {getWordsToShow(getBottomHalf(spectator2BottomWords)).map((word, index) => (
+                    <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator2BottomBackgroundColor())}`}>
+                      {word}
+                    </div>
+                  ))}
+                  {getBottomHalf(spectator2BottomWords).length > 10 && (
+                    <div className="text-gray-400 text-xs">
+                      +{getBottomHalf(spectator2BottomWords).length - 10} more
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Spectator 2 */}
-        <div className="bg-black border-2 border-white rounded-lg p-6 relative">
-          {/* Spectator 2 Number Circle */}
-          <div className="absolute top-2 left-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold z-10">
-            2
-          </div>
-          
-          <div className="space-y-4">
-            {/* Top Half */}
-            <div>
-              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator2TopBackgroundColor()}`}>
-                {getWordsToShow(getTopHalf(spectator2TopWords)).map((word, index) => (
-                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator2TopBackgroundColor())}`}>
-                    {word}
-                  </div>
-                ))}
-                {getTopHalf(spectator2TopWords).length > 10 && (
-                  <div className="text-gray-400 text-xs">
-                    +{getTopHalf(spectator2TopWords).length - 10} more
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Separator */}
-            <div className="border-t-2 border-gray-600 my-4"></div>
-
-            {/* Bottom Half */}
-            <div>
-              <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto ${getSpectator2BottomBackgroundColor()}`}>
-                {getWordsToShow(getBottomHalf(spectator2BottomWords)).map((word, index) => (
-                  <div key={index} className={`text-sm mb-1 ${getTextColor(getSpectator2BottomBackgroundColor())}`}>
-                    {word}
-                  </div>
-                ))}
-                {getBottomHalf(spectator2BottomWords).length > 10 && (
-                  <div className="text-gray-400 text-xs">
-                    +{getBottomHalf(spectator2BottomWords).length - 10} more
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Diagonal D-pad Button Layout */}
+      )}
+      {/* D-Pad with long press handlers */}
       <div className="w-full relative" style={{ height: '35vh' }}>
         <div className="relative w-full h-full">
           {/* Diagonal lines creating X pattern */}
@@ -507,10 +564,46 @@ const SpectatorFilterPage: React.FC = () => {
             <div className="absolute top-0 left-0 w-full h-full" style={{ background: 'linear-gradient(-45deg, transparent calc(50% - 1px), white calc(50% - 1px), white calc(50% + 1px), transparent calc(50% + 1px))' }}></div>
           </div>
           {/* Clickable triangular regions (buttons) */}
-          <button onClick={() => handleButtonPress('up')} className="absolute top-0 left-0 w-full h-1/2 bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }} aria-label="Up"><div className="flex items-center justify-center h-full text-white font-bold text-lg">1 & 4</div></button>
-          <button onClick={() => handleButtonPress('right')} className="absolute top-0 right-0 w-1/2 h-full bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }} aria-label="Right"><div className="flex items-center justify-center h-full text-white font-bold text-lg">2 & 4</div></button>
-          <button onClick={() => handleButtonPress('down')} className="absolute bottom-0 left-0 w-full h-1/2 bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }} aria-label="Down"><div className="flex items-center justify-center h-full text-white font-bold text-lg">2 & 3</div></button>
-          <button onClick={() => handleButtonPress('left')} className="absolute top-0 left-0 w-1/2 h-full bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }} aria-label="Left"><div className="flex items-center justify-center h-full text-white font-bold text-lg">1 & 3</div></button>
+          <button
+            onMouseDown={() => { longPressTimeout.current = setTimeout(() => handleDPadLongPress('up'), 500); }}
+            onMouseUp={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; handleDPadPress('up'); } }}
+            onMouseLeave={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; } }}
+            className="absolute top-0 left-0 w-full h-1/2 bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }}
+            aria-label="Up"
+          >
+            <div className="flex items-center justify-center h-full text-white font-bold text-lg">1 & 4</div>
+          </button>
+          <button
+            onMouseDown={() => { longPressTimeout.current = setTimeout(() => handleDPadLongPress('right'), 500); }}
+            onMouseUp={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; handleDPadPress('right'); } }}
+            onMouseLeave={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; } }}
+            className="absolute top-0 right-0 w-1/2 h-full bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }}
+            aria-label="Right"
+          >
+            <div className="flex items-center justify-center h-full text-white font-bold text-lg">2 & 4</div>
+          </button>
+          <button
+            onMouseDown={() => { longPressTimeout.current = setTimeout(() => handleDPadLongPress('down'), 500); }}
+            onMouseUp={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; handleDPadPress('down'); } }}
+            onMouseLeave={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; } }}
+            className="absolute bottom-0 left-0 w-full h-1/2 bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }}
+            aria-label="Down"
+          >
+            <div className="flex items-center justify-center h-full text-white font-bold text-lg">2 & 3</div>
+          </button>
+          <button
+            onMouseDown={() => { longPressTimeout.current = setTimeout(() => handleDPadLongPress('left'), 500); }}
+            onMouseUp={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; handleDPadPress('left'); } }}
+            onMouseLeave={() => { if (longPressTimeout.current) { clearTimeout(longPressTimeout.current); longPressTimeout.current = null; } }}
+            className="absolute top-0 left-0 w-1/2 h-full bg-black border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+            style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', transform: 'scale(0.7)', transformOrigin: 'center' }}
+            aria-label="Left"
+          >
+            <div className="flex items-center justify-center h-full text-white font-bold text-lg">1 & 3</div>
+          </button>
         </div>
       </div>
     </div>
