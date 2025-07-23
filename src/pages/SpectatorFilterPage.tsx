@@ -62,6 +62,11 @@ const SpectatorFilterPage: React.FC = () => {
 
   // Auto-start question phase on mount if profiling enabled and questions ticked
   useEffect(() => {
+    console.log('[PROFILING DEBUG] Profiling check:', {
+      enabledPsychologicalQuestions,
+      currentPsychologicalQuestionIndex,
+      psychologicalQuestionsCompleted
+    });
     if (
       enabledPsychologicalQuestions.length > 0 &&
       currentPsychologicalQuestionIndex === -1 &&
@@ -436,6 +441,7 @@ const SpectatorFilterPage: React.FC = () => {
         currentPsychologicalQuestionIndex >= 0 &&
         currentPsychologicalQuestionIndex < enabledPsychologicalQuestions.length &&
         !psychologicalQuestionsCompleted && (
+          (() => { console.log('[PROFILING DEBUG] Rendering question box'); return null; })(),
           <div className="w-full bg-dark-grey p-4 rounded-lg mb-4 no-highlight">
             <div className="text-center">
               <div className="text-lg font-medium no-highlight">
