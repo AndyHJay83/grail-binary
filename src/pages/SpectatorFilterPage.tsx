@@ -40,7 +40,7 @@ const SpectatorFilterPage: React.FC = () => {
   const [dynamicSequence, setDynamicSequence] = useState<string[]>([]);
 
   // Add state for long press
-  const [longPressYesSide, setLongPressYesSide] = useState<[BinaryChoice, BinaryChoice] | null>(null);
+  // const [longPressYesSide, setLongPressYesSide] = useState<[BinaryChoice, BinaryChoice] | null>(null);
   // Add state for asymmetric long press
   const [longPressNoHalf, setLongPressNoHalf] = useState<{ spectator1: 'top' | 'bottom' | null, spectator2: 'top' | 'bottom' | null }>({ spectator1: null, spectator2: null });
 
@@ -466,12 +466,16 @@ const SpectatorFilterPage: React.FC = () => {
             <div className="space-y-4">
               {(() => {
                 const halves = splitHalf(spectator1TopWords.concat(spectator1BottomWords));
+                const yesSide: [BinaryChoice, BinaryChoice] = [
+                  longPressNoHalf.spectator1 === 'top' ? 'L' : 'R',
+                  longPressNoHalf.spectator2 === 'top' ? 'L' : 'R'
+                ];
                 return (
                   <>
                     {/* Top Half */}
                     <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
                       {longPressNoHalf.spectator1 === 'top'
-                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person1Results.map((line, idx) => (
+                        ? decodeProfilingAnswers(yesSide).person1Results.map((line, idx) => (
                             <div key={idx} className="text-base py-1">{line}</div>
                           ))
                         : halves.top.map((word, idx) => (
@@ -481,7 +485,7 @@ const SpectatorFilterPage: React.FC = () => {
                     {/* Bottom Half */}
                     <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
                       {longPressNoHalf.spectator1 === 'bottom'
-                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person1Results.map((line, idx) => (
+                        ? decodeProfilingAnswers(yesSide).person1Results.map((line, idx) => (
                             <div key={idx} className="text-base py-1">{line}</div>
                           ))
                         : halves.bottom.map((word, idx) => (
@@ -499,12 +503,16 @@ const SpectatorFilterPage: React.FC = () => {
             <div className="space-y-4">
               {(() => {
                 const halves = splitHalf(spectator2TopWords.concat(spectator2BottomWords));
+                const yesSide: [BinaryChoice, BinaryChoice] = [
+                  longPressNoHalf.spectator1 === 'top' ? 'L' : 'R',
+                  longPressNoHalf.spectator2 === 'top' ? 'L' : 'R'
+                ];
                 return (
                   <>
                     {/* Top Half */}
                     <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
                       {longPressNoHalf.spectator2 === 'top'
-                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person2Results.map((line, idx) => (
+                        ? decodeProfilingAnswers(yesSide).person2Results.map((line, idx) => (
                             <div key={idx} className="text-base py-1">{line}</div>
                           ))
                         : halves.top.map((word, idx) => (
@@ -514,7 +522,7 @@ const SpectatorFilterPage: React.FC = () => {
                     {/* Bottom Half */}
                     <div className={`p-3 rounded min-h-[100px] max-h-[100px] overflow-y-auto`}>
                       {longPressNoHalf.spectator2 === 'bottom'
-                        ? decodeProfilingAnswers([longPressNoHalf.spectator1 === 'top' ? 'L' : 'R', longPressNoHalf.spectator2 === 'top' ? 'L' : 'R']).person2Results.map((line, idx) => (
+                        ? decodeProfilingAnswers(yesSide).person2Results.map((line, idx) => (
                             <div key={idx} className="text-base py-1">{line}</div>
                           ))
                         : halves.bottom.map((word, idx) => (
